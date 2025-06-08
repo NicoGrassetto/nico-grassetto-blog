@@ -1,10 +1,9 @@
----
 import { getCollection } from 'astro:content';
 
 const posts = await getCollection('blog');
 const sortedPosts = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
-const siteUrl = 'https://nico-grassetto.github.io/nico-grassetto-blog';
+const siteUrl = 'https://NicoGrassetto.github.io/nico-grassetto-blog';
 
 export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
@@ -33,4 +32,3 @@ export async function GET() {
     }
   });
 }
----
