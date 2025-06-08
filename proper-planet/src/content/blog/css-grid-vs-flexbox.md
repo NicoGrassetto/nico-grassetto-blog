@@ -1,7 +1,7 @@
 ---
-title: "CSS Grid vs Flexbox: When to Use Each"
+title: "Migration from COBOL to Java"
 date: "2024-01-10"
-image: "/nico-grassetto-blog/images/test-image.png"
+image: "/nico-grassetto-blog/images/cobol-to-java.jpg" 
 description: "Understanding the differences between CSS Grid and Flexbox for layout"
 ---
 
