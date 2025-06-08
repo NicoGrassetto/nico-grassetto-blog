@@ -1,7 +1,7 @@
 ---
 title: "Building Responsive Web Components"
 date: "2024-02-28"
-image: "/nico-grassetto-blog/images/web-components.jpg"
+image: "/nico-grassetto-blog/images/test-image.png"
 description: "A deep dive into creating reusable, responsive web components"
 ---
 
