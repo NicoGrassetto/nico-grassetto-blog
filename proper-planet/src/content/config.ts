@@ -10,18 +10,6 @@ const blog = defineCollection({
   }),
 });
 
-const artifacts = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    date: z.string(),
-    description: z.string(),
-    demo: z.string().optional(),
-    github: z.string().optional(),
-  }),
-});
-
 export const collections = {
   blog,
-  artifacts,
 };

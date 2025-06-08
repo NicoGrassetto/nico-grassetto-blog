@@ -2,16 +2,10 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import BlogList from '../components/BlogList.astro';
-import ArtifactList from '../components/ArtifactList.astro';
 
-// Get all blog posts and artifacts, sorted by date (newest first)
+// Get all blog posts, sorted by date (newest first)
 const allBlogPosts = await getCollection('blog');
 const sortedPosts = allBlogPosts.sort((a, b) => 
-  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
-
-const allArtifacts = await getCollection('artifacts');
-const sortedArtifacts = allArtifacts.sort((a, b) => 
   new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
 );
 ---
@@ -30,28 +24,9 @@ const sortedArtifacts = allArtifacts.sort((a, b) =>
 			))}
 		</ul>
 	</section>
-
-	<section class="artifacts-section">
-		<h2 class="section-title">Artifacts</h2>
-		<ul class="blog-list">
-			{sortedArtifacts.map((artifact) => (
-				<ArtifactList
-					title={artifact.data.title}
-					date={artifact.data.date}
-					description={artifact.data.description}
-					slug={artifact.slug}
-					demo={artifact.data.demo}
-					github={artifact.data.github}
-				/>
-			))}
-		</ul>
-	</section>
 </Layout>
 
 <style>
-	.artifacts-section {
-		margin-top: 4rem;
-	}
 </style>
 
 
