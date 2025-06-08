@@ -1,0 +1,117 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import BlogCard from '../components/BlogCard.astro';
+
+// Get all blog posts and sort by date (newest first)
+const allBlogPosts = await getCollection('blog');
+const sortedPosts = allBlogPosts.sort((a, b) => 
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+---
+
+<Layout title="Nico Grassetto's Blog" description="Welcome to my personal blog where I share insights about web development, JavaScript, and modern frontend technologies.">
+	<div class="hero-section">
+		<div class="hero-content">
+			<h1>Welcome to My Blog</h1>
+			<p>Exploring web development, JavaScript, and modern frontend technologies</p>
+		</div>
+	</div>
+	
+	<section class="blog-section">
+		<div class="container">
+			<h2 class="section-title">Latest Articles</h2>
+			<div class="blog-grid">
+				{sortedPosts.map((post) => (
+					<BlogCard
+						title={post.data.title}
+						date={post.data.date}
+						image={post.data.image}
+						description={post.data.description}
+						slug={post.slug}
+					/>
+				))}
+			</div>
+		</div>
+	</section>
+</Layout>
+
+<style>
+	.hero-section {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		padding: 4rem 2rem;
+		text-align: center;
+	}
+
+	.hero-content h1 {
+		font-size: 3rem;
+		margin: 0 0 1rem 0;
+		font-weight: 700;
+	}
+
+	.hero-content p {
+		font-size: 1.25rem;
+		margin: 0;
+		opacity: 0.9;
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.blog-section {
+		padding: 4rem 2rem;
+	}
+
+	.container {
+		max-width: 1200px;
+		margin: 0 auto;
+	}
+
+	.section-title {
+		font-size: 2.5rem;
+		text-align: center;
+		margin: 0 0 3rem 0;
+		color: #1f2937;
+		font-weight: 700;
+	}
+
+	.blog-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+		gap: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	@media (max-width: 768px) {
+		.hero-content h1 {
+			font-size: 2rem;
+		}
+		
+		.hero-content p {
+			font-size: 1rem;
+		}
+		
+		.section-title {
+			font-size: 2rem;
+		}
+		
+		.blog-grid {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
+		
+		.hero-section {
+			padding: 3rem 1rem;
+		}
+		
+		.blog-section {
+			padding: 3rem 1rem;
+		}
+	}
+
+	@media (max-width: 400px) {
+		.blog-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
