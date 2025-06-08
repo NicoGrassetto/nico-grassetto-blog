@@ -1,0 +1,111 @@
+---
+export interface Props {
+  title: string;
+  date: string;
+  description: string;
+  slug: string;
+  demo?: string;
+  github?: string;
+}
+
+const { title, date, description, slug, demo, github } = Astro.props;
+
+// Format the date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+// Generate a mock view count (in a real app, this would come from analytics)
+const generateViewCount = () => {
+  return Math.floor(Math.random() * 1000) + 50;
+};
+---
+
+<li class="artifact-item">
+  <div class="artifact-content">
+    <h3 class="artifact-title">
+      <a href={`/artifacts/${slug}`} class="artifact-link">{title}</a>
+    </h3>
+    <div class="artifact-meta">
+      <time datetime={date}>{formatDate(date)}</time>
+      <span>{generateViewCount()}</span>
+    </div>
+    <div class="artifact-links">
+      {demo && <a href={demo} target="_blank" rel="noopener" class="external-link">Demo</a>}
+      {github && <a href={github} target="_blank" rel="noopener" class="external-link">GitHub</a>}
+    </div>
+  </div>
+</li>
+
+<style>
+  .artifact-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .artifact-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .artifact-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.4;
+  }
+
+  .artifact-link {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .artifact-link:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+
+  .artifact-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .artifact-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .external-link {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid transparent;
+  }
+
+  .external-link:hover {
+    color: var(--link-hover);
+    border-bottom-color: var(--link-hover);
+  }
+
+  @media (max-width: 768px) {
+    .artifact-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+</style>

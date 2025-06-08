@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About - Nico Grassetto" description="Learn more about Nico Grassetto, a web developer passionate about modern frontend technologies.">
+	<section class="about-section">
+		<h2 class="section-title">About</h2>
+		
+		<div class="about-content">
+			<p>
+				I'm a web developer passionate about creating thoughtful digital experiences using modern technologies. 
+				I specialize in JavaScript, TypeScript, React, and various frontend frameworks and tools.
+			</p>
+			
+			<p>
+				When I'm not coding, you can find me exploring new web technologies, contributing to open source projects, 
+				or sharing knowledge through writing and speaking about web development.
+			</p>
+			
+			<p>
+				This blog is where I document my learnings, share insights about web development, 
+				and explore the latest trends in frontend technologies.
+			</p>
+		</div>
+		
+		<div class="contact-info">
+			<h3>Get in touch</h3>
+			<p>Feel free to reach out if you'd like to collaborate, have questions, or just want to say hello!</p>
+		</div>
+	</section>
+</Layout>
+
+<style>
+	.about-content p {
+		margin-bottom: 1.5rem;
+		line-height: 1.7;
+	}
+	
+	.contact-info {
+		margin-top: 3rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--border-primary);
+	}
+	
+	.contact-info h3 {
+		font-size: 1.125rem;
+		margin: 0 0 1rem 0;
+		color: var(--text-primary);
+	}
+	
+	.contact-info p {
+		margin: 0;
+		color: var(--text-secondary);
+	}
+</style>

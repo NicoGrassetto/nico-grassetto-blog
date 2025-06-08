@@ -1,134 +1,57 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import BlogCard from '../components/BlogCard.astro';
+import BlogList from '../components/BlogList.astro';
+import ArtifactList from '../components/ArtifactList.astro';
 
-// Get all blog posts and sort by date (newest first)
+// Get all blog posts and artifacts, sorted by date (newest first)
 const allBlogPosts = await getCollection('blog');
 const sortedPosts = allBlogPosts.sort((a, b) => 
   new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
 );
+
+const allArtifacts = await getCollection('artifacts');
+const sortedArtifacts = allArtifacts.sort((a, b) => 
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
 ---
 
-<Layout title="Nico Grassetto's Blog" description="Welcome to my personal blog where I share insights about web development, JavaScript, and modern frontend technologies.">
-	<div class="hero-section">
-		<div class="hero-content">
-			<h1>Welcome to My Blog</h1>
-			<p>Exploring web development, JavaScript, and modern frontend technologies</p>
-		</div>
-	</div>
-	
+<Layout title="Nico Grassetto" description="Engineering thoughtful web experiences with modern technologies.">
 	<section class="blog-section">
-		<div class="container">
-			<h2 class="section-title">Latest Articles</h2>
-			<div class="blog-grid">
-				{sortedPosts.map((post) => (
-					<BlogCard
-						title={post.data.title}
-						date={post.data.date}
-						image={post.data.image}
-						description={post.data.description}
-						slug={post.slug}
-					/>
-				))}
-			</div>
-		</div>
+		<h2 class="section-title">Blog</h2>
+		<ul class="blog-list">
+			{sortedPosts.map((post) => (
+				<BlogList
+					title={post.data.title}
+					date={post.data.date}
+					description={post.data.description}
+					slug={post.slug}
+				/>
+			))}
+		</ul>
+	</section>
+
+	<section class="artifacts-section">
+		<h2 class="section-title">Artifacts</h2>
+		<ul class="blog-list">
+			{sortedArtifacts.map((artifact) => (
+				<ArtifactList
+					title={artifact.data.title}
+					date={artifact.data.date}
+					description={artifact.data.description}
+					slug={artifact.slug}
+					demo={artifact.data.demo}
+					github={artifact.data.github}
+				/>
+			))}
+		</ul>
 	</section>
 </Layout>
 
 <style>
-	.hero-section {
-		background: linear-gradient(135deg, #3730a3 0%, #581c87 100%);
-		color: white;
-		padding: 4rem 2rem;
-		text-align: center;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.hero-section::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
-		pointer-events: none;
-	}
-
-	.hero-content h1 {
-		font-size: 3rem;
-		margin: 0 0 1rem 0;
-		font-weight: 700;
-		position: relative;
-		z-index: 1;
-	}
-
-	.hero-content p {
-		font-size: 1.25rem;
-		margin: 0;
-		opacity: 0.9;
-		max-width: 600px;
-		margin: 0 auto;
-		position: relative;
-		z-index: 1;
-	}
-
-	.blog-section {
-		padding: 4rem 2rem;
-	}
-
-	.container {
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-
-	.section-title {
-		font-size: 2.5rem;
-		text-align: center;
-		margin: 0 0 3rem 0;
-		color: #f1f5f9;
-		font-weight: 700;
-	}
-
-	.blog-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-		gap: 2rem;
-		margin-bottom: 2rem;
-	}
-
-	@media (max-width: 768px) {
-		.hero-content h1 {
-			font-size: 2rem;
-		}
-		
-		.hero-content p {
-			font-size: 1rem;
-		}
-		
-		.section-title {
-			font-size: 2rem;
-		}
-		
-		.blog-grid {
-			grid-template-columns: 1fr;
-			gap: 1.5rem;
-		}
-		
-		.hero-section {
-			padding: 3rem 1rem;
-		}
-		
-		.blog-section {
-			padding: 3rem 1rem;
-		}
-	}
-
-	@media (max-width: 400px) {
-		.blog-grid {
-			grid-template-columns: 1fr;
-		}
+	.artifacts-section {
+		margin-top: 4rem;
 	}
 </style>
+
+

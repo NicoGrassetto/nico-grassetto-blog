@@ -1,0 +1,35 @@
+---
+export interface Props {
+  title: string;
+  date: string;
+  description: string;
+  slug: string;
+}
+
+const { title, date, description, slug } = Astro.props;
+
+// Format the date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+// Generate a mock read count (in a real app, this would come from analytics)
+const generateReadCount = () => {
+  return Math.floor(Math.random() * 5000) + 100;
+};
+---
+
+<li class="blog-item">
+  <a href={`/blog/${slug}`} class="blog-link">
+    <h3 class="blog-title">{title}</h3>
+    <div class="blog-meta">
+      <time datetime={date}>{formatDate(date)}</time>
+      <span>{generateReadCount()}</span>
+    </div>
+  </a>
+</li>
