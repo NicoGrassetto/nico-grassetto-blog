@@ -5,8 +5,6 @@ image: "/nico-grassetto-blog/images/test-image.png"
 description: "Learn how to build fast, modern websites with Astro.js"
 ---
 
-# Getting Started with Astro
-
 Astro is a modern static site generator that lets you build faster websites with less client-side JavaScript. In this post, we'll explore the key features that make Astro special.
 
 ## Why Choose Astro?

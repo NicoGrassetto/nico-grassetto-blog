@@ -5,8 +5,6 @@ image: "/nico-grassetto-blog/images/test-image.png"
 description: "Exploring the latest JavaScript features in ES2024"
 ---
 
-# JavaScript ES2024: New Features to Know
-
 The JavaScript ecosystem continues to evolve with ES2024 bringing several exciting new features that improve developer experience and code quality.
 
 ## Array.prototype.toSorted()

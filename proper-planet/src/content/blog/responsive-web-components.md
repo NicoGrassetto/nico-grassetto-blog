@@ -5,8 +5,6 @@ image: "/nico-grassetto-blog/images/test-image.png"
 description: "A deep dive into creating reusable, responsive web components"
 ---
 
-# Building Responsive Web Components
-
 Web components are the future of frontend development. They provide a way to create reusable, encapsulated HTML elements that work across different frameworks and libraries.
 
 ## What are Web Components?

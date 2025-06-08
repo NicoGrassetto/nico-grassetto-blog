@@ -5,8 +5,6 @@ image: "/nico-grassetto-blog/images/test-image.png"
 description: "Understanding the differences between CSS Grid and Flexbox for layout"
 ---
 
-# CSS Grid vs Flexbox: When to Use Each
-
 Both CSS Grid and Flexbox are powerful layout systems, but they serve different purposes. Understanding when to use each one is crucial for efficient web development.
 
 ## Flexbox: One-Dimensional Layouts
