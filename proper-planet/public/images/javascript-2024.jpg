@@ -1,5 +1,11 @@
-<!-- Placeholder SVG for JavaScript ES2024 blog post -->
+<!-- Dark theme placeholder SVG for JavaScript ES2024 blog post -->
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#f7df1e"/>
-  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="20" fill="#323330" text-anchor="middle" dominant-baseline="middle">JavaScript ES2024</text>
+  <defs>
+    <linearGradient id="jsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#facc15;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eab308;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#jsGrad)"/>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="20" fill="#1f2937" text-anchor="middle" dominant-baseline="middle" font-weight="bold">JavaScript ES2024</text>
 </svg>

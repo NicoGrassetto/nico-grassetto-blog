@@ -38,16 +38,31 @@ const sortedPosts = allBlogPosts.sort((a, b) =>
 
 <style>
 	.hero-section {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		background: linear-gradient(135deg, #3730a3 0%, #581c87 100%);
 		color: white;
 		padding: 4rem 2rem;
 		text-align: center;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero-section::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+		pointer-events: none;
 	}
 
 	.hero-content h1 {
 		font-size: 3rem;
 		margin: 0 0 1rem 0;
 		font-weight: 700;
+		position: relative;
+		z-index: 1;
 	}
 
 	.hero-content p {
@@ -56,6 +71,8 @@ const sortedPosts = allBlogPosts.sort((a, b) =>
 		opacity: 0.9;
 		max-width: 600px;
 		margin: 0 auto;
+		position: relative;
+		z-index: 1;
 	}
 
 	.blog-section {
@@ -71,7 +88,7 @@ const sortedPosts = allBlogPosts.sort((a, b) =>
 		font-size: 2.5rem;
 		text-align: center;
 		margin: 0 0 3rem 0;
-		color: #1f2937;
+		color: #f1f5f9;
 		font-weight: 700;
 	}
 
