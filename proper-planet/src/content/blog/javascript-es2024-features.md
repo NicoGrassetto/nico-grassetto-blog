@@ -1,7 +1,7 @@
 ---
 title: "JavaScript ES2024: New Features to Know"
 date: "2024-04-02"
-image: "/images/javascript-2024.jpg"
+image: "/nico-grassetto-blog/images/javascript-2024.jpg"
 description: "Exploring the latest JavaScript features in ES2024"
 ---
 

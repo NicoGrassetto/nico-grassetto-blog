@@ -1,7 +1,7 @@
 ---
 title: "CSS Grid vs Flexbox: When to Use Each"
 date: "2024-01-10"
-image: "/images/css-layout.jpg"
+image: "/nico-grassetto-blog/images/css-layout.jpg"
 description: "Understanding the differences between CSS Grid and Flexbox for layout"
 ---
 

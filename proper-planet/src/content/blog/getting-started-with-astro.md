@@ -1,7 +1,7 @@
 ---
 title: "Getting Started with Astro: A Modern Static Site Generator"
 date: "2024-03-15"
-image: "/images/astro-hero.jpg"
+image: "/nico-grassetto-blog/images/astro-hero.jpg"
 description: "Learn how to build fast, modern websites with Astro.js"
 ---
 
