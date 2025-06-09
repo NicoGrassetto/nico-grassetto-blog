@@ -28,9 +28,23 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:creator" content="@ngrassetto" />
-		
-		<!-- RSS Feed -->
+				<!-- RSS Feed -->
 		<link rel="alternate" type="application/rss+xml" title="Nico Grassetto's Blog" href="/feed" />
+		
+		<!-- Prevent flash of unstyled content -->
+		<script>
+			(function() {
+				function getInitialTheme() {
+					const savedTheme = localStorage.getItem('theme');
+					if (savedTheme) return savedTheme;
+					if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+						return 'light';
+					}
+					return 'dark';
+				}
+				document.documentElement.setAttribute('data-theme', getInitialTheme());
+			})();
+		</script>
 		
 		<title>{title}</title>
 	</head>	<body>
@@ -50,16 +64,44 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 				<slot />
 			</main>
 		</div>
-
 		<script>
 			// Theme toggle functionality
 			const themeToggle = document.getElementById('theme-toggle');
 			const html = document.documentElement;
 			
-			// Check for saved theme preference or default to 'dark'
-			const currentTheme = localStorage.getItem('theme') || 'dark';
-			html.setAttribute('data-theme', currentTheme);
+			// Function to get initial theme
+			function getInitialTheme() {
+				// Check for saved theme preference
+				const savedTheme = localStorage.getItem('theme');
+				if (savedTheme) {
+					return savedTheme;
+				}
+				
+				// Check system preference
+				if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+					return 'light';
+				}
+				
+				// Default to dark
+				return 'dark';
+			}
 			
+			// Set initial theme
+			const initialTheme = getInitialTheme();
+			html.setAttribute('data-theme', initialTheme);
+			
+			// Listen for system theme changes
+			if (window.matchMedia) {
+				window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+					// Only auto-switch if user hasn't manually set a preference
+					if (!localStorage.getItem('theme')) {
+						const newTheme = e.matches ? 'light' : 'dark';
+						html.setAttribute('data-theme', newTheme);
+					}
+				});
+			}
+			
+			// Theme toggle click handler
 			themeToggle?.addEventListener('click', () => {
 				const currentTheme = html.getAttribute('data-theme');
 				const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -71,8 +113,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 	</body>
 </html>
 
-<style is:global>
-	:root {
+<style is:global>	:root {
 		/* Dark theme (default) */
 		--bg-primary: #000000;
 		--bg-secondary: #111111;
@@ -82,6 +123,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		--accent-primary: #ffffff;
 		--accent-hover: #cccccc;
 		--border-primary: #333333;
+		--border-secondary: #444444;
 		--link-color: #ffffff;
 		--link-hover: #cccccc;
 		--button-bg: #ffffff;
@@ -89,6 +131,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		--button-hover-bg: #f0f0f0;
 		--toggle-bg: #333333;
 		--toggle-hover-bg: #444444;
+		--shadow-color: rgba(0, 0, 0, 0.5);
 	}
 
 	[data-theme="light"] {
@@ -101,6 +144,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		--accent-primary: #000000;
 		--accent-hover: #333333;
 		--border-primary: #e0e0e0;
+		--border-secondary: #d0d0d0;
 		--link-color: #000000;
 		--link-hover: #333333;
 		--button-bg: #000000;
@@ -108,10 +152,16 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		--button-hover-bg: #333333;
 		--toggle-bg: #e0e0e0;
 		--toggle-hover-bg: #d0d0d0;
+		--shadow-color: rgba(0, 0, 0, 0.1);
 	}
-
-	* {
+	html {
+		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+	*,
+	*::before,
+	*::after {
 		box-sizing: border-box;
+		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 	}
 	html,
 	body {
@@ -155,12 +205,29 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		justify-content: center;
 		position: relative;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.theme-toggle:hover {
+	}	.theme-toggle:hover {
 		background-color: var(--toggle-hover-bg);
 		transform: scale(1.05);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.theme-toggle:active {
+		transform: scale(0.95);
+		transition: transform 0.1s ease;
+	}
+
+	.theme-toggle:focus {
+		outline: 2px solid var(--accent-primary);
+		outline-offset: 2px;
+	}
+
+	.theme-toggle:focus:not(:focus-visible) {
+		outline: none;
+	}
+
+	.theme-toggle:focus-visible {
+		outline: 2px solid var(--accent-primary);
+		outline-offset: 2px;
 	}
 
 	.theme-toggle-icon {
@@ -361,7 +428,6 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 	.button:hover::after {
 		transform: translateX(2px); /* Slight movement on hover */
 	}
-
 	@media (max-width: 768px) {
 		.container {
 			padding: 1.5rem;
@@ -369,6 +435,34 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		
 		.site-header {
 			margin-bottom: 3rem;
+		}
+
+		.header-top {
+			gap: 1rem;
+		}
+
+		.site-title {
+			font-size: 1.25rem;
+		}
+
+		.theme-toggle {
+			width: 40px;
+			height: 40px;
+		}
+
+		.theme-toggle-icon {
+			width: 18px;
+			height: 18px;
+		}
+
+		.theme-toggle-icon::before {
+			width: 10px;
+			height: 10px;
+		}
+
+		[data-theme="light"] .theme-toggle-icon::before {
+			width: 14px;
+			height: 14px;
 		}
 	}
 </style>
