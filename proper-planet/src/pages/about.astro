@@ -26,6 +26,7 @@ const companyLogos = {
 
 	<section class="about-section">		<h2>Introduction</h2>
 		<div class="content-section">
+			<img src="/nico-grassetto-blog/images/about-picture.jpg" alt="Nico Grassetto" class="profile-picture" />
 			<p>
 				I'm a cloud and AI-focused solution engineer based in Brussels, Belgium.
 			</p>
@@ -47,7 +48,7 @@ const companyLogos = {
 			</p>
 
 			<p>
-				I'm passionate about productivity and self-growth, always seeking new ways to enhance my productivity through technology—no wonder I joined Microsoft!
+			 I'm passionate about productivity and self-growth, always seeking new ways to enhance my productivity through technology—no wonder I joined Microsoft!
 			</p>
 		</div>
 		<!-- Could name "philosophy and approach" -->
@@ -235,6 +236,16 @@ const companyLogos = {
 	color: var(--text-secondary);
 }
 
+.profile-picture {
+	float: right;
+	width: 250px;
+	height: 250px;
+	object-fit: cover;
+	border-radius: 8px;
+	margin: 0 0 1rem 2rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .values-list {
 	list-style: none;
 	padding: 0;
@@ -326,6 +337,15 @@ const companyLogos = {
 
 .content-section a:hover {
 	text-decoration: underline;
+}
+
+.profile-picture {
+	width: 100%;
+	height: auto;
+	max-width: 300px;
+	border-radius: 8px;
+	margin: 1.5rem 0;
+	object-fit: cover;
 }
 
 @media (max-width: 768px) {
