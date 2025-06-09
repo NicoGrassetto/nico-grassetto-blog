@@ -263,15 +263,19 @@ const companyLogos = {
 }
 
 .values-list {
-	list-style: none;
-	padding: 0;
+	list-style: square;
+	padding-left: 1.5rem;
 	margin: 1rem 0;
 }
 
 .values-list li {
 	margin-bottom: 1rem;
-	padding-left: 1rem;
-	border-left: 3px solid var(--border-primary);
+	padding-left: 0.5rem;
+}
+
+.values-list li::marker {
+	color: var(--text-secondary);
+	opacity: 0.4;
 }
 
 .values-list strong {
