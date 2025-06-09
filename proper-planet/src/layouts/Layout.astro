@@ -33,11 +33,15 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		<link rel="alternate" type="application/rss+xml" title="Nico Grassetto's Blog" href="/feed" />
 		
 		<title>{title}</title>
-	</head>
-	<body>
+	</head>	<body>
 		<div class="container">
 			<header class="site-header">
-				<h1 class="site-title">NICO GRASSETTO™</h1>
+				<div class="header-top">
+					<h1 class="site-title">NICO GRASSETTO™</h1>
+					<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
+						<span class="theme-toggle-icon"></span>
+					</button>
+				</div>
 				<p class="site-subtitle">Engineering thoughtful web experiences with modern technologies.</p>				<nav class="site-nav">
 					<a href="/nico-grassetto-blog/about" class="button">About Nico Grassetto</a>
 				</nav>
@@ -46,11 +50,30 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 				<slot />
 			</main>
 		</div>
+
+		<script>
+			// Theme toggle functionality
+			const themeToggle = document.getElementById('theme-toggle');
+			const html = document.documentElement;
+			
+			// Check for saved theme preference or default to 'dark'
+			const currentTheme = localStorage.getItem('theme') || 'dark';
+			html.setAttribute('data-theme', currentTheme);
+			
+			themeToggle?.addEventListener('click', () => {
+				const currentTheme = html.getAttribute('data-theme');
+				const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+				
+				html.setAttribute('data-theme', newTheme);
+				localStorage.setItem('theme', newTheme);
+			});
+		</script>
 	</body>
 </html>
 
 <style is:global>
 	:root {
+		/* Dark theme (default) */
 		--bg-primary: #000000;
 		--bg-secondary: #111111;
 		--text-primary: #ffffff;
@@ -61,12 +84,35 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		--border-primary: #333333;
 		--link-color: #ffffff;
 		--link-hover: #cccccc;
+		--button-bg: #ffffff;
+		--button-text: #000000;
+		--button-hover-bg: #f0f0f0;
+		--toggle-bg: #333333;
+		--toggle-hover-bg: #444444;
+	}
+
+	[data-theme="light"] {
+		/* Light theme */
+		--bg-primary: #ffffff;
+		--bg-secondary: #f8f9fa;
+		--text-primary: #000000;
+		--text-secondary: #333333;
+		--text-muted: #666666;
+		--accent-primary: #000000;
+		--accent-hover: #333333;
+		--border-primary: #e0e0e0;
+		--link-color: #000000;
+		--link-hover: #333333;
+		--button-bg: #000000;
+		--button-text: #ffffff;
+		--button-hover-bg: #333333;
+		--toggle-bg: #e0e0e0;
+		--toggle-hover-bg: #d0d0d0;
 	}
 
 	* {
 		box-sizing: border-box;
 	}
-
 	html,
 	body {
 		margin: 0;
@@ -76,6 +122,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		color: var(--text-primary);
 		background-color: var(--bg-primary);
 		font-size: 16px;
+		transition: background-color 0.3s ease, color 0.3s ease;
 	}
 
 	.container {
@@ -83,10 +130,94 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		margin: 0 auto;
 		padding: 2rem;
 	}
-
 	.site-header {
 		margin-bottom: 4rem;
 		text-align: left;
+	}
+
+	.header-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.theme-toggle {
+		background-color: var(--toggle-bg);
+		border: none;
+		border-radius: 50%;
+		width: 44px;
+		height: 44px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.theme-toggle:hover {
+		background-color: var(--toggle-hover-bg);
+		transform: scale(1.05);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.theme-toggle-icon {
+		width: 20px;
+		height: 20px;
+		position: relative;
+		transition: all 0.3s ease;
+	}
+
+	/* Sun icon for dark mode (when clicking will switch to light) */
+	.theme-toggle-icon::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background-color: var(--text-primary);
+		transition: all 0.3s ease;
+	}
+
+	.theme-toggle-icon::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20px;
+		height: 20px;
+		border: 2px solid transparent;
+		border-radius: 50%;
+		box-shadow: 
+			0 -8px 0 -6px var(--text-primary),
+			6px -6px 0 -6px var(--text-primary),
+			8px 0 0 -6px var(--text-primary),
+			6px 6px 0 -6px var(--text-primary),
+			0 8px 0 -6px var(--text-primary),
+			-6px 6px 0 -6px var(--text-primary),
+			-8px 0 0 -6px var(--text-primary),
+			-6px -6px 0 -6px var(--text-primary);
+		transition: all 0.3s ease;
+	}
+
+	/* Moon icon for light mode */
+	[data-theme="light"] .theme-toggle-icon::before {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background-color: transparent;
+		box-shadow: 4px 0 0 var(--text-primary);
+		transform: translate(-50%, -50%) rotate(0deg);
+	}
+
+	[data-theme="light"] .theme-toggle-icon::after {
+		display: none;
 	}
 
 	.site-title {
@@ -196,31 +327,35 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		gap: 1rem;
 		align-items: center;
 	}	.button {
-		background-color: #ffffff; /* White background */
-		color: #000000 !important; /* Black text - force override */
+		background-color: var(--button-bg);
+		color: var(--button-text) !important;
 		padding: 0.5rem 1rem;
 		border: none;
 		border-radius: 4px;
 		text-decoration: none;
 		font-size: 1rem;
-		font-weight: normal; /* Changed from bold to normal */
+		font-weight: normal;
 		cursor: pointer;
-		transition: background-color 0.3s ease;
+		transition: all 0.3s ease;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
 		width: auto;
-		max-width: 200px; /* Smaller maximum width */
+		max-width: 200px;
 	}
 
 	.button::after {
 		content: '→';
 		font-size: 1rem;
 		transition: transform 0.2s ease;
+		color: var(--button-text);
 	}
+	
 	.button:hover {
-		background-color: #f0f0f0; /* Slightly darker white on hover */
-		color: #000000 !important; /* Keep text black on hover */
+		background-color: var(--button-hover-bg);
+		color: var(--button-text) !important;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
 
 	.button:hover::after {
