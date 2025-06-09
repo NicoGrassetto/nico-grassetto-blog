@@ -2,54 +2,143 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="About - Nico Grassetto" description="Learn more about Nico Grassetto, a web developer passionate about modern frontend technologies.">
-	<section class="about-section">
-		<h2 class="section-title">About</h2>
+<Layout title="About Nico Grassetto" description="Learn more about Nico Grassetto">	<section class="about-section">
+		<h2>About Nico Grassetto</h2>
 		
-		<div class="about-content">
+		<div class="bio-content">
+			<p class="intro">
+				Nico Grassetto is a passionate web developer and technology enthusiast dedicated to crafting thoughtful digital experiences using cutting-edge technologies.
+			</p>
+			
+			<h3>Professional Journey</h3>
 			<p>
-				I'm a web developer passionate about creating thoughtful digital experiences using modern technologies. 
-				I specialize in JavaScript, TypeScript, React, and various frontend frameworks and tools.
+				With expertise spanning JavaScript, TypeScript, React, and various modern frontend frameworks, Nico has built a career around creating intuitive and performant web applications. His approach combines technical precision with user-centered design principles, ensuring that every project delivers both functionality and exceptional user experience.
+			</p>
+			
+			<h3>Technical Expertise</h3>
+			<ul class="skills-list">
+				<li><strong>Frontend Technologies:</strong> JavaScript, TypeScript, React, Astro.js, HTML5, CSS3</li>
+				<li><strong>Backend & Cloud:</strong> Node.js, Azure, Modern deployment strategies</li>
+				<li><strong>Development Tools:</strong> Git, VS Code, Modern build tools and workflows</li>
+				<li><strong>Specializations:</strong> Performance optimization, responsive design, accessibility</li>
+			</ul>
+			
+			<h3>Philosophy & Approach</h3>
+			<p>
+				Nico believes in the power of continuous learning and staying current with the rapidly evolving web development landscape. He actively contributes to open source projects and enjoys sharing knowledge through his blog, covering topics ranging from practical development techniques to emerging technologies and industry best practices.
 			</p>
 			
 			<p>
-				When I'm not coding, you can find me exploring new web technologies, contributing to open source projects, 
-				or sharing knowledge through writing and speaking about web development.
+				When not coding, Nico can be found exploring new web technologies, contributing to the developer community, or working on personal projects that push the boundaries of what's possible on the web.
 			</p>
 			
-			<p>
-				This blog is where I document my learnings, share insights about web development, 
-				and explore the latest trends in frontend technologies.
-			</p>
-		</div>
-		
-		<div class="contact-info">
-			<h3>Get in touch</h3>
-			<p>Feel free to reach out if you'd like to collaborate, have questions, or just want to say hello!</p>
+			<div class="cta">
+				<p>Interested in collaborating or learning more about my work? Feel free to reach out through the blog or connect on professional networks.</p>
+			</div>
 		</div>
 	</section>
 </Layout>
 
 <style>
-	.about-content p {
-		margin-bottom: 1.5rem;
-		line-height: 1.7;
+.about-section {
+	padding: 2rem;
+	max-width: 700px;
+	margin: 0 auto;
+}
+
+.about-section h2 {
+	font-size: 2rem;
+	margin-bottom: 2rem;
+	text-align: center;
+	color: var(--text-primary);
+}
+
+.bio-content {
+	text-align: left;
+}
+
+.intro {
+	font-size: 1.125rem;
+	line-height: 1.7;
+	margin-bottom: 2rem;
+	color: var(--text-secondary);
+	font-style: italic;
+	text-align: center;
+	padding: 1rem;
+	border-left: 3px solid var(--border-primary);
+	background: var(--bg-secondary);
+	border-radius: 4px;
+}
+
+.bio-content h3 {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin: 2rem 0 1rem 0;
+	color: var(--text-primary);
+	border-bottom: 1px solid var(--border-primary);
+	padding-bottom: 0.5rem;
+}
+
+.bio-content p {
+	font-size: 1rem;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+	color: var(--text-secondary);
+}
+
+.skills-list {
+	list-style: none;
+	padding: 0;
+	margin: 1rem 0 2rem 0;
+}
+
+.skills-list li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--border-primary);
+	color: var(--text-secondary);
+}
+
+.skills-list li:last-child {
+	border-bottom: none;
+}
+
+.skills-list strong {
+	color: var(--text-primary);
+	font-weight: 600;
+}
+
+.cta {
+	margin-top: 2rem;
+	padding: 1.5rem;
+	background: var(--bg-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--border-primary);
+	text-align: center;
+}
+
+.cta p {
+	margin: 0;
+	font-size: 1rem;
+	color: var(--text-secondary);
+	font-style: italic;
+}
+
+@media (max-width: 768px) {
+	.about-section {
+		padding: 1.5rem;
 	}
 	
-	.contact-info {
-		margin-top: 3rem;
-		padding-top: 2rem;
-		border-top: 1px solid var(--border-primary);
+	.about-section h2 {
+		font-size: 1.75rem;
 	}
 	
-	.contact-info h3 {
+	.intro {
+		font-size: 1rem;
+		padding: 0.75rem;
+	}
+	
+	.bio-content h3 {
 		font-size: 1.125rem;
-		margin: 0 0 1rem 0;
-		color: var(--text-primary);
 	}
-	
-	.contact-info p {
-		margin: 0;
-		color: var(--text-secondary);
-	}
+}
 </style>

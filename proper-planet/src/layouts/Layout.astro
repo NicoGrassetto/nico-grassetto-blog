@@ -38,15 +38,8 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		<div class="container">
 			<header class="site-header">
 				<h1 class="site-title">NICO GRASSETTO™</h1>
-				<p class="site-subtitle">Engineering thoughtful web experiences with modern technologies.</p>
-				<nav class="site-nav">
-					<a href="/about">About Nico Grassetto</a>
-				</nav>
-				<nav class="social-links">
-					<a href="https://github.com/ngrassetto" target="_blank">GitHub</a>
-					<a href="https://linkedin.com/in/ngrassetto" target="_blank">LinkedIn</a>
-					<a href="https://twitter.com/ngrassetto" target="_blank">X</a>
-					<a href="/feed" target="_blank">RSS Feed</a>
+				<p class="site-subtitle">Engineering thoughtful web experiences with modern technologies.</p>				<nav class="site-nav">
+					<a href="/nico-grassetto-blog/about" class="button">About Nico Grassetto</a>
 				</nav>
 			</header>
 			<main>
@@ -116,9 +109,9 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		margin: 0 0 1.5rem 0;
 		line-height: 1.5;
 	}
-
 	.site-nav {
 		margin-bottom: 1.5rem;
+		text-align: center; /* Center the button */
 	}
 
 	.site-nav a {
@@ -130,25 +123,6 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 	}
 
 	.site-nav a:hover {
-		color: var(--link-hover);
-		border-bottom-color: var(--link-hover);
-	}
-
-	.social-links {
-		display: flex;
-		gap: 1.5rem;
-		flex-wrap: wrap;
-	}
-
-	.social-links a {
-		color: var(--link-color);
-		text-decoration: none;
-		font-size: 0.9rem;
-		transition: color 0.2s ease;
-		border-bottom: 1px solid transparent;
-	}
-
-	.social-links a:hover {
 		color: var(--link-hover);
 		border-bottom-color: var(--link-hover);
 	}
@@ -217,6 +191,36 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		display: flex;
 		gap: 1rem;
 		align-items: center;
+	}	.button {
+		background-color: #ffffff; /* White background */
+		color: #000000 !important; /* Black text - force override */
+		padding: 0.5rem 1rem;
+		border: none;
+		border-radius: 4px;
+		text-decoration: none;
+		font-size: 1rem;
+		font-weight: normal; /* Changed from bold to normal */
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: auto;
+		max-width: 200px; /* Smaller maximum width */
+	}
+
+	.button::after {
+		content: '→';
+		font-size: 1rem;
+		transition: transform 0.2s ease;
+	}
+	.button:hover {
+		background-color: #f0f0f0; /* Slightly darker white on hover */
+		color: #000000 !important; /* Keep text black on hover */
+	}
+
+	.button:hover::after {
+		transform: translateX(2px); /* Slight movement on hover */
 	}
 
 	@media (max-width: 768px) {
@@ -227,16 +231,5 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		.site-header {
 			margin-bottom: 3rem;
 		}
-		
-		.social-links {
-			gap: 1rem;
-		}
-		
-		.blog-meta {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.25rem;
-		}
 	}
-</style>
 </style>

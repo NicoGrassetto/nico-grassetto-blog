@@ -17,11 +17,6 @@ const formatDate = (dateString: string) => {
     year: 'numeric'
   });
 };
-
-// Generate a mock read count (in a real app, this would come from analytics)
-const generateReadCount = () => {
-  return Math.floor(Math.random() * 5000) + 100;
-};
 ---
 
 <li class="blog-item">
@@ -29,7 +24,6 @@ const generateReadCount = () => {
     <h3 class="blog-title">{title}</h3>
     <div class="blog-meta">
       <time datetime={date}>{formatDate(date)}</time>
-      <span>{generateReadCount()}</span>
     </div>
   </a>
 </li>
