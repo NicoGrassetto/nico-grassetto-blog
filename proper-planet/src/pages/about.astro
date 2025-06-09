@@ -5,55 +5,23 @@ const companyLogos = {
 	microsoft: '/nico-grassetto-blog/images/logos/microsoft.png',
 	agilytic: '/nico-grassetto-blog/images/logos/agilytic.png',
 	nodejs: '/nico-grassetto-blog/images/logos/nodejs.png',
-	cosmosdb: '/nico-grassetto-blog/images/logos/cosmos.png', // Using existing cosmos.png
+	cosmosdb: '/nico-grassetto-blog/images/logos/cosmos.png',
 	azure: '/nico-grassetto-blog/images/logos/azure.png',
 	langchain: '/nico-grassetto-blog/images/logos/langchain.png',
-	postgresql: '/nico-grassetto-blog/images/logos/postgresql.png',
+	python: '/nico-grassetto-blog/images/logos/python.png',
+	javascript: '/nico-grassetto-blog/images/logos/javascript.png',
 	vscode: '/nico-grassetto-blog/images/logos/vscode.png',
 	github: '/nico-grassetto-blog/images/logos/github.png',
 	githubcopilot: '/nico-grassetto-blog/images/logos/github-copilot.png',
 	todoist: '/nico-grassetto-blog/images/logos/todoist.png',
 	edge: '/nico-grassetto-blog/images/logos/edge.png',
 	figma: '/nico-grassetto-blog/images/logos/figma.png',
-	obs: '/nico-grassetto-blog/images/logos/obs.png',
 	applemusic: '/nico-grassetto-blog/images/logos/apple-music.png',
 	tldraw: '/nico-grassetto-blog/images/logos/tldraw.png'
 };
 ---
 
 <Layout title="About Nico Grassetto" description="Learn more about Nico Grassetto">	<section class="about-section">
-		<h2>About Nico Grassetto</h2>
-		
-		<div class="bio-content">			<p class="intro">
-				Nico Grassetto is a solution engineer at <a href="https://www.microsoft.com/en-gb" class="logo-link"><img src={companyLogos.microsoft} alt="Microsoft logo" />Microsoft</a> working in AI apps and cloud.
-			</p>
-			
-			<h3>Professional Journey</h3>
-			<p>
-				With expertise spanning JavaScript, TypeScript, React, and various modern frontend frameworks, Nico has built a career around creating intuitive and performant web applications. His approach combines technical precision with user-centered design principles, ensuring that every project delivers both functionality and exceptional user experience.
-			</p>
-			
-			<h3>Technical Expertise</h3>
-			<ul class="skills-list">
-				<li><strong>Frontend Technologies:</strong> JavaScript, TypeScript, React, Astro.js, HTML5, CSS3</li>
-				<li><strong>Backend & Cloud:</strong> Node.js, Azure, Modern deployment strategies</li>
-				<li><strong>Development Tools:</strong> Git, VS Code, Modern build tools and workflows</li>
-				<li><strong>Specializations:</strong> Performance optimization, responsive design, accessibility</li>
-			</ul>
-			
-			<h3>Philosophy & Approach</h3>
-			<p>
-				Nico believes in the power of continuous learning and staying current with the rapidly evolving web development landscape. He actively contributes to open source projects and enjoys sharing knowledge through his blog, covering topics ranging from practical development techniques to emerging technologies and industry best practices.
-			</p>
-			
-			<p>
-				When not coding, Nico can be found exploring new web technologies, contributing to the developer community, or working on personal projects that push the boundaries of what's possible on the web.
-			</p>
-			
-			<div class="cta">
-				<p>Interested in collaborating or learning more about my work? Feel free to reach out through the blog or connect on professional networks.</p>
-			</div>
-		</div>
 	</section>
 
 	<section class="about-section">		<h2>Introduction</h2>
@@ -82,7 +50,8 @@ const companyLogos = {
 				I'm passionate about productivity and self-growth, always seeking new ways to enhance my productivity through technology—no wonder I joined Microsoft!
 			</p>
 		</div>
-		<h2>Values, Principles, Beliefs</h2>
+		<!-- Could name "philosophy and approach" -->
+		<h2>Values, Principles, Beliefs</h2> 
 		<div class="content-section">			<ul class="values-list">
 				<li>
 					<strong>Continuous Learning:</strong> learning is an endless journey that fuels my daily energy.
@@ -134,11 +103,11 @@ const companyLogos = {
 			<p><strong>My preferred tech:</strong></p>
 			<ul class="values-list">
 				<li><a href="https://nodejs.org" class="logo-link"><img src={companyLogos.nodejs} alt="Node.js logo" />Node.js</a> - JavaScript Runtime</li>
-				<li><a href="https://azure.microsoft.com/services/cosmos-db/" class="logo-link"><img src={companyLogos.cosmosdb} alt="Cosmos DB logo" />Cosmos DB</a> - NoSQL Database</li>
+				<li><a href="https://azure.microsoft.com/services/cosmos-db/" class="logo-link"><img src={companyLogos.cosmosdb} alt="Cosmos DB logo" />Cosmos DB</a> - NoSQL & SQL Databases</li>
 				<li><a href="https://azure.microsoft.com" class="logo-link"><img src={companyLogos.azure} alt="Azure logo" />Azure</a> - Cloud Platform</li>
-				<li><a href="https://js.langchain.com" class="logo-link"><img src={companyLogos.langchain} alt="LangChain logo" />LangChain</a> & LangGraph - Generative AI SDK</li>
-				<li>Python & JavaScript - Main Programming Languages</li>
-				<li><a href="https://www.postgresql.org" class="logo-link"><img src={companyLogos.postgresql} alt="PostgreSQL logo" />PostgreSQL</a> - SQL Database</li>
+				<li><a href="https://www.langchain.com/" class="logo-link"><img src={companyLogos.langchain} alt="LangChain logo" />LangChain & LangGraph</a> - Generative AI SDK</li>
+				<li><a href="https://www.python.org/" class="logo-link"><img src={companyLogos.python} alt="Python logo" />Python</a> - For All Things AI</li>
+				<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" class="logo-link"><img src={companyLogos.javascript} alt="JavaScript logo" />JavaScript</a> - For all things web</li>
 			</ul>
 			<p><strong>Tools:</strong></p>
 			<ul class="values-list">
@@ -148,7 +117,6 @@ const companyLogos = {
 				<li><a href="https://todoist.com" class="logo-link"><img src={companyLogos.todoist} alt="Todoist logo" />Todoist</a> - Todo / Management</li>
 				<li><a href="https://www.microsoft.com/edge" class="logo-link"><img src={companyLogos.edge} alt="Edge logo" />Edge</a> - Web Browser</li>
 				<li><a href="https://figma.com" class="logo-link"><img src={companyLogos.figma} alt="Figma logo" />Figma</a> - Interface Design</li>
-				<li><a href="https://obsproject.com" class="logo-link"><img src={companyLogos.obs} alt="OBS Studio logo" />OBS Studio</a> - Broadcasting Software</li>
 				<li><a href="https://www.apple.com/apple-music" class="logo-link"><img src={companyLogos.applemusic} alt="Apple Music logo" />Apple Music</a> - Music Streaming</li>
 				<li><a href="https://tldraw.com" class="logo-link"><img src={companyLogos.tldraw} alt="Figma logo" />tldraw</a> - Whiteboard</li>
 			</ul>
