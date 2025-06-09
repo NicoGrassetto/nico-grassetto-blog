@@ -2,9 +2,10 @@
 export interface Props {
 	title?: string;
 	description?: string;
+	currentPage?: 'home' | 'about';
 }
 
-const { title = "Nico Grassetto's Blog", description = "A modern blog built with Astro.js" } = Astro.props;
+const { title = "Nico Grassetto's Blog", description = "A modern blog built with Astro.js", currentPage = 'home' } = Astro.props;
 ---
 
 <!doctype html>
@@ -57,7 +58,12 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 					</button>
 				</div>
 				<p class="site-subtitle">Engineering thoughtful web experiences with modern technologies.</p>				<nav class="site-nav">
-					<a href="/nico-grassetto-blog/about" class="button">About Nico Grassetto</a>
+					{currentPage === 'home' && (
+						<a href="/nico-grassetto-blog/about" class="button">About Nico Grassetto</a>
+					)}
+					{currentPage === 'about' && (
+						<a href="/nico-grassetto-blog/" class="button back-to-blog">Back to Blog</a>
+					)}
 				</nav>
 			</header>
 			<main>
@@ -310,10 +316,13 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		margin-left: auto; /* Center the element horizontally */
 		margin-right: auto; /* Center the element horizontally */
 		margin-bottom: 2rem; /* Maintain bottom spacing */
-	}
-	.site-nav {
+	}	.site-nav {
 		margin-bottom: 1.5rem;
 		text-align: center; /* Center the button */
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
 	}
 
 	.site-nav a {
@@ -410,12 +419,15 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		width: auto;
 		max-width: 200px;
 	}
-
 	.button::after {
 		content: '→';
 		font-size: 1rem;
 		transition: transform 0.2s ease;
 		color: var(--button-text);
+	}
+
+	.button.back-to-blog::after {
+		content: '←';
 	}
 	
 	.button:hover {
@@ -424,9 +436,12 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		transform: translateY(-1px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
-
 	.button:hover::after {
 		transform: translateX(2px); /* Slight movement on hover */
+	}
+
+	.button.back-to-blog:hover::after {
+		transform: translateX(-2px); /* Move left for back button */
 	}
 	@media (max-width: 768px) {
 		.container {
