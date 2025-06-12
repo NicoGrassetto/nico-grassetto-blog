@@ -18,7 +18,8 @@ const companyLogos = {
 	figma: '/nico-grassetto-blog/images/logos/figma.png',
 	applemusic: '/nico-grassetto-blog/images/logos/apple-music.png',
 	tldraw: '/nico-grassetto-blog/images/logos/tldraw.png', 
-	copilot: '/nico-grassetto-blog/images/logos/copilot.png'
+	copilot: '/nico-grassetto-blog/images/logos/copilot.png',
+	book: '/nico-grassetto-blog/images/logos/amazon.png'
 };
 ---
 
@@ -88,15 +89,14 @@ const companyLogos = {
 				<li>💪 Working out</li>
 			</ul>
 		</div>
-		
-		<h2>Reading List</h2>
+		<h2>Reading List <span class="link-icon">🔗</span></h2>
 		<div class="content-section">
 			<p>Some books I like and recommend!</p>
 			<ul class="values-list">
-				<li><a href="https://amzn.eu/d/cy62n7r">Distributed Systems</a> by Maarten van Steen</li>
-				<li><a href="https://amzn.eu/d/2zc2TP9">Supercommunicators: How to Unlock the Secret Language of Connection</a> by Charles Duhigg</li>
-				<li><a href="https://amzn.eu/d/hwAtQ0f">The Personal MBA</a> by Josh Kaufman</li>
-				<li><a href="https://a.co/d/5U8PeHM">Thinking in Systems</a> by Donella H. Meadows</li>
+				<li><a href="https://amzn.eu/d/cy62n7r" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Distributed Systems</a> by Maarten van Steen</li>
+				<li><a href="https://amzn.eu/d/2zc2TP9" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Supercommunicators</a> by Charles Duhigg</li>
+				<li><a href="https://amzn.eu/d/hwAtQ0f" class="logo-link"><img src={companyLogos.book} alt="Book logo" />The Personal MBA</a> by Josh Kaufman</li>
+				<li><a href="https://a.co/d/5U8PeHM" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Thinking in Systems</a> by Donella H. Meadows</li>
 			</ul>
 		</div>
 		<h2>Software <span class="link-icon">🔗</span></h2>
