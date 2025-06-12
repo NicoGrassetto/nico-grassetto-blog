@@ -7,7 +7,7 @@ description: "Discover how GitHub Copilot is transforming the way developers wri
 
 # Copilot Effectiveness Formula
 
-<img src="\src\content\blog\shapes at 25-06-12 20.03.57.png" alt="drawing" width="300"/>
+<img src="/nico-grassetto-blog/images/copilot-effectiveness-formula.png" alt="Copilot Effectiveness Formula" width="300"/>
 
 When working with GitHub Copilot, I've found that its effectiveness can be modeled as:
 
