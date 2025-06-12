@@ -5,7 +5,7 @@ image: "/nico-grassetto-blog/images/copilot-action.png"
 description: "Discover how GitHub Copilot is transforming the way developers write code with AI assistance"
 ---
 
-# Developer Productivity Formula
+# Copilot Effectiveness Formula
 
 <img src="\src\content\blog\shapes at 25-06-12 20.03.57.png" alt="drawing" width="300"/>
 
