@@ -5,6 +5,8 @@ image: "/nico-grassetto-blog/images/copilot-action.png"
 description: "Discover how GitHub Copilot is transforming the way developers write code with AI assistance"
 ---
 
+import LineChart from '../../components/LineChart.astro';
+
 # Copilot Effectiveness Formula
 
 <img src="/nico-grassetto-blog/images/copilot-effectiveness-formula.png" alt="Copilot Effectiveness Formula" width="300"/>
@@ -26,6 +28,28 @@ In other words:
 - **Higher model capability (M)** → Higher effectiveness
 - **More detailed instructions (D)** → Higher effectiveness
 - **Larger task scope (S)** → Lower effectiveness
+
+## Copilot Effectiveness Over Time
+
+As I've been using GitHub Copilot more frequently, I've noticed a clear linear improvement in my productivity. Here's a simple visualization of this relationship:
+
+<LineChart
+  title="GitHub Copilot Effectiveness Growth"
+  xLabel="Time (months of usage)"
+  yLabel="Productivity Improvement (%)"
+  labels={['0', '1', '2', '3', '4', '5', '6']}
+  datasets={[
+    {
+      label: 'Productivity Increase',
+      data: [0, 50, 100, 150, 200, 250, 300],
+      color: '#3b82f6'
+    }
+  ]}
+  width={600}
+  height={400}
+/>
+
+This linear growth pattern (y = 50x) demonstrates how consistent practice with Copilot leads to predictable productivity gains.
 
 # Scope of the Task
 
@@ -85,4 +109,4 @@ I'll be publishing more blog posts targeting specific use cases (web development
 
 I'll also keep updating this blog post over time as I gather more insights and learnings. 😉
 
-This blog itself is a testament to what you can achieve using GitHub Copilot! -->
+This blog itself is a testament to what you can achieve using GitHub Copilot!
