@@ -37,12 +37,11 @@ const { charts = [] } = Astro.props;
           gridColor: 'rgba(0, 0, 0, 0.1)',
           backgroundColor: '#ffffff',
           borderColor: 'rgba(0, 0, 0, 0.2)'
-        };
-      } else {
+        };      } else {
         return {
           textColor: '#e2e8f0',
           gridColor: 'rgba(255, 255, 255, 0.1)',
-          backgroundColor: '#2d3748',
+          backgroundColor: '#000000',
           borderColor: 'rgba(255, 255, 255, 0.2)'
         };
       }
@@ -174,8 +173,7 @@ const { charts = [] } = Astro.props;
       max-width: 100%;
     }
   }
-  
-  /* Light theme chart variables */
+    /* Light theme chart variables */
   :global([data-theme="light"]) .chart-container {
     --chart-background: #ffffff;
     --chart-shadow: rgba(0, 0, 0, 0.1);
@@ -186,9 +184,9 @@ const { charts = [] } = Astro.props;
   
   /* Dark theme chart variables */
   :global([data-theme="dark"]) .chart-container {
-    --chart-background: #2d3748;
-    --chart-shadow: rgba(0, 0, 0, 0.3);
-    --chart-border: rgba(255, 255, 255, 0.1);
+    --chart-background: #000000;
+    --chart-shadow: rgba(255, 255, 255, 0.1);
+    --chart-border: rgba(255, 255, 255, 0.2);
     --chart-text-color: #e2e8f0;
     --chart-grid-color: rgba(255, 255, 255, 0.1);
   }

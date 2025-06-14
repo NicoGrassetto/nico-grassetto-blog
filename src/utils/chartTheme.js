@@ -12,15 +12,14 @@ export const CHART_COLORS = {
     grid: 'rgba(0, 0, 0, 0.1)',
     border: 'rgba(0, 0, 0, 0.1)',
     shadow: 'rgba(0, 0, 0, 0.1)'
-  },
-  dark: {
+  },  dark: {
     primary: ['#60a5fa', '#f87171', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#22d3ee'],
     secondary: ['#93c5fd', '#fca5a5', '#6ee7b7', '#fcd34d', '#c4b5fd', '#f9a8d4', '#67e8f9'],
-    background: '#2d3748',
+    background: '#000000',
     text: '#e2e8f0',
     grid: 'rgba(255, 255, 255, 0.1)',
-    border: 'rgba(255, 255, 255, 0.1)',
-    shadow: 'rgba(0, 0, 0, 0.3)'
+    border: 'rgba(255, 255, 255, 0.2)',
+    shadow: 'rgba(255, 255, 255, 0.1)'
   }
 };
 

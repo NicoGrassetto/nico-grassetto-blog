@@ -34,8 +34,8 @@
 - ✅ No page reload required
 
 #### **Accessible Color Schemes**
-- ✅ **Light Mode**: Dark text (#1a202c) on white backgrounds
-- ✅ **Dark Mode**: Light text (#e2e8f0) on dark gray backgrounds  
+- ✅ **Light Mode**: Dark text (#1a202c) on pure white backgrounds (#ffffff)
+- ✅ **Dark Mode**: Light text (#e2e8f0) on pure black backgrounds (#000000)  
 - ✅ High contrast grid lines and borders
 - ✅ Optimized shadows for each theme
 
@@ -59,8 +59,8 @@
 #### **Step 2: Test Theme Switching**
 1. Click the theme toggle button in the header (🌓 icon)
 2. Observe immediate changes:
-   - Chart container backgrounds should switch colors
-   - All text should remain readable
+   - Chart container backgrounds should switch between pure white and pure black
+   - All text should remain readable with high contrast
    - Grid lines should adapt to new theme
    - Smooth transitions should occur
 
@@ -89,11 +89,11 @@
 
 #### **Dark Theme**
 ```css
---chart-background: #2d3748
+--chart-background: #000000
 --chart-text-color: #e2e8f0
 --chart-grid-color: rgba(255, 255, 255, 0.1)  
---chart-border: rgba(255, 255, 255, 0.1)
---chart-shadow: rgba(0, 0, 0, 0.3)
+--chart-border: rgba(255, 255, 255, 0.2)
+--chart-shadow: rgba(255, 255, 255, 0.1)
 ```
 
 ### 📈 **Performance Optimizations**
