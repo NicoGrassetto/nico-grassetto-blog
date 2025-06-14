@@ -1,0 +1,64 @@
+---
+title: "Simple Mermaid Test"
+description: "A simple test of Mermaid diagram rendering"
+date: "2025-06-14"
+image: "/images/github-copilot.jpg"
+---
+
+import Mermaid from '../../components/Mermaid.astro';
+
+# Simple Mermaid Test
+
+This page tests if Mermaid diagrams are working correctly.
+
+## Test 1: Basic Flowchart
+
+<Mermaid>
+{`graph TD
+    A[Start] --> B[End]`}
+</Mermaid>
+
+## Test 2: Sequence Diagram
+
+<Mermaid>
+{`sequenceDiagram
+    Alice->>Bob: Hello Bob
+    Bob-->>Alice: Hello Alice`}
+</Mermaid>
+
+## Test 3: Simple Flowchart with Decision
+
+<Mermaid>
+{`flowchart LR
+    A[Start] --> B{Question}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E`}
+</Mermaid>
+
+## Test 4: Pie Chart - Blog Post Categories
+
+<Mermaid>
+{`pie title Blog Post Categories
+    "Technical Tutorials" : 45
+    "Azure & Cloud" : 25
+    "Development Tools" : 15
+    "Project Updates" : 10
+    "Personal Insights" : 5`}
+</Mermaid>
+
+## Test 5: Pie Chart - Programming Languages Used
+
+<Mermaid>
+{`pie title Programming Languages in Our Projects
+    "JavaScript/TypeScript" : 40
+    "Python" : 25
+    "C#/.NET" : 20
+    "Java" : 10
+    "Other" : 5`}
+</Mermaid>
+
+---
+
+**Debug Info**: If you see the raw text above instead of diagrams, check the browser console for errors.

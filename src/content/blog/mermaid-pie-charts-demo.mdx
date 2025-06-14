@@ -1,0 +1,99 @@
+---
+title: "Mermaid Pie Charts Demo"
+description: "Examples of creating beautiful pie charts with Mermaid.js for data visualization in blog posts"
+date: "2025-06-14"
+image: "/images/github-copilot.jpg"
+---
+
+import Mermaid from '../../components/Mermaid.astro';
+
+# Mermaid Pie Charts Demo
+
+Pie charts are perfect for showing data distributions and proportions. Here are several examples using Mermaid.js:
+
+## 1. Simple Pie Chart
+
+<Mermaid>
+{`pie title Favorite Programming Languages
+    "JavaScript" : 35
+    "Python" : 30
+    "TypeScript" : 20
+    "C#" : 15`}
+</Mermaid>
+
+## 2. Website Traffic Sources
+
+<Mermaid>
+{`pie title Website Traffic Sources
+    "Direct" : 40
+    "Search Engines" : 30
+    "Social Media" : 15
+    "Referrals" : 10
+    "Email" : 5`}
+</Mermaid>
+
+## 3. Project Time Distribution
+
+<Mermaid>
+{`pie title Time Spent on Project Activities
+    "Development" : 50
+    "Testing" : 20
+    "Documentation" : 15
+    "Meetings" : 10
+    "Planning" : 5`}
+</Mermaid>
+
+## 4. Technology Stack Usage
+
+<Mermaid>
+{`pie title Technology Stack in Our Projects
+    "Frontend (React/Vue/Angular)" : 35
+    "Backend (Node.js/Python/.NET)" : 30
+    "Database (SQL/NoSQL)" : 20
+    "DevOps/Cloud" : 15`}
+</Mermaid>
+
+## 5. Budget Allocation
+
+<Mermaid>
+{`pie title Project Budget Allocation
+    "Development Team" : 45
+    "Infrastructure" : 25
+    "Tools & Licenses" : 15
+    "Marketing" : 10
+    "Contingency" : 5`}
+</Mermaid>
+
+## Pie Chart Syntax
+
+The syntax for Mermaid pie charts is simple:
+
+```
+pie title Your Chart Title
+    "Label 1" : value1
+    "Label 2" : value2
+    "Label 3" : value3
+```
+
+### Key Points:
+- Start with `pie title` followed by your chart title
+- Each data point has a label in quotes followed by `:` and the value
+- Values can be percentages or raw numbers
+- Mermaid automatically calculates proportions
+- Colors are assigned automatically but can be customized with themes
+
+### Tips for Better Pie Charts:
+1. **Limit categories**: Keep to 5-7 slices maximum for readability
+2. **Use meaningful labels**: Make them descriptive but concise  
+3. **Order by size**: Arrange from largest to smallest when possible
+4. **Add context**: Include the total or time period in the title
+
+These pie charts are perfect for:
+- Survey results
+- Budget breakdowns
+- Time tracking
+- Market share analysis
+- Resource allocation
+- Performance metrics
+
+Happy charting! 📊

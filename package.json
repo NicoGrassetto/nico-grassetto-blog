@@ -12,6 +12,7 @@
     "@astrojs/mdx": "^4.3.0",
     "astro": "^5.9.1",
     "chart.js": "^4.4.9",
+    "mermaid": "^11.6.0",
     "rehype-mathjax": "^7.1.0",
     "remark-math": "^6.0.0"
   }
