@@ -42,7 +42,6 @@ The blog includes articles on:
 
 - Implement table of contents on the side
 - Adjust design (slight changes)
-- Add Mermaid.js support: https://mermaid.js.org/ecosystem/tutorials.html
 
 ## 👀 Want to learn more?
 

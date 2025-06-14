@@ -60,7 +60,7 @@ Ideal for showing interactions between different actors or systems:
 Great for object-oriented design documentation:
 
 <Mermaid>
-classDiagram
+{`classDiagram
     class BlogPost {
         +String title
         +String content
@@ -87,7 +87,7 @@ classDiagram
     }
     
     Author ||--o{ BlogPost : writes
-    BlogPost }o--|| Tag : tagged_with
+    BlogPost }o--|| Tag : tagged_with`}
 </Mermaid>
 
 ## 4. State Diagrams
@@ -95,7 +95,7 @@ classDiagram
 Perfect for showing system states and transitions:
 
 <Mermaid>
-stateDiagram-v2
+{`stateDiagram-v2
     [*] --> Draft
     Draft --> Review : Submit for review
     Review --> Draft : Request changes
@@ -104,7 +104,7 @@ stateDiagram-v2
     Archived --> [*]
     
     Review --> Rejected : Reject
-    Rejected --> [*]
+    Rejected --> [*]`}
 </Mermaid>
 
 ## 5. Entity Relationship Diagrams
@@ -112,7 +112,7 @@ stateDiagram-v2
 Excellent for database design:
 
 <Mermaid>
-erDiagram
+{`erDiagram
     AUTHOR {
         int id PK
         string name
@@ -141,7 +141,7 @@ erDiagram
     
     AUTHOR ||--o{ BLOG_POST : writes
     BLOG_POST ||--o{ POST_TAG : has
-    TAG ||--o{ POST_TAG : tagged
+    TAG ||--o{ POST_TAG : tagged`}
 </Mermaid>
 
 ## 6. Gantt Charts
@@ -149,7 +149,7 @@ erDiagram
 Great for project planning and timelines:
 
 <Mermaid>
-gantt
+{`gantt
     title Blog Development Timeline
     dateFormat  YYYY-MM-DD
     section Planning
@@ -166,7 +166,7 @@ gantt
     Integration Testing   :2025-06-16, 2025-06-18
     
     section Deployment
-    Deploy to GitHub Pages :deploy, 2025-06-18, 2025-06-20
+    Deploy to GitHub Pages :deploy, 2025-06-18, 2025-06-20`}
 </Mermaid>
 
 ## 7. User Journey Maps
@@ -174,7 +174,7 @@ gantt
 Perfect for UX documentation:
 
 <Mermaid>
-journey
+{`journey
     title Blog Reader Journey
     section Discovery
       Search for content     : 3: Reader
@@ -189,7 +189,7 @@ journey
     section Return
       Bookmark the site      : 4: Reader
       Subscribe to RSS       : 5: Reader
-      Return for new content : 5: Reader
+      Return for new content : 5: Reader`}
 </Mermaid>
 
 ## 8. Git Graph
@@ -197,7 +197,7 @@ journey
 Useful for showing repository branching strategies:
 
 <Mermaid>
-gitgraph
+{`gitgraph
     commit id: "Initial commit"
     branch feature/mermaid
     checkout feature/mermaid
@@ -210,7 +210,7 @@ gitgraph
     branch hotfix/urgent-fix
     commit id: "Fix critical bug"
     checkout main
-    merge hotfix/urgent-fix
+    merge hotfix/urgent-fix`}
 </Mermaid>
 
 ## 9. Pie Charts
@@ -218,12 +218,12 @@ gitgraph
 Great for showing data distributions:
 
 <Mermaid>
-pie title Blog Post Categories
+{`pie title Blog Post Categories
     "Technical Tutorials" : 45
     "Azure & Cloud" : 25
     "Development Tools" : 15
     "Project Updates" : 10
-    "Personal Insights" : 5
+    "Personal Insights" : 5`}
 </Mermaid>
 
 ## 10. Simple Flowchart
