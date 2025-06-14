@@ -11,23 +11,21 @@ description: "Discover how GitHub Copilot is transforming the way developers wri
 
 When working with GitHub Copilot, I've found that its effectiveness can be modeled as:
 
-$$P = \alpha \times E \times M \times \frac{\beta \times T}{C}$$
+Effectiveness (**E**) of GitHub Copilot can be simplified as directly proportional to the capability of the AI model (**M**) and the level of detail (**D**) provided in your instructions, and inversely proportional to the scope (**S**) of the task:
+
+$$E \propto \frac{M \times D}{S}$$
 
 Where:
+- **E** = Effectiveness of GitHub Copilot
+- **M** = AI Model capability 
+- **D** = Detail level in instructions
+- **S** = Scope of the task
 
-- **P** represents overall productivity
-- **α** is the developer's skill coefficient
-- **E** represents the developer's experience with AI tools
-- **M** is the AI model capability (e.g., GPT-4 > GPT-3.5)
-- **C** is the complexity of the task
-- **β** is the tooling efficiency factor
-- **T** is the time spent clearly describing the task to the AI
+In other words:
 
-You can also express the impact of task decomposition on error rate as:
-
-$$Error\_Rate = \frac{1}{n} \sum_{i=1}^{n} \frac{C_i}{M \times D_i}$$
-
-Where **Cᵢ** is the complexity of subtask _i_, **M** is the model capability, and **Dᵢ** is the level of detail provided in the prompt for subtask _i_.
+- **Higher model capability (M)** → Higher effectiveness
+- **More detailed instructions (D)** → Higher effectiveness
+- **Larger task scope (S)** → Lower effectiveness
 
 # Scope of the Task
 

@@ -26,13 +26,24 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:creator" content="@ngrassetto" />
-		
-		<!-- KaTeX for LaTeX rendering -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" 
-			integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntxDMMtPXibPPS/O0TbIgWB5aMX5V/KxzYD" 
-			crossorigin="anonymous" />
-				<!-- RSS Feed -->
+		<meta name="twitter:creator" content="@ngrassetto" />		<!-- MathJax for LaTeX rendering -->
+		<script is:inline>
+			window.MathJax = {
+				tex: {
+					inlineMath: [['$', '$'], ['\\(', '\\)']],
+					displayMath: [['$$', '$$'], ['\\[', '\\]']],
+					processEscapes: true,
+					processEnvironments: true
+				},
+				options: {
+					ignoreHtmlClass: 'tex2jax_ignore',
+					processHtmlClass: 'tex2jax_process'
+				}
+			};
+		</script>
+		<script async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+		<script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+			<!-- RSS Feed -->
 		<link rel="alternate" type="application/rss+xml" title="Nico Grassetto's Blog" href="/feed" />
 		
 		<!-- Prevent flash of unstyled content -->
