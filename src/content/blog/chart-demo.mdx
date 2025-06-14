@@ -1,0 +1,222 @@
+---
+title: "Chart Demo: Data Visualization in Blog Posts"
+date: "2025-06-14"
+image: "/nico-grassetto-blog/images/blog-icon.png"
+description: "Learn how to embed interactive charts and graphs in your blog posts using Chart.js and Astro components"
+---
+
+import Chart from '../../components/Chart.astro';
+import LineChart from '../../components/LineChart.astro';
+import ScatterChart from '../../components/ScatterChart.astro';
+
+# Data Visualization in Blog Posts
+
+Welcome to this demo showing how to embed charts and graphs in your blog posts! This post demonstrates various types of charts that you can use to visualize data in your content.
+
+## Line Chart Example
+
+Here's a simple line chart showing website traffic over time:
+
+<LineChart 
+  title="Website Traffic Over Time"
+  xLabel="Month"
+  yLabel="Visitors"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  datasets={[
+    {
+      label: "Unique Visitors",
+      data: [1200, 1900, 3000, 5000, 2300, 3200]
+    },
+    {
+      label: "Page Views", 
+      data: [2400, 3800, 6000, 10000, 4600, 6400]
+    }
+  ]}
+  width={600}
+  height={400}
+/>
+
+## Bar Chart Example
+
+This bar chart shows programming language popularity:
+
+<Chart 
+  type="bar"
+  data={{
+    labels: ['JavaScript', 'Python', 'Java', 'TypeScript', 'C#', 'PHP'],
+    datasets: [{
+      label: 'Developer Usage (%)',
+      data: [67.8, 44.1, 35.4, 34.8, 27.9, 20.9],
+      backgroundColor: [
+        '#f7df1e',
+        '#3776ab', 
+        '#ed8b00',
+        '#3178c6',
+        '#512bd4',
+        '#777bb4'
+      ]
+    }]
+  }}
+  options={{
+    title: "Programming Language Popularity 2024",
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Usage Percentage'
+        }
+      }
+    }
+  }}
+  width={600}
+  height={400}
+/>
+
+## Scatter Plot Example
+
+Here's a scatter plot showing the correlation between study time and test scores:
+
+<ScatterChart 
+  title="Study Time vs Test Scores"
+  xLabel="Hours Studied"
+  yLabel="Test Score"
+  data={[
+    [[1, 65], [2, 70], [3, 75], [4, 80], [5, 85], [6, 90], [7, 88], [8, 92], [9, 95], [10, 98]]
+  ]}
+  labels={["Student Scores"]}
+  colors={["#3b82f6"]}
+  width={600}
+  height={400}
+/>
+
+## Pie Chart Example
+
+This pie chart shows market share distribution:
+
+<Chart 
+  type="pie"
+  data={{
+    labels: ['Chrome', 'Safari', 'Edge', 'Firefox', 'Other'],
+    datasets: [{
+      data: [65.12, 18.78, 4.12, 2.77, 9.21],
+      backgroundColor: [
+        '#4285F4',
+        '#34A853', 
+        '#0078D4',
+        '#FF9500',
+        '#EA4335'
+      ]
+    }]
+  }}
+  options={{
+    title: "Browser Market Share 2024"
+  }}
+  width={500}
+  height={400}
+/>
+
+## How to Use Charts in Your Posts
+
+To use these charts in your blog posts, you have several options:
+
+### Option 1: Using MDX (Recommended)
+
+1. Create your blog post with a `.mdx` extension instead of `.md`
+2. Import the chart components at the top of your file:
+   ```mdx
+   import Chart from '../../components/Chart.astro';
+   import LineChart from '../../components/LineChart.astro';
+   import ScatterChart from '../../components/ScatterChart.astro';
+   ```
+3. Use the components directly in your content with props
+
+### Option 2: Using the Blog Layout
+
+If you prefer to keep using `.md` files, you can modify your blog layout to include chart data in the frontmatter and render charts based on that data.
+
+### Available Chart Types
+
+The `Chart` component supports all Chart.js chart types:
+- `line` - Line charts
+- `bar` - Bar charts  
+- `pie` - Pie charts
+- `doughnut` - Donut charts
+- `scatter` - Scatter plots
+- `bubble` - Bubble charts
+- `polarArea` - Polar area charts
+- `radar` - Radar charts
+
+### Chart Component Props
+
+The main `Chart` component accepts these props:
+
+- `type`: Chart type (required)
+- `data`: Chart.js data object (required)
+- `options`: Chart.js options object (optional)
+- `width`: Chart width in pixels (default: 400)
+- `height`: Chart height in pixels (default: 300)
+- `id`: Custom canvas ID (optional, auto-generated)
+
+### LineChart Component Props
+
+The `LineChart` component accepts:
+
+- `title`: Chart title
+- `xLabel`: X-axis label  
+- `yLabel`: Y-axis label
+- `labels`: Array of x-axis labels
+- `datasets`: Array of dataset objects with `label`, `data`, and optional `color`
+- `width` & `height`: Dimensions
+
+### ScatterChart Component Props
+
+The `ScatterChart` component accepts:
+
+- `title`: Chart title
+- `xLabel` & `yLabel`: Axis labels
+- `data`: Array of data series, where each series is an array of [x, y] coordinate pairs
+- `labels`: Array of series labels
+- `colors`: Array of colors for each series
+- `width` & `height`: Dimensions
+
+## Mathematical Formulas with Charts
+
+You can also combine charts with mathematical formulas using MathJax. For example, here's the quadratic formula:
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+And here's a visualization of different quadratic functions:
+
+<LineChart 
+  title="Quadratic Functions: y = ax² + bx + c"
+  xLabel="x"
+  yLabel="y"
+  labels={["-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5"]}
+  datasets={[
+    {
+      label: "y = x²",
+      data: [25, 16, 9, 4, 1, 0, 1, 4, 9, 16, 25],
+      color: "#3b82f6"
+    },
+    {
+      label: "y = -0.5x² + 2x + 1",
+      data: [-11.5, -7, -3.5, -1, 0.5, 1, 0.5, -1, -3.5, -7, -11.5],
+      color: "#ef4444"
+    }
+  ]}
+  width={600}
+  height={400}
+/>
+
+## Conclusion
+
+With these chart components, you can now easily add data visualizations to your blog posts! The charts are responsive, interactive, and will enhance your content significantly.
+
+Remember to:
+- Use meaningful titles and axis labels
+- Choose appropriate colors for accessibility
+- Keep charts simple and focused on the story you want to tell
+- Test on mobile devices to ensure responsiveness
+
+Happy charting! 📊

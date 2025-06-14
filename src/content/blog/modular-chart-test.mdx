@@ -1,0 +1,46 @@
+---
+title: "Modular Chart Test"
+date: "2025-06-14"
+image: "/nico-grassetto-blog/images/blog-icon.png"
+description: "Testing modular chart implementation"
+---
+
+import ModularChart from '../../components/ModularChart.astro';
+import ScatterChart from '../../components/ScatterChart.astro';
+
+# Modular Chart Test
+
+Let's test the new modular chart:
+
+<ModularChart 
+  type="line"
+  data={{
+    labels: ['January', 'February', 'March', 'April', 'May'],
+    datasets: [{
+      label: 'Sales',
+      data: [10, 25, 15, 30, 22],
+      borderColor: '#3b82f6',
+      backgroundColor: '#3b82f620',
+      fill: true
+    }]
+  }}
+  width={600}
+  height={400}
+/>
+
+And also test the fixed ScatterChart:
+
+<ScatterChart 
+  title="Random Data Points"
+  xLabel="X Values"
+  yLabel="Y Values"
+  data={[
+    [[1, 10], [2, 15], [3, 12], [4, 18], [5, 20]]
+  ]}
+  labels={["Dataset 1"]}
+  colors={["#ef4444"]}
+  width={500}
+  height={300}
+/>
+
+This should show both charts with proper Chart.js module imports.

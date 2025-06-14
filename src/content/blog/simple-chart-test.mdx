@@ -1,0 +1,28 @@
+---
+title: "Simple Chart Test"
+date: "2025-06-14"
+image: "/nico-grassetto-blog/images/blog-icon.png"
+description: "Testing simple chart implementation"
+---
+
+import SimpleChart from '../../components/SimpleChart.astro';
+
+# Simple Chart Test
+
+Let's test a basic chart:
+
+<SimpleChart 
+  type="bar"
+  data={{
+    labels: ['A', 'B', 'C', 'D'],
+    datasets: [{
+      label: 'Test Data',
+      data: [10, 20, 30, 40],
+      backgroundColor: '#3b82f6'
+    }]
+  }}
+  width={500}
+  height={300}
+/>
+
+This should show a simple bar chart.

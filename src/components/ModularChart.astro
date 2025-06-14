@@ -1,0 +1,113 @@
+---
+export interface Props {
+  type: 'line' | 'bar' | 'pie' | 'doughnut' | 'scatter' | 'bubble' | 'polarArea' | 'radar';
+  data: any;
+  options?: any;
+  width?: number;
+  height?: number;
+}
+
+const { 
+  type = 'line', 
+  data, 
+  options = {}, 
+  width = 400, 
+  height = 300
+} = Astro.props;
+
+const id = 'chart-' + Math.random().toString(36).substr(2, 9);
+
+// Prepare the chart configuration
+const chartConfig = {
+  type,
+  data,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: !!options.title,
+        text: options.title
+      },
+      legend: {
+        display: true,
+        position: 'top'
+      }
+    },
+    ...options
+  }
+};
+---
+
+<div class="chart-wrapper" style={`width: ${width}px; height: ${height}px; margin: 1rem auto;`}>
+  <canvas id={id} width={width} height={height}></canvas>
+</div>
+
+<script>
+  import { Chart, registerables } from 'chart.js';
+  
+  // Register all Chart.js components
+  Chart.register(...registerables);
+  
+  // Function to initialize charts
+  function initializeCharts() {
+    const canvases = document.querySelectorAll('canvas[id^="chart-"]') as NodeListOf<HTMLCanvasElement>;
+    canvases.forEach(canvas => {
+      // Skip if already has a chart
+      if ((canvas as any).chartInstance) return;
+      
+      // Get chart config from data attribute or window object
+      const chartId = canvas.id;
+      const config = (window as any)[`chartConfig_${chartId}`];
+      
+      if (config) {
+        try {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            const chart = new Chart(ctx, config);
+            (canvas as any).chartInstance = chart;
+            console.log('Chart created:', chartId);
+          }
+        } catch (error) {
+          console.error('Error creating chart:', error);
+        }
+      }
+    });
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCharts);
+  } else {
+    initializeCharts();
+  }
+</script>
+
+<script define:vars={{ chartConfig, id }}>
+  // Store chart config globally for the initialization script
+  window[`chartConfig_${id}`] = chartConfig;
+</script>
+
+<style>
+  .chart-wrapper {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .chart-wrapper {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  }
+</style>

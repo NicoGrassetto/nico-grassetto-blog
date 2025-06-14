@@ -1,0 +1,130 @@
+---
+export interface Props {
+  title?: string;
+  xLabel?: string;
+  yLabel?: string;
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+    color?: string;
+  }>;
+  width?: number;
+  height?: number;
+}
+
+const { 
+  title = '',
+  xLabel = '',
+  yLabel = '',
+  labels,
+  datasets,
+  width = 500,
+  height = 300
+} = Astro.props;
+
+const id = 'line-' + Math.random().toString(36).substr(2, 9);
+
+const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+
+const chartData = {
+  labels,
+  datasets: datasets.map((dataset, index) => ({
+    label: dataset.label,
+    data: dataset.data,
+    borderColor: dataset.color || colors[index % colors.length],
+    backgroundColor: (dataset.color || colors[index % colors.length]) + '20',
+    borderWidth: 2,
+    fill: false,
+    tension: 0.1
+  }))
+};
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    title: {
+      display: !!title,
+      text: title,
+      font: { size: 16, weight: 'bold' }
+    },
+    legend: {
+      display: true,
+      position: 'top'
+    }
+  },
+  scales: {
+    x: {
+      display: true,
+      title: {
+        display: !!xLabel,
+        text: xLabel
+      }
+    },
+    y: {
+      display: true,
+      title: {
+        display: !!yLabel,
+        text: yLabel
+      }
+    }
+  }
+};
+---
+
+<div class="line-chart-container" style={`width: ${width}px; height: ${height}px; margin: 1rem auto;`}>
+  <canvas id={id} width={width} height={height}></canvas>
+</div>
+
+<script define:vars={{ chartData, options, id }}>
+  function initChart() {
+    if (typeof Chart !== 'undefined') {
+      const ctx = document.getElementById(id);
+      if (ctx) {
+        try {
+          new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: options
+          });
+          console.log('Line chart rendered successfully:', id);
+        } catch (error) {
+          console.error('Line chart rendering error:', error);
+        }
+      }
+    } else {
+      setTimeout(initChart, 100);
+    }
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChart);
+  } else {
+    initChart();
+  }
+</script>
+
+<style>
+  .line-chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .line-chart-container {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  }
+</style>

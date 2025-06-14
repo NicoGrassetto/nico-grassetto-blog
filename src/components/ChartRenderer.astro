@@ -1,0 +1,90 @@
+---
+// This component can be used in regular .md files by including chart data in frontmatter
+export interface Props {
+  charts?: Array<{
+    type: 'line' | 'bar' | 'pie' | 'doughnut' | 'scatter' | 'bubble' | 'polarArea' | 'radar';
+    id: string;
+    data?: any;
+    options?: any;
+    title?: string;
+    width?: number;
+    height?: number;
+  }>;
+}
+
+const { charts = [] } = Astro.props;
+---
+
+{charts.map((chart) => (
+  chart.data && (
+    <div class="chart-wrapper" id={`chart-wrapper-${chart.id}`}>
+      <div class="chart-container" style={`width: ${chart.width || 500}px; height: ${chart.height || 300}px; margin: 2rem auto;`}>
+        <canvas id={`chart-${chart.id}`} width={chart.width || 500} height={chart.height || 300}></canvas>
+      </div>
+    </div>
+  )
+))}
+
+<script define:vars={{ charts }}>
+  if (charts && charts.length > 0) {
+    import('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js').then((module) => {
+      const Chart = module.default;
+      
+      charts.filter(chart => chart.data).forEach(chart => {
+        const ctx = document.getElementById(`chart-${chart.id}`);
+        if (ctx) {
+          const defaultOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: !!chart.title,
+                text: chart.title,
+                font: { size: 16, weight: 'bold' }
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            },
+            ...chart.options
+          };
+          
+          new Chart(ctx, {
+            type: chart.type,
+            data: chart.data,
+            options: defaultOptions
+          });
+        }
+      });
+    });
+  }
+</script>
+
+<style>
+  .chart-wrapper {
+    margin: 2rem 0;
+  }
+  
+  .chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .chart-container {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  }
+</style>
