@@ -41,8 +41,6 @@ The blog includes articles on:
 ## 🔧 TODO / Future Enhancements
 
 - Implement table of contents on the side
-- Implement chat and graph rendering
-- Fix equation rendering
 - Adjust design (slight changes)
 - Add Mermaid.js support: https://mermaid.js.org/ecosystem/tutorials.html
 
