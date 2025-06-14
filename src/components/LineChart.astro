@@ -47,11 +47,13 @@ const options = {
     title: {
       display: !!title,
       text: title,
-      font: { size: 16, weight: 'bold' }
+      font: { size: 16, weight: 'bold' },
+      color: 'var(--chart-text-color)'
     },
     legend: {
-      display: true,
-      position: 'top'
+      labels: {
+        color: 'var(--chart-text-color)'
+      }
     }
   },
   scales: {
@@ -59,14 +61,27 @@ const options = {
       display: true,
       title: {
         display: !!xLabel,
-        text: xLabel
+        text: xLabel,
+        color: 'var(--chart-text-color)'
+      },
+      ticks: {
+        color: 'var(--chart-text-color)'
+      },
+      grid: {
+        color: 'var(--chart-grid-color)'
       }
     },
     y: {
       display: true,
       title: {
         display: !!yLabel,
-        text: yLabel
+        text: yLabel,
+        color: 'var(--chart-text-color)'      },
+      ticks: {
+        color: 'var(--chart-text-color)'
+      },
+      grid: {
+        color: 'var(--chart-grid-color)'
       }
     }
   }
@@ -78,16 +93,115 @@ const options = {
 </div>
 
 <script define:vars={{ chartData, options, id }}>
+  // Function to get theme-aware colors
+  function getThemeColors() {
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    
+    if (theme === 'light') {
+      return {
+        textColor: '#1a202c',
+        gridColor: 'rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#ffffff',
+        borderColor: 'rgba(0, 0, 0, 0.2)'
+      };
+    } else {
+      return {
+        textColor: '#e2e8f0',
+        gridColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: '#2d3748',
+        borderColor: 'rgba(255, 255, 255, 0.2)'
+      };
+    }
+  }
+  
   function initChart() {
     if (typeof Chart !== 'undefined') {
       const ctx = document.getElementById(id);
       if (ctx) {
         try {
-          new Chart(ctx, {
+          // Apply current theme colors
+          const colors = getThemeColors();
+          const themeOptions = { ...options };
+          
+          if (themeOptions.plugins?.title) {
+            themeOptions.plugins.title.color = colors.textColor;
+          }
+          if (themeOptions.plugins?.legend?.labels) {
+            themeOptions.plugins.legend.labels.color = colors.textColor;
+          }
+          if (themeOptions.scales) {
+            if (themeOptions.scales.x) {
+              themeOptions.scales.x.ticks = themeOptions.scales.x.ticks || {};
+              themeOptions.scales.x.grid = themeOptions.scales.x.grid || {};
+              themeOptions.scales.x.ticks.color = colors.textColor;
+              themeOptions.scales.x.grid.color = colors.gridColor;
+              if (themeOptions.scales.x.title) {
+                themeOptions.scales.x.title.color = colors.textColor;
+              }
+            }
+            if (themeOptions.scales.y) {
+              themeOptions.scales.y.ticks = themeOptions.scales.y.ticks || {};
+              themeOptions.scales.y.grid = themeOptions.scales.y.grid || {};
+              themeOptions.scales.y.ticks.color = colors.textColor;
+              themeOptions.scales.y.grid.color = colors.gridColor;
+              if (themeOptions.scales.y.title) {
+                themeOptions.scales.y.title.color = colors.textColor;
+              }
+            }
+          }
+          
+          const chart = new Chart(ctx, {
             type: 'line',
             data: chartData,
-            options: options
+            options: themeOptions
           });
+          
+          // Store chart for theme updates
+          window[`chartInstance_${id}`] = chart;
+          
+          // Function to update colors
+          function updateChartColors() {
+            const newColors = getThemeColors();
+            
+            if (chart.options.plugins?.title) {
+              chart.options.plugins.title.color = newColors.textColor;
+            }
+            if (chart.options.plugins?.legend?.labels) {
+              chart.options.plugins.legend.labels.color = newColors.textColor;
+            }
+            if (chart.options.scales) {
+              if (chart.options.scales.x) {
+                chart.options.scales.x.ticks.color = newColors.textColor;
+                chart.options.scales.x.grid.color = newColors.gridColor;
+                if (chart.options.scales.x.title) {
+                  chart.options.scales.x.title.color = newColors.textColor;
+                }
+              }
+              if (chart.options.scales.y) {
+                chart.options.scales.y.ticks.color = newColors.textColor;
+                chart.options.scales.y.grid.color = newColors.gridColor;
+                if (chart.options.scales.y.title) {
+                  chart.options.scales.y.title.color = newColors.textColor;
+                }
+              }
+            }
+            chart.update('none');
+          }
+          
+          // Listen for theme changes
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                updateChartColors();
+              }
+            });
+          });
+          
+          observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+          });
+          
           console.log('Line chart rendered successfully:', id);
         } catch (error) {
           console.error('Line chart rendering error:', error);
@@ -107,13 +221,15 @@ const options = {
 
 <style>
   .line-chart-container {
-    background: white;
+    background: var(--chart-background, #ffffff);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px var(--chart-shadow, rgba(0, 0, 0, 0.1));
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 1px solid var(--chart-border, rgba(0, 0, 0, 0.1));
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
   
   canvas {
@@ -123,6 +239,29 @@ const options = {
   
   @media (max-width: 768px) {
     .line-chart-container {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  }
+  
+  /* Light theme chart variables */
+  :global([data-theme="light"]) .line-chart-container {
+    --chart-background: #ffffff;
+    --chart-shadow: rgba(0, 0, 0, 0.1);
+    --chart-border: rgba(0, 0, 0, 0.1);
+    --chart-text-color: #1a202c;
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Dark theme chart variables */
+  :global([data-theme="dark"]) .line-chart-container {
+    --chart-background: #2d3748;
+    --chart-shadow: rgba(0, 0, 0, 0.3);
+    --chart-border: rgba(255, 255, 255, 0.1);
+    --chart-text-color: #e2e8f0;
+    --chart-grid-color: rgba(255, 255, 255, 0.1);
+  }
+</style>
       width: 100% !important;
       max-width: 100%;
     }

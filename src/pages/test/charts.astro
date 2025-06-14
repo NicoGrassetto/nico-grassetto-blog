@@ -1,0 +1,201 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ModularChart from '../../components/ModularChart.astro';
+import LineChart from '../../components/LineChart.astro';
+import SimpleChart from '../../components/SimpleChart.astro';
+import ScatterChart from '../../components/ScatterChart.astro';
+import Chart from '../../components/Chart.astro';
+
+const sampleLineData = {
+  labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+  datasets: [{
+    label: 'Dataset 1',
+    data: [12, 19, 3, 5, 2, 3],
+    fill: false,
+    borderColor: '#3b82f6',
+    tension: 0.1
+  }, {
+    label: 'Dataset 2',
+    data: [5, 15, 8, 12, 7, 10],
+    fill: false,
+    borderColor: '#ef4444',
+    tension: 0.1
+  }]
+};
+
+const samplePieData = {
+  labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+  datasets: [{
+    label: 'Votes',
+    data: [12, 19, 3, 5, 2, 3],
+    backgroundColor: [
+      '#ef4444',
+      '#3b82f6',
+      '#f59e0b',
+      '#10b981',
+      '#8b5cf6',
+      '#f97316'
+    ]
+  }]
+};
+
+const sampleBarData = {
+  labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+  datasets: [{
+    label: 'Sales',
+    data: [65, 59, 80, 81],
+    backgroundColor: 'rgba(53, 162, 235, 0.5)',
+  }]
+};
+
+const scatterData = [
+  [
+    [10, 20],
+    [15, 25], 
+    [20, 30],
+    [25, 35],
+    [30, 40]
+  ]
+];
+
+const doughnutData = {
+  labels: ['Desktop', 'Mobile', 'Tablet'],
+  datasets: [{
+    data: [300, 50, 100],
+    backgroundColor: [
+      '#3b82f6',
+      '#ef4444',
+      '#10b981'
+    ]
+  }]
+};
+---
+
+<Layout title="Chart Theme Test">
+  <div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 2rem;">🎨 Chart Theme Test</h1>
+    
+    <div style="background: var(--bg-secondary, #f8f9fa); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+      <p><strong>🌓 Toggle the theme using the button in the header!</strong></p>
+      <p>Watch how all charts instantly adapt their colors, backgrounds, and text to match the current theme.</p>
+    </div>
+    
+    <div style="display: grid; gap: 3rem;">
+      <section>
+        <h2>📈 Line Chart (Specialized Component)</h2>
+        <p>Multi-dataset line chart with custom labels and theme-aware axes.</p>
+        <LineChart 
+          title="Monthly Performance Comparison"
+          xLabel="Month" 
+          yLabel="Value" 
+          labels={sampleLineData.labels}
+          datasets={sampleLineData.datasets}
+          width={700}
+          height={400}
+        />
+      </section>
+      
+      <section>
+        <h2>🥧 Pie Chart (Modular Component)</h2>
+        <p>Pie chart showing distribution with theme-aware legends and titles.</p>
+        <ModularChart 
+          type="pie"
+          data={samplePieData}
+          options={{ 
+            title: "Survey Results Distribution",
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }}
+          width={500}
+          height={500}
+        />
+      </section>
+      
+      <section>
+        <h2>📊 Bar Chart (Simple Component)</h2>
+        <p>Quarterly data with theme-responsive grid lines and text.</p>
+        <SimpleChart 
+          type="bar"
+          data={sampleBarData}
+          options={{ 
+            title: "Quarterly Sales Performance",
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }}
+          width={600}
+          height={350}
+        />
+      </section>
+      
+      <section>
+        <h2>🎯 Scatter Chart (Specialized Component)</h2>
+        <p>Data correlation visualization with adaptive color scheme.</p>
+        <ScatterChart 
+          title="Data Correlation Analysis"
+          xLabel="X Variable"
+          yLabel="Y Variable"
+          data={scatterData}
+          labels={["Sample Data"]}
+          width={600}
+          height={400}
+        />
+      </section>
+      
+      <section>
+        <h2>🍩 Doughnut Chart (Standard Component)</h2>
+        <p>Device usage statistics with theme-aware styling.</p>
+        <Chart 
+          type="doughnut"
+          data={doughnutData}
+          options={{ 
+            title: "Device Usage Statistics",
+            plugins: {
+              legend: {
+                position: 'right'
+              }
+            }
+          }}
+          width={500}
+          height={400}
+        />
+      </section>
+      
+      <section>
+        <h2>📋 Feature Checklist</h2>
+        <div style="background: var(--bg-secondary, #f8f9fa); padding: 1.5rem; border-radius: 8px;">
+          <h3>✅ What to Test:</h3>
+          <ul style="margin: 1rem 0;">
+            <li><strong>Theme Toggle:</strong> Click the theme button in the header</li>
+            <li><strong>Container Backgrounds:</strong> Chart containers should change color</li>
+            <li><strong>Text Color:</strong> All chart text should remain readable</li>
+            <li><strong>Grid Lines:</strong> Should adapt to theme (subtle in both modes)</li>
+            <li><strong>Legends:</strong> Should change color with theme</li>
+            <li><strong>Borders:</strong> Container borders should be visible in both modes</li>
+            <li><strong>Shadows:</strong> Should be subtle in light mode, stronger in dark mode</li>
+            <li><strong>Transitions:</strong> Should be smooth when switching themes</li>
+          </ul>
+          
+          <h3>🔍 Expected Behavior:</h3>
+          <ul style="margin: 1rem 0;">
+            <li><strong>Light Mode:</strong> White backgrounds, dark text, subtle shadows</li>
+            <li><strong>Dark Mode:</strong> Dark gray backgrounds, light text, stronger shadows</li>
+            <li><strong>Real-time Updates:</strong> Charts update instantly without page reload</li>
+            <li><strong>All Components:</strong> Every chart type should support theming</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+    
+    <div style="margin-top: 3rem; padding: 1.5rem; background: var(--bg-accent, #e3f2fd); border-radius: 8px; text-align: center;">
+      <h3>🎉 Implementation Complete!</h3>
+      <p>All chart components now support automatic dark/light mode detection with:</p>
+      <p><strong>Real-time theme switching • Accessible color schemes • Smooth transitions</strong></p>
+    </div>
+  </div>
+</Layout>

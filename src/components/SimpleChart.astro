@@ -28,10 +28,32 @@ const id = 'chart-' + Math.random().toString(36).substr(2, 9);
     console.log('Chart.js available:', typeof Chart !== 'undefined');
     console.log('Canvas element found:', !!document.getElementById(id));
     
+    // Function to get theme-aware colors
+    function getThemeColors() {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      
+      if (theme === 'light') {
+        return {
+          textColor: '#1a202c',
+          gridColor: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#ffffff',
+          borderColor: 'rgba(0, 0, 0, 0.2)'
+        };
+      } else {
+        return {
+          textColor: '#e2e8f0',
+          gridColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: '#2d3748',
+          borderColor: 'rgba(255, 255, 255, 0.2)'
+        };
+      }
+    }
+    
     if (typeof Chart !== 'undefined') {
       const canvas = document.getElementById(id);
       if (canvas) {
         const ctx = canvas.getContext('2d');
+        const colors = getThemeColors();
         
         const defaultOptions = {
           responsive: true,
@@ -39,22 +61,84 @@ const id = 'chart-' + Math.random().toString(36).substr(2, 9);
           plugins: {
             title: {
               display: !!options.title,
-              text: options.title
+              text: options.title,
+              color: colors.textColor
             },
             legend: {
               display: true,
-              position: 'top'
+              position: 'top',
+              labels: {
+                color: colors.textColor
+              }
             }
           },
+          scales: type !== 'pie' && type !== 'doughnut' && type !== 'polarArea' ? {
+            x: {
+              ticks: {
+                color: colors.textColor
+              },
+              grid: {
+                color: colors.gridColor
+              }
+            },
+            y: {
+              ticks: {
+                color: colors.textColor
+              },
+              grid: {
+                color: colors.gridColor
+              }
+            }
+          } : undefined,
           ...options
         };
-        
-        try {
+          try {
           const chart = new Chart(ctx, {
             type: type,
             data: data,
             options: defaultOptions
           });
+          
+          // Store chart instance for theme updates
+          window[`chartInstance_${id}`] = chart;
+          
+          // Function to update colors
+          function updateChartColors() {
+            const newColors = getThemeColors();
+            
+            if (chart.options.plugins?.title) {
+              chart.options.plugins.title.color = newColors.textColor;
+            }
+            if (chart.options.plugins?.legend?.labels) {
+              chart.options.plugins.legend.labels.color = newColors.textColor;
+            }
+            if (chart.options.scales) {
+              if (chart.options.scales.x) {
+                chart.options.scales.x.ticks.color = newColors.textColor;
+                chart.options.scales.x.grid.color = newColors.gridColor;
+              }
+              if (chart.options.scales.y) {
+                chart.options.scales.y.ticks.color = newColors.textColor;
+                chart.options.scales.y.grid.color = newColors.gridColor;
+              }
+            }
+            chart.update('none');
+          }
+          
+          // Listen for theme changes
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                updateChartColors();
+              }
+            });
+          });
+          
+          observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+          });
+          
           console.log('Chart created successfully:', chart);
         } catch (error) {
           console.error('Error creating chart:', error);
@@ -80,13 +164,15 @@ const id = 'chart-' + Math.random().toString(36).substr(2, 9);
 
 <style>
   .simple-chart-container {
-    background: white;
+    background: var(--chart-background, #ffffff);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px var(--chart-shadow, rgba(0, 0, 0, 0.1));
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 1px solid var(--chart-border, rgba(0, 0, 0, 0.1));
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
   
   canvas {
@@ -99,5 +185,23 @@ const id = 'chart-' + Math.random().toString(36).substr(2, 9);
       width: 100% !important;
       max-width: 100%;
     }
+  }
+  
+  /* Light theme chart variables */
+  :global([data-theme="light"]) .simple-chart-container {
+    --chart-background: #ffffff;
+    --chart-shadow: rgba(0, 0, 0, 0.1);
+    --chart-border: rgba(0, 0, 0, 0.1);
+    --chart-text-color: #1a202c;
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Dark theme chart variables */
+  :global([data-theme="dark"]) .simple-chart-container {
+    --chart-background: #2d3748;
+    --chart-shadow: rgba(0, 0, 0, 0.3);
+    --chart-border: rgba(255, 255, 255, 0.1);
+    --chart-text-color: #e2e8f0;
+    --chart-grid-color: rgba(255, 255, 255, 0.1);
   }
 </style>
