@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog');
+const posts = (await getCollection('blog')).filter((p) => !p.data.draft);
 const sortedPosts = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
 const siteUrl = 'https://NicoGrassetto.github.io/nico-grassetto-blog';

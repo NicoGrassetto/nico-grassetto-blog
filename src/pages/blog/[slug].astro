@@ -4,7 +4,9 @@ import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
-  return blogEntries.map(entry => ({
+  // Only generate pages for non-draft posts
+  const published = blogEntries.filter((e) => !e.data.draft);
+  return published.map(entry => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
@@ -15,6 +17,10 @@ type Props = {
 };
 
 const { entry } = Astro.props;
+// Safety guard: if somehow a draft is attempted to render, return 404
+if (entry.data.draft) {
+  throw new Response(null, { status: 404 });
+}
 const { Content } = await entry.render();
 
 // Format the date for display

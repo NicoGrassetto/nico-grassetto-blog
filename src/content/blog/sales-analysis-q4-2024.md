@@ -1,6 +1,7 @@
 ---
 title: "Sales Data Analysis - Q4 2024"
 date: "2024-12-15"
+draft: true
 image: "/nico-grassetto-blog/images/blog-icon.png"
 description: "Analyzing sales performance and trends for the fourth quarter of 2024"
 ---
