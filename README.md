@@ -29,18 +29,6 @@ All commands are run from the root of the project:
 | `npm run build`           | Build production site to `./dist/`               |
 | `npm run preview`         | Preview build locally before deploying           |
 
-## Topics
-
-- Azure services and cloud development
-- AI and GitHub Copilot
-- Software engineering practices
-- Database technologies
-
-## TODO
-
-- Table of contents sidebar
-- Minor design adjustments
-
 ## Resources
 
 - [Astro Documentation](https://docs.astro.build)
