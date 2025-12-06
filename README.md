@@ -1,6 +1,6 @@
 # Nico Grassetto Blog
 
-A personal blog built with Astro featuring articles about Azure, AI development, and software engineering.
+My personal corner of the internet where I write about whatever catches my interest. Feel free to use this as a template for your own blog — just remove my articles first.
 
 ## Project Structure
 
@@ -32,3 +32,9 @@ All commands are run from the root of the project:
 ## Resources
 
 - [Astro Documentation](https://docs.astro.build)
+
+## License
+
+The **code** (components, layouts, configurations) is available under the [MIT License](LICENSE) — use it freely as a template.
+
+The **content** (blog posts, images, and written material in `src/content/`) is © Nico Grassetto. All rights reserved.
