@@ -5,7 +5,7 @@ export interface Props {
 	currentPage?: 'home' | 'about';
 }
 
-const { title = "Nico Grassetto's Blog", description = "A modern blog built with Astro.js", currentPage = 'home' } = Astro.props;
+const { title = "Nico Grassetto's Blog", description = "<placeholder>", currentPage = "home" } = Astro.props;
 ---
 
 <!doctype html>
@@ -26,7 +26,7 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:creator" content="@ngrassetto" />		<!-- MathJax for LaTeX rendering -->
+		<meta name="twitter:creator" content="@ngrassetto" />		
 		<script is:inline>
 			window.MathJax = {
 				tex: {
@@ -41,7 +41,6 @@ const { title = "Nico Grassetto's Blog", description = "A modern blog built with
 				}
 			};
 		</script>
-		<script async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 		<script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 				<!-- Chart.js for data visualization -->
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
