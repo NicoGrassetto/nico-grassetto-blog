@@ -1,3 +1,11 @@
+---
+title: "Generative AI and Agents in 2025: The Microsoft Ecosystem"
+date: "2025-01-15"
+image: "/images/logos/placeholder.png"
+description: "Explore Microsoft's spectrum of tools for building AI agents in 2025, from no-code Copilot Studio to pro-code SDKs and Azure AI Foundry."
+draft: true
+---
+
 **Generative AI and Agents in 2025: The Microsoft Ecosystem**
 
 In 2025, Microsoft offers a **spectrum of tools for building AI “agents”** – from no-code solutions for business users to pro-code SDKs for developers. Whether you’re a solution architect designing enterprise AI workflows or a business manager automating a task with AI, there’s a Microsoft tool tailored to your needs. This ecosystem spans **Copilot Studio** for low-code agent creation, the **Microsoft 365 (M365) Agents SDK** (gradually superseding the old Bot Framework), **Azure AI Foundry** for cloud-scale AI operations, and the open-source **Microsoft Agent Framework**, which evolved from Semantic Kernel and AutoGen to simplify advanced agent development. Below, we break down each of these, with real-life-style mini stories, usage tips, and how they compare to other frameworks (like LangChain/LangGraph). Let’s dive in!
