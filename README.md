@@ -2,6 +2,8 @@
 
 My personal corner of the internet where I write about whatever catches my interest. Feel free to use this as a template for your own blog — just remove my articles first.
 
+**Live site:** [nicograssetto.github.io/nico-grassetto-blog](https://nicograssetto.github.io/nico-grassetto-blog)
+
 ## Project Structure
 
 ```text
