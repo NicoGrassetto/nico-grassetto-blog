@@ -2,7 +2,7 @@
 title: "Dark Mode Chart Demo"
 date: "2025-06-14"
 draft: true
-image: "/nico-grassetto-blog/images/azure.jpg"
+image: "../../assets/images/azure.jpg"
 description: "Demonstration of theme-aware charts that adapt to dark and light modes"
 ---
 

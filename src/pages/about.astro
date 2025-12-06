@@ -1,25 +1,47 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+
+// Import all logo images
+import microsoftLogo from '../assets/images/logos/microsoft.png';
+import agilyticLogo from '../assets/images/logos/agilytic.png';
+import nodejsLogo from '../assets/images/logos/nodejs.png';
+import cosmosLogo from '../assets/images/logos/cosmos.png';
+import azureLogo from '../assets/images/logos/azure.png';
+import langchainLogo from '../assets/images/logos/langchain.png';
+import pythonLogo from '../assets/images/logos/python.png';
+import javascriptLogo from '../assets/images/logos/javascript.png';
+import vscodeLogo from '../assets/images/logos/vscode.png';
+import githubLogo from '../assets/images/logos/github.png';
+import githubCopilotLogo from '../assets/images/logos/github-copilot.png';
+import todoistLogo from '../assets/images/logos/todoist.png';
+import edgeLogo from '../assets/images/logos/edge.png';
+import figmaLogo from '../assets/images/logos/figma.png';
+import appleMusicLogo from '../assets/images/logos/apple-music.png';
+import tldrawLogo from '../assets/images/logos/tldraw.png';
+import copilotLogo from '../assets/images/logos/copilot.png';
+import amazonLogo from '../assets/images/logos/amazon.png';
+import aboutPicture from '../assets/images/about-picture.jpg';
 
 const companyLogos = {
-	microsoft: '/nico-grassetto-blog/images/logos/microsoft.png',
-	agilytic: '/nico-grassetto-blog/images/logos/agilytic.png',
-	nodejs: '/nico-grassetto-blog/images/logos/nodejs.png',
-	cosmosdb: '/nico-grassetto-blog/images/logos/cosmos.png',
-	azure: '/nico-grassetto-blog/images/logos/azure.png',
-	langchain: '/nico-grassetto-blog/images/logos/langchain.png',
-	python: '/nico-grassetto-blog/images/logos/python.png',
-	javascript: '/nico-grassetto-blog/images/logos/javascript.png',
-	vscode: '/nico-grassetto-blog/images/logos/vscode.png',
-	github: '/nico-grassetto-blog/images/logos/github.png',
-	githubcopilot: '/nico-grassetto-blog/images/logos/github-copilot.png',
-	todoist: '/nico-grassetto-blog/images/logos/todoist.png',
-	edge: '/nico-grassetto-blog/images/logos/edge.png',
-	figma: '/nico-grassetto-blog/images/logos/figma.png',
-	applemusic: '/nico-grassetto-blog/images/logos/apple-music.png',
-	tldraw: '/nico-grassetto-blog/images/logos/tldraw.png', 
-	copilot: '/nico-grassetto-blog/images/logos/copilot.png',
-	book: '/nico-grassetto-blog/images/logos/amazon.png'
+	microsoft: microsoftLogo,
+	agilytic: agilyticLogo,
+	nodejs: nodejsLogo,
+	cosmosdb: cosmosLogo,
+	azure: azureLogo,
+	langchain: langchainLogo,
+	python: pythonLogo,
+	javascript: javascriptLogo,
+	vscode: vscodeLogo,
+	github: githubLogo,
+	githubcopilot: githubCopilotLogo,
+	todoist: todoistLogo,
+	edge: edgeLogo,
+	figma: figmaLogo,
+	applemusic: appleMusicLogo,
+	tldraw: tldrawLogo, 
+	copilot: copilotLogo,
+	book: amazonLogo
 };
 ---
 
@@ -27,13 +49,13 @@ const companyLogos = {
 	</section>	<h1>About Nico Grassetto</h2>
 	<section class="about-section">		<h2>Introduction <span class="link-icon">🔗</span></h2>
 		<div class="content-section">
-			<img src="/nico-grassetto-blog/images/about-picture.jpg" alt="Nico Grassetto" class="profile-picture" />
+			<Image src={aboutPicture} alt="Nico Grassetto" class="profile-picture" width={300} />
 			<p>
 				I'm a cloud and AI-focused solution engineer based in Brussels, Belgium.
 			</p>
 
 			<p>
-				Currently, I work at <a href="https://www.microsoft.com/en-gb" class="logo-link"><img src={companyLogos.microsoft} alt="Microsoft logo" />Microsoft</a> on the AI Apps team. Before joining Microsoft, I was at <a href="https://www.agilytic.com/" class="logo-link"><img src={companyLogos.agilytic} alt="Agilytic logo" />Agilytic</a>, where I contributed to developing a document recommendation engine for the EU Commission and an e-mail enrichment tool for an international enterprise networking company.
+				Currently, I work at <a href="https://www.microsoft.com/en-gb" class="logo-link"><Image src={companyLogos.microsoft} alt="Microsoft logo" width={20} height={20} /></a> Microsoft on the AI Apps team. Before joining Microsoft, I was at <a href="https://www.agilytic.com/" class="logo-link"><Image src={companyLogos.agilytic} alt="Agilytic logo" width={20} height={20} /></a> Agilytic, where I contributed to developing a document recommendation engine for the EU Commission and an e-mail enrichment tool for an international enterprise networking company.
 			</p>
 
 			<p>
@@ -96,12 +118,12 @@ const companyLogos = {
 		<h2>Reading List <span class="link-icon">🔗</span></h2>
 		<div class="content-section">
 			<p>Some books I like and recommend!</p>			<ul class="values-list">
-				<li><a href="https://amzn.eu/d/cy62n7r" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Distributed Systems</a> by Maarten van Steen</li>
-				<li><a href="https://amzn.eu/d/2zc2TP9" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Supercommunicators</a> by Charles Duhigg</li>
-				<li><a href="https://amzn.eu/d/hwAtQ0f" class="logo-link"><img src={companyLogos.book} alt="Book logo" />The Personal MBA</a> by Josh Kaufman</li>
-				<li><a href="https://a.co/d/5U8PeHM" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Thinking in Systems</a> by Donella H. Meadows</li>
-				<li><a href="https://amzn.eu/d/bgGNLca" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Homo Deus</a> by Yuval Noah Harari</li>
-				<li><a href="https://amzn.eu/d/bnXagVT" class="logo-link"><img src={companyLogos.book} alt="Book logo" />Sapiens</a> by Yuval Noah Harari</li>
+				<li><a href="https://amzn.eu/d/cy62n7r" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> Distributed Systems by Maarten van Steen</li>
+				<li><a href="https://amzn.eu/d/2zc2TP9" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> Supercommunicators by Charles Duhigg</li>
+				<li><a href="https://amzn.eu/d/hwAtQ0f" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> The Personal MBA by Josh Kaufman</li>
+				<li><a href="https://a.co/d/5U8PeHM" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> Thinking in Systems by Donella H. Meadows</li>
+				<li><a href="https://amzn.eu/d/bgGNLca" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> Homo Deus by Yuval Noah Harari</li>
+				<li><a href="https://amzn.eu/d/bnXagVT" class="logo-link"><Image src={companyLogos.book} alt="Book logo" width={20} height={20} /></a> Sapiens by Yuval Noah Harari</li>
 			</ul>
 		</div>
 		<h2>Software <span class="link-icon">🔗</span></h2>
@@ -111,24 +133,24 @@ const companyLogos = {
 			</p>
 			<p><strong>My preferred tech:</strong></p>
 			<ul class="values-list">
-				<li><a href="https://nodejs.org" class="logo-link"><img src={companyLogos.nodejs} alt="Node.js logo" />Node.js</a> - JavaScript Runtime</li>
-				<li><a href="https://azure.microsoft.com/en-us/products/cosmos-db/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><img src={companyLogos.cosmosdb} alt="Cosmos DB logo" />Cosmos DB</a> - NoSQL & SQL Databases</li>
-				<li><a href="https://azure.microsoft.com/en-us/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><img src={companyLogos.azure} alt="Azure logo" />Azure</a> - Cloud Platform</li>
-				<li><a href="https://www.langchain.com/" class="logo-link"><img src={companyLogos.langchain} alt="LangChain logo" />LangChain & LangGraph</a> - Generative AI SDK</li>
-				<li><a href="https://www.python.org/" class="logo-link"><img src={companyLogos.python} alt="Python logo" />Python</a> - For all things AI and data science</li>
-				<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" class="logo-link"><img src={companyLogos.javascript} alt="JavaScript logo" />JavaScript</a> - For all things web</li>
+				<li><a href="https://nodejs.org" class="logo-link"><Image src={companyLogos.nodejs} alt="Node.js logo" width={20} height={20} /></a> Node.js - JavaScript Runtime</li>
+				<li><a href="https://azure.microsoft.com/en-us/products/cosmos-db/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><Image src={companyLogos.cosmosdb} alt="Cosmos DB logo" width={20} height={20} /></a> Cosmos DB - NoSQL & SQL Databases</li>
+				<li><a href="https://azure.microsoft.com/en-us/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><Image src={companyLogos.azure} alt="Azure logo" width={20} height={20} /></a> Azure - Cloud Platform</li>
+				<li><a href="https://www.langchain.com/" class="logo-link"><Image src={companyLogos.langchain} alt="LangChain logo" width={20} height={20} /></a> LangChain & LangGraph - Generative AI SDK</li>
+				<li><a href="https://www.python.org/" class="logo-link"><Image src={companyLogos.python} alt="Python logo" width={20} height={20} /></a> Python - For all things AI and data science</li>
+				<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" class="logo-link"><Image src={companyLogos.javascript} alt="JavaScript logo" width={20} height={20} /></a> JavaScript - For all things web</li>
 			</ul>
 			<p><strong>Tools:</strong></p>
 			<ul class="values-list">
-				<li><a href="https://code.visualstudio.com/" class="logo-link"><img src={companyLogos.vscode} alt="VS Code logo" />VS Code</a> - Code Editor</li>
-				<li><a href="https://github.com/" class="logo-link"><img src={companyLogos.github} alt="GitHub logo" />GitHub</a> - Version Control & Project Management</li>
-				<li><a href="https://github.com/features/copilot" class="logo-link"><img src={companyLogos.githubcopilot} alt="GitHub Copilot logo" />GitHub Copilot</a> - AI Pair Programmer</li>
-				<li><a href="https://www.todoist.com/" class="logo-link"><img src={companyLogos.todoist} alt="Todoist logo" />Todoist</a> - Todo / Management</li>
-				<li><a href="https://www.microsoft.com/edge" class="logo-link"><img src={companyLogos.edge} alt="Edge logo" />Edge</a> - Web Browser</li>
-				<li><a href="https://www.figma.com/" class="logo-link"><img src={companyLogos.figma} alt="Figma logo" />Figma</a> - Interface Design</li>
-				<li><a href="https://music.apple.com/us/new" class="logo-link"><img src={companyLogos.applemusic} alt="Apple Music logo" />Apple Music</a> - Music Streaming</li>
-				<li><a href="https://tldraw.com" class="logo-link"><img src={companyLogos.tldraw} alt="Figma logo" />tldraw</a> - Whiteboard</li>
-				<li><a href="https://copilot.microsoft.com/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><img src={companyLogos.copilot} alt="Copilot logo" />Microsoft Copilot</a> - AI-powered assistant</li>
+				<li><a href="https://code.visualstudio.com/" class="logo-link"><Image src={companyLogos.vscode} alt="VS Code logo" width={20} height={20} /></a> VS Code - Code Editor</li>
+				<li><a href="https://github.com/" class="logo-link"><Image src={companyLogos.github} alt="GitHub logo" width={20} height={20} /></a> GitHub - Version Control & Project Management</li>
+				<li><a href="https://github.com/features/copilot" class="logo-link"><Image src={companyLogos.githubcopilot} alt="GitHub Copilot logo" width={20} height={20} /></a> GitHub Copilot - AI Pair Programmer</li>
+				<li><a href="https://www.todoist.com/" class="logo-link"><Image src={companyLogos.todoist} alt="Todoist logo" width={20} height={20} /></a> Todoist - Todo / Management</li>
+				<li><a href="https://www.microsoft.com/edge" class="logo-link"><Image src={companyLogos.edge} alt="Edge logo" width={20} height={20} /></a> Edge - Web Browser</li>
+				<li><a href="https://www.figma.com/" class="logo-link"><Image src={companyLogos.figma} alt="Figma logo" width={20} height={20} /></a> Figma - Interface Design</li>
+				<li><a href="https://music.apple.com/us/new" class="logo-link"><Image src={companyLogos.applemusic} alt="Apple Music logo" width={20} height={20} /></a> Apple Music - Music Streaming</li>
+				<li><a href="https://tldraw.com" class="logo-link"><Image src={companyLogos.tldraw} alt="tldraw logo" width={20} height={20} /></a> tldraw - Whiteboard</li>
+				<li><a href="https://copilot.microsoft.com/?msockid=368a3dc0788e605b293c292e796e616c" class="logo-link"><Image src={companyLogos.copilot} alt="Copilot logo" width={20} height={20} /></a> Microsoft Copilot - AI-powered assistant</li>
 			</ul>
 		</div>
 		<!-- VS Code Extensions section (commented out for now)

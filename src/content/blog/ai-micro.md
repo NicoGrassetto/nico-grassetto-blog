@@ -1,7 +1,7 @@
 ---
 title: "Generative AI and Agents in 2025: The Microsoft Ecosystem"
 date: "2025-01-15"
-image: "/images/logos/placeholder.png"
+image: "../../assets/images/azure.jpg"
 description: "Explore Microsoft's spectrum of tools for building AI agents in 2025, from no-code Copilot Studio to pro-code SDKs and Azure AI Foundry."
 draft: true
 ---

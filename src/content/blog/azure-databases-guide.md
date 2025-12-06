@@ -2,7 +2,7 @@
 title: "A guide to databases on Azure"
 date: "2025-06-09"
 draft: true
-image: "/nico-grassetto-blog/images/azure.jpg"
+image: "../../assets/images/azure.jpg"
 description: "A comprehensive guide to choosing and implementing the right database solution on Microsoft Azure"
 ---
 
