@@ -1,0 +1,47 @@
+---
+export interface Props {
+  name: string;
+  description: string;
+  href?: string;
+}
+
+const { name, description, href } = Astro.props;
+---
+
+<div class="repo-item">
+  {href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" class="repo-link">
+      <span class="repo-name">{name}</span>
+    </a>
+  ) : (
+    <span class="repo-name">{name}</span>
+  )}
+  <p class="repo-description">{description}</p>
+</div>
+
+<style>
+  .repo-item {
+    margin-bottom: 1rem;
+  }
+
+  .repo-link {
+    text-decoration: none;
+  }
+
+  .repo-link:hover .repo-name {
+    color: var(--link-hover);
+  }
+
+  .repo-name {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .repo-description {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+</style>

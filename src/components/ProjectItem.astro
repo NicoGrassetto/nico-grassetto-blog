@@ -1,0 +1,91 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  badge?: 'ACCELERATOR' | 'DEMO' | 'RESEARCH' | 'TOOL' | 'APP';
+  href?: string;
+}
+
+const { title, description, badge, href } = Astro.props;
+---
+
+<div class="project-item">
+  {href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" class="project-link">
+      <span class="project-title">{title}</span>
+      {badge && <span class={`project-badge badge-${badge.toLowerCase()}`}>{badge}</span>}
+    </a>
+  ) : (
+    <div class="project-header">
+      <span class="project-title">{title}</span>
+      {badge && <span class={`project-badge badge-${badge.toLowerCase()}`}>{badge}</span>}
+    </div>
+  )}
+  <p class="project-description">{description}</p>
+</div>
+
+<style>
+  .project-item {
+    margin-bottom: 1rem;
+  }
+
+  .project-link,
+  .project-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    flex-wrap: wrap;
+  }
+
+  .project-link:hover .project-title {
+    color: var(--link-hover);
+  }
+
+  .project-title {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .project-badge {
+    font-size: 0.6rem;
+    font-weight: 500;
+    padding: 0.1rem 0.35rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-accelerator {
+    background-color: #4a3d2d;
+    color: #c9b38a;
+  }
+
+  .badge-demo {
+    background-color: #3d3a4a;
+    color: #b8a9c9;
+  }
+
+  .badge-research {
+    background-color: #2d4a3e;
+    color: #7dcea0;
+  }
+
+  .badge-tool {
+    background-color: #6b3a3a;
+    color: #ffb3b3;
+  }
+
+  .badge-app {
+    background-color: #2d4a6b;
+    color: #a3d4ff;
+  }
+
+  .project-description {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+</style>
