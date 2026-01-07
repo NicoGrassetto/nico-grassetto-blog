@@ -6,8 +6,8 @@ import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://NicoGrassetto.github.io',
-  base: '/nico-grassetto-blog',
+  site: 'https://www.nicograssetto.com',
+  base: '/',
   integrations: [mdx()],
   markdown: {
     remarkPlugins: [remarkMath],
