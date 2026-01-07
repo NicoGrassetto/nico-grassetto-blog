@@ -12,7 +12,7 @@ const { title = "Nico Grassetto's Blog", description = "<placeholder>", currentP
 <html lang="en">	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/png" href="/nico-grassetto-blog/favicon.png" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<meta name="author" content="Nico Grassetto" />
@@ -74,10 +74,10 @@ const { title = "Nico Grassetto's Blog", description = "<placeholder>", currentP
 				</div>
 				<p class="site-subtitle">"Engineering experiences with technologies."</p>				<nav class="site-nav">
 					{currentPage === 'home' && (
-						<a href="/nico-grassetto-blog/about" class="button">About Nico Grassetto</a>
+						<a href="/about" class="button">About Nico Grassetto</a>
 					)}
 					{currentPage === 'about' && (
-						<a href="/nico-grassetto-blog/" class="button back-to-blog">Back to Blog</a>
+						<a href="/" class="button back-to-blog">Back to Blog</a>
 					)}
 				</nav>
 			</header>
