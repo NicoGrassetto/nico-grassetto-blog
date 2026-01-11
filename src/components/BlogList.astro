@@ -1,4 +1,6 @@
 ---
+import { formatDate } from '../utils/formatDate';
+
 export interface Props {
   title: string;
   date: string;
@@ -7,20 +9,10 @@ export interface Props {
 }
 
 const { title, date, description, slug } = Astro.props;
-
-// Format the date for display
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-};
 ---
 
 <li class="blog-item">
-  <a href={`/nico-grassetto-blog/blog/${slug}`} class="blog-link">
+  <a href={`${import.meta.env.BASE_URL}blog/${slug}`} class="blog-link">
     <h3 class="blog-title">{title}</h3>
     <div class="blog-meta">
       <time datetime={date}>{formatDate(date)}</time>

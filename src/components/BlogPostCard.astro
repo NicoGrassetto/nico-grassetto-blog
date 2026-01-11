@@ -1,4 +1,7 @@
 ---
+import { formatDate } from '../utils/formatDate';
+import { Image } from 'astro:assets';
+
 export interface Props {
   title: string;
   date: string;
@@ -7,22 +10,10 @@ export interface Props {
   views?: number;
 }
 
-import { Image } from 'astro:assets';
-
 const { title, date, slug, image, views } = Astro.props;
-
-// Format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  });
-};
 ---
 
-<a href={`/nico-grassetto-blog/blog/${slug}`} class="blog-post-card">
+<a href={`${import.meta.env.BASE_URL}blog/${slug}`} class="blog-post-card">
   <div class="card-content">
     <h3 class="card-title">{title}</h3>
     <div class="card-meta">

@@ -22,6 +22,19 @@ SOFTWARE.
 
 ---
 
-Note: This license applies to the code, components, layouts, and configuration
-files only. Blog content (posts, articles, and images in src/content/) is
-copyrighted and not covered by this license.
+Content License (Blog Posts, Images)
+=====================================
+
+Blog content © 2026 Nico Grassetto
+Licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)
+https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+You MAY:
+  • Share links to this content with attribution
+
+You MAY NOT:
+  • Republish or copy-paste content
+  • Create derivative works
+  • Use content for commercial purposes
+
+This applies to all blog posts, articles, and images in src/content/.
