@@ -34,6 +34,19 @@ const links = [
 	{ name: "LinkedIn", href: "https://www.linkedin.com/in/nicograssetto/", icon: "linkedin" },
 	{ name: "Discord", href: "https://discord.gg/", icon: "discord" },
 ];
+
+const books = [
+	{ title: "Distributed Systems", author: "Maarten van Steen" },
+	{ title: "Supercommunicators", author: "Charles Duhigg" },
+	{ title: "The Personal MBA", author: "Josh Kaufman" },
+	{ title: "Thinking in Systems", author: "Donella H. Meadows" },
+	{ title: "Concurrency in Go", author: "Katherine Cox-Buday" },
+	{ title: "The Go Programming Language", author: "Alan Donovan & Brian Kernighan" },
+	{ title: "100 Go Mistakes and How to Avoid Them", author: "Teiva Harsanyi" },
+	{ title: "Mining of Massive Datasets", author: "Leskovec, Rajaraman & Ullman" },
+	{ title: "Machine Learning Engineering", author: "Andriy Burkov" },
+	{ title: "Designing Data-Intensive Applications", author: "Martin Kleppmann" },
+];
 ---
 
 <Layout title="Nico Grassetto" description="Engineering experiences with technologies." fullWidth={true}>
@@ -155,7 +168,7 @@ const links = [
 			</div>
 		</div>
 
-		<!-- Column 3: Blog Posts -->
+		<!-- Column 3: Blog Posts + Reading List -->
 		<div class="column">
 			<div class="column-section">
 				<h2 class="section-header">POSTS</h2>
@@ -169,6 +182,17 @@ const links = [
 						/>
 					))}
 				</div>
+			</div>
+			<div class="column-section">
+				<h2 class="section-header">READING LIST</h2>
+				<ul class="reading-list">
+					{books.map((book) => (
+						<li class="book-item">
+							<span class="book-title">{book.title}</span>
+							<span class="book-author">by {book.author}</span>
+						</li>
+					))}
+				</ul>
 			</div>
 		</div>
 	</div>
@@ -230,6 +254,45 @@ const links = [
 	@keyframes jump {
 		0%, 100% { transform: translateY(0); }
 		50% { transform: translateY(-5px); }
+	}
+
+	/* Reading List Styles */
+	.reading-list-intro {
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.reading-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.book-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.book-item:last-child {
+		border-bottom: none;
+	}
+
+	.book-title {
+		color: var(--text-primary);
+		font-weight: 500;
+		font-size: 0.95rem;
+	}
+
+	.book-author {
+		color: var(--text-secondary);
+		font-size: 0.8rem;
 	}
 </style>
 
