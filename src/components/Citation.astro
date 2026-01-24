@@ -1,0 +1,107 @@
+---
+export interface Props {
+  id: string;
+  author: string;
+  year: string;
+  title: string;
+  // Optional fields for different source types
+  journal?: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  publisher?: string;
+  url?: string;
+  accessDate?: string;
+  doi?: string;
+  edition?: string;
+  editors?: string;
+  bookTitle?: string; // For book chapters
+  type?: 'article' | 'book' | 'website' | 'chapter' | 'report';
+}
+
+const { 
+  id,
+  author, 
+  year, 
+  title, 
+  journal, 
+  volume, 
+  issue, 
+  pages, 
+  publisher, 
+  url, 
+  accessDate,
+  doi,
+  edition,
+  editors,
+  bookTitle,
+  type = 'article' 
+} = Astro.props;
+
+// Format the citation based on type
+function formatCitation() {
+  let citation = `${author} (${year}). `;
+  
+  switch (type) {
+    case 'article':
+      citation += `${title}. `;
+      if (journal) {
+        citation += `<em>${journal}</em>`;
+        if (volume) citation += `, <em>${volume}</em>`;
+        if (issue) citation += `(${issue})`;
+        if (pages) citation += `, ${pages}`;
+        citation += '. ';
+      }
+      break;
+      
+    case 'book':
+      citation += `<em>${title}</em>`;
+      if (edition) citation += ` (${edition} ed.)`;
+      citation += '. ';
+      if (publisher) citation += `${publisher}. `;
+      break;
+      
+    case 'chapter':
+      citation += `${title}. `;
+      if (editors) citation += `In ${editors} (Eds.), `;
+      if (bookTitle) citation += `<em>${bookTitle}</em>`;
+      if (pages) citation += ` (pp. ${pages})`;
+      citation += '. ';
+      if (publisher) citation += `${publisher}. `;
+      break;
+      
+    case 'website':
+      citation += `<em>${title}</em>. `;
+      if (publisher) citation += `${publisher}. `;
+      break;
+      
+    case 'report':
+      citation += `<em>${title}</em>. `;
+      if (publisher) citation += `${publisher}. `;
+      break;
+  }
+  
+  if (doi) {
+    citation += `https://doi.org/${doi}`;
+  } else if (url) {
+    citation += url;
+  }
+  
+  return citation;
+}
+---
+
+<div class="citation" id={`ref-${id}`}>
+  <Fragment set:html={formatCitation()} />
+</div>
+
+<style>
+  .citation {
+    padding-left: 2rem;
+    text-indent: -2rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+</style>

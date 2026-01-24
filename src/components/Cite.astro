@@ -1,0 +1,58 @@
+---
+export interface Props {
+  id: string;
+  author: string;
+  year: string;
+  prefix?: string; // e.g., "see" or "e.g.,"
+  suffix?: string; // e.g., "p. 25"
+  parenthetical?: boolean; // (Author, Year) vs Author (Year)
+}
+
+const { 
+  id,
+  author, 
+  year, 
+  prefix = '',
+  suffix = '',
+  parenthetical = true 
+} = Astro.props;
+
+// Extract last name from author string (handles "Smith, J." or "Smith & Jones")
+function getLastName(authorStr: string) {
+  // If it contains "&", it's multiple authors
+  if (authorStr.includes(' & ')) {
+    const authors = authorStr.split(' & ');
+    if (authors.length === 2) {
+      return `${authors[0].split(',')[0]} & ${authors[1].split(',')[0]}`;
+    }
+    return `${authors[0].split(',')[0]} et al.`;
+  }
+  // Single author - get last name (before comma)
+  return authorStr.split(',')[0];
+}
+
+const lastName = getLastName(author);
+const prefixText = prefix ? `${prefix} ` : '';
+const suffixText = suffix ? `, ${suffix}` : '';
+---
+
+<a href={`#ref-${id}`} class="cite">
+  {parenthetical ? (
+    `(${prefixText}${lastName}, ${year}${suffixText})`
+  ) : (
+    <Fragment>{lastName} ({year}{suffixText})</Fragment>
+  )}
+</a>
+
+<style>
+  .cite {
+    color: #e67e22 !important;
+    text-decoration: none !important;
+    cursor: pointer;
+  }
+  
+  .cite:hover {
+    color: #d35400 !important;
+    text-decoration: none !important;
+  }
+</style>

@@ -160,16 +160,31 @@ const { title = "Nico Grassetto's Blog", description = "Engineering experiences 
 		color: var(--text-primary);
 		background-color: var(--bg-primary);
 		font-size: 16px;
-		height: 100vh;
-		overflow: hidden;
 		font-weight: 400;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 	}
 
+	/* Lock scrolling only for full-width layout (homepage) */
+	body:has(.container-full) {
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	/* Allow scrolling for regular container (blog posts) */
+	body:has(.container) {
+		height: auto;
+		overflow: auto;
+	}
+
 	/* Full-width container for 3-column layout */
 	.container-full {
 		width: 100%;
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	.container-full main {
 		height: 100vh;
 		overflow: hidden;
 	}
@@ -182,9 +197,9 @@ const { title = "Nico Grassetto's Blog", description = "Engineering experiences 
 		min-height: 100vh;
 	}
 
-	main {
-		height: 100vh;
-		overflow: hidden;
+	.container main {
+		height: auto;
+		overflow: visible;
 	}
 
 	/* Three-column grid */
@@ -237,8 +252,8 @@ const { title = "Nico Grassetto's Blog", description = "Engineering experiences 
 
 	/* Profile section */
 	.profile-image {
-		width: 100%;
-		max-width: 85%;
+		width: 85%;
+		height: auto;
 		aspect-ratio: auto;
 		object-fit: cover;
 		margin: 0 auto 1.5rem auto;
@@ -309,14 +324,38 @@ const { title = "Nico Grassetto's Blog", description = "Engineering experiences 
 	}
 
 	@media (max-width: 768px) {
+		html, body {
+			overflow: auto !important;
+			height: auto !important;
+		}
+
+		.container-full {
+			height: auto !important;
+			overflow: visible !important;
+		}
+
+		main {
+			height: auto !important;
+			overflow: visible !important;
+		}
+
 		.three-column-grid {
 			grid-template-columns: 1fr;
+			height: auto;
+			overflow: visible;
 		}
 		
 		.column {
 			border-right: none;
 			border-bottom: 1px solid var(--column-border);
 			min-height: auto;
+			height: auto;
+			overflow: visible;
+		}
+
+		.column:nth-child(3) {
+			grid-column: auto;
+			border-top: none;
 		}
 
 		.column:last-child {
@@ -328,7 +367,7 @@ const { title = "Nico Grassetto's Blog", description = "Engineering experiences 
 		}
 
 		.profile-image {
-			max-width: 200px;
+			width: 70%;
 		}
 	}
 
