@@ -1,8 +1,8 @@
-erg;lmzergmlz;zem---
+---
 title: "Spare thoughts on enterprise AI"
 date: "2026-01-04"
-description: "Demystg:er;z,grez,gifying enterprise AI and what it really means."
-draft: falseze,gzerMZERT.grm
+description: "Demystifying enterprise AI and what it really means."
+draft: false
 ---
 
 Lately, I've been wanting to bring closure to the topic of Enterprise AI.
