@@ -1,34 +1,23 @@
----
+erg;lmzergmlz;zem---
 title: "Spare thoughts on enterprise AI"
 date: "2026-01-04"
-description: "Demystifying enterprise AI and what it really means."
-draft: true
+description: "Demystg:er;z,grez,gifying enterprise AI and what it really means."
+draft: falseze,gzerMZERT.grm
 ---
 
-Small intro where I talk about the fact that people keep talking about enterprise AI without really knowing what it is
-I feel like people oftentimes overthink or underestimate what enterprise AI is. Be it it as it amy it's ropoted in definitions 
+Lately, I've been wanting to bring closure to the topic of Enterprise AI.
 
-But why do we need enterprise AI, who needs it?
+The idea was sparked when I was planning a session for a client who wanted to understand what Enterprise AI was and how to implement it. While searching for a clear definition, I realised that most definitions differed significantly, leaving everyone with biased and opinionated views on the matter.
 
-They never talk about monitoring or obserbaiilty, security? AI Strategy?Governance?
+In discussions with clients, I often realise we're talking about entirely different definitions of Enterprise AI.
 
-<div style="text-align: center;">
-  <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWF6NzJpMmwyaDF6NnQ0YnVuMmtubjM4dDc2Y3hxM3picWg0anR6MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FLo0LIBIUeI6c/giphy.gif" alt="Confused gif" width="600">
-</div>
+So here it is—my opinionated and biased view on Enterprise AI.
 
-Some intro on the fact that we all have a different definition of Enterprise AI, talk about searching for it using ChatGPT and corss checking. Turns out not even Microsoft has an official statemnet ab out enterpriose AI. I could find one by Google, Amazon, Salesforce
+To begin, as mentioned, I started my quest for a definition by using ChatGPT and looking up definitions from IBM, Salesforce, Amazon, Google, and Microsoft.
 
-Come up with a unified definition.
+That's where my first surprise came in: they all had different definitions. While some factors were similar or common, the essence of most definitions varied significantly.
 
-Now that we have a definition let's brak down from a technological standpoint what enterprise AI means 
-
-
-First off none of them talk about evaluiation and monitoring 
-Observabuility is the bread and butter of enterprise AI.
-
-Also they dont accoutn for enterprsie AI strategy or whatever you fancy calling it. Enterprise AI starts in the board room where an AI strategy is defined. While I;ve never defined one myself I would imagine suych a strartegy would cover prioritiuysing usecases and projects based on e.g. ROI, how to tackle governance, and compliance (for EU think AI Act or GDPR)
-
-There's probably way more to it 
+A big factor tha tbugs me is also that people grossly overthink what it is about and sometimes teams even weaponise it as ane xcse to iterative and move forward slowly. Trust me, it's not that deep.
 
 <style>
 table {
@@ -50,6 +39,40 @@ table th {
 | [Amazon](https://aws.amazon.com/what-is/enterprise-ai//?utm_source=chatgpt.com) | "Enterprise artificial intelligence (AI) is the adoption of advanced AI technologies within <span style="background-color: red; color: white;">**large organizations**</span>. Taking AI systems from prototype to production introduces several challenges around <mark>scale</mark>, performance, data governance, ethics, and regulatory compliance. Enterprise AI includes policies, strategies, infrastructure, and technologies for widespread AI use within <span style="background-color: red; color: white;">**a large organization**</span>. Even though it requires significant investment and effort, enterprise AI is important for <span style="background-color: red; color: white;">**large organizations**</span> as AI systems become more mainstream." |
 | [Salesforce](https://www.salesforce.com/artificial-intelligence/enterprise-ai/?utm_source=chatgpt.com) | "Enterprise AI is the application of AI for <span style="background-color: red; color: white;">**large organizations**</span>, helping boost workforce efficiency and productivity. It includes the use of autonomous agents and a combination of different AI technologies <mark>at scale</mark> — including machine learning, natural language processing (NLP), deep learning, computer vision, and automation — to change how people work across industries and sectors. This started with the first wave of predictive AI in 2016, and continued with the second wave of generative AI and copilots. Now, we're on the third wave of AI: AI agents." |
 | [IBM](https://www.ibm.com/think/topics/enterprise-ai?utm_source=chatgpt.com) | "Enterprise artificial intelligence (AI) is the integration of advanced AI-enabled technologies and techniques within <span style="background-color: red; color: white;">**large organizations**</span> to enhance business functions. It encompasses routine tasks such as data collection and analysis, plus more complex operations such as automation, customer service and risk management." |
+
+Let's first talk about what these definitions have in common. They all mention organizations—usually large ones. While that might seem trivial, it’s actually meaningful: organizations are hierarchical, with multiple teams often working in silos. There are data silos, different roles, and a variety of priorities, but some concerns are always top of mind for any organization:
+
+- Security
+- Governance
+- Strategy (at least at a high level, regardless of the specific topic)
+
+But here’s what bugs me: there are important aspects these definitions gloss over or ignore entirely.
+
+For example, at least two mention scalability, but honestly, that’s not the most critical factor for enterprise AI—at least not in my view.
+
+What about observability? Integration? These are just as important, if not more so, when it comes to making AI work in the real world of enterprises.
+
+
+<div style="text-align: center;">
+  <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWF6NzJpMmwyaDF6NnQ0YnVuMmtubjM4dDc2Y3hxM3picWg0anR6MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FLo0LIBIUeI6c/giphy.gif" alt="Confused gif" width="600">
+</div>
+
+Another finding is that Microsoft doesnt have an offical
+Turns out not even Microsoft has an official statemnet ab out enterpriose AI. I could find one by Google, Amazon, Salesforce
+
+Come up with a unified definition.
+
+Now that we have a definition let's brak down from a technological standpoint what enterprise AI means 
+
+
+First off none of them talk about evaluiation and monitoring 
+Observabuility is the bread and butter of enterprise AI.
+
+Also they dont accoutn for enterprsie AI strategy or whatever you fancy calling it. Enterprise AI starts in the board room where an AI strategy is defined. While I;ve never defined one myself I would imagine suych a strartegy would cover prioritiuysing usecases and projects based on e.g. ROI, how to tackle governance, and compliance (for EU think AI Act or GDPR)
+
+There's probably way more to it 
+
+
 
 # On scalability
 Despite what most people think, Enterprise AI can also be a a low traffic system used by internal employees. 
