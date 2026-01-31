@@ -29,3 +29,22 @@ victims so no big deal. Maybe we can find identify victims by Victim A, Victim B
 For all I know , the sub tabs in here don't mean much. Probably refer to dataa sources or hearings. let's open
 
 Ok pdf so far are mostly about things to fill in or basically letters about who is suing who. Very administeative but we get some interesting info nonetheless about data of birth and acts committed. NOT TO BE DISCARTDED
+
+
+The more I go in the files (it's a mess and probably on purpose) the more I realise we need some way to classify them by topic. The DOJ doesn't help in that
+Give the mess I'm confident now that we'll need to run an AI on most files and folders to classify their type + descriptions.
+
+After that we can finally do some kind of work per type.
+
+Most pictures are to be discarded we are mostly here for data and text.
+
+To eb honest I'm not even confident I want to dump all the files in there. I'd probably go for a manual approach first. Discard what I know I want to discard and dump the files I think are relevant.
+
+We will be discarding pictures and videos. Let's focus on text. Challenge everything is a pdf in there evne pictures so it makes even more sense for me to do it manyually. I want to reduce the hange of a model (LLM) to block my requests
+
+We have some first level data sources
+
+Court Records
+DOJ Disclosures, Including Disclosures Under the Epstein Files Transparency Act (H.R. 4405)
+Freedom of Information Act (FOIA)
+House Committee on Oversight and Government Reform Disclosures
