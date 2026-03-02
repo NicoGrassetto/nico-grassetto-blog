@@ -1,15 +1,14 @@
 ---
 title: "Spare thoughts on enterprise AI"
 date: "2026-01-04"
-description: "Demystifying enterprise AI and what it really means."
+description: "TL;DR I believe people overthink what enterprise AI is.ß"
 draft: true
 ---
+TL;DR I think people overthink what enterprise AI is. The first time I was acquited with ceoncept of enterprise AI, is when I joined Microsoft back in 2023 and I thought I got it, but I still didn't until recently. You might be wondering why write an article about. Well it turns out I sorta kinda had to dig into what it is for a session for one of my customers.
 
-Lately, I've been wanting to bring closure to the topic of Enterprise AI.
+I wholeheartely believe that most lack of alignment or conflicits are rooted in different defuiitions on a topic at hands,
 
 The idea was sparked when I was planning a session for a client who wanted to understand what Enterprise AI was and how to implement it. While searching for a clear definition, I realised that most definitions differed significantly, leaving everyone with biased and opinionated views on the matter.
-
-In discussions with clients, I often realise we're talking about entirely different definitions of Enterprise AI.
 
 So here it is—my opinionated and biased view on Enterprise AI.
 
@@ -18,6 +17,18 @@ To begin, as mentioned, I started my quest for a definition by using ChatGPT and
 That's where my first surprise came in: they all had different definitions. While some factors were similar or common, the essence of most definitions varied significantly.
 
 A big factor tha tbugs me is also that people grossly overthink what it is about and sometimes teams even weaponise it as ane xcse to iterative and move forward slowly. Trust me, it's not that deep.
+----
+A definition that is quite on the sport is solve business-level problems inside organizations — typically focusing on automation, decision support, process optimization, knowledge extraction, and customer operations.
+
+I didn't really bother -  I went on chatGPT and asked for a definitioon... Since it's trained on publically accessible data one could assume that this tends to statsiticalyu represent the most commonly accepoted defintioion
+Enterprise AI is about:
+- Integration with existing business systems (ERP, CRM, supply chains)
+- Reliability, security, governance, and auditability requirements
+- ROI-driven deployment rather than experimental performance
+- Domain-specific training on company data
+-----
+
+I actually started my quest by asking what were the definitions from the big hyperscalers in town and this is really where things started picking up my itnerests
 
 <style>
 table {
@@ -72,216 +83,73 @@ Also they dont accoutn for enterprsie AI strategy or whatever you fancy calling 
 
 There's probably way more to it 
 
+<!-- ...existing code... -->
+# Thesis
 
+> Enterprise AI is a superset of prod-ready AI.
 
-# On scalability
-Despite what most people think, Enterprise AI can also be a a low traffic system used by internal employees. 
+Let $E$ be the set of all Enterprise AI systems, $P$ be the set of all production-ready AI systems, $R_E$ be the set of requirements for Enterprise AI, and $R_P$ be the set of requirements for production-ready AI.
 
-I've seen countless times (and literally a few minutes ago I was contacted about someone tinkering about whethger they should use GPT ). 
+**In terms of requirements**, Enterprise AI demands everything prod-ready AI does, and more:
 
-Let's focus on userr-facing applications processing what one would consider a large volume of requests.
+$$R_P \subset R_E$$
 
-Two factrso come into play:
+**In terms of systems**, every Enterprise AI system is production-ready, but not vice versa:
 
-- Latency:
-- Volume:
+$$E \subset P$$
 
-Enterprise AI should be ready for scale but not necessary 
+Or equivalently:
 
-# Governance can be simple
-First off what you are you governing? Some disconnectred projects using AI models (e.g. you might just want to govern your endpoints and models at least for cost control)
-So… what is AI governance?
+$$(\forall x (x \in E \rightarrow x \in P)) \land (\exists y (y \in P \land y \notin E))$$
 
-<!-- At its core, AI governance is how your company decides, enforces, and proves that its AI systems are used responsibly, safely, legally, and consistently.
+![Enterprise AI is a superset of prod-ready AI](./Untitled-2025-12-19-1440.png)
 
-Think of it as:
+Since I love overengineering answers let us walk through the requirements for each AI system.
 
-“The rules of the road + traffic cops + accident reports” for AI.
+**Assumption**: ChatGPT's answer statistically reflects the commonly accepted definition.
 
-It’s not just policy docs. It’s who decides what’s allowed, how risks are managed, and how you stay out of trouble as AI spreads across teams.
+As per ChatGPT's words:
+```
+In practice, enterprise AI is usually characterized by:
 
-Why it matters especially in your situation
+- Integration with existing business systems (ERP, CRM, supply chains)
 
-You said:
+- Reliability, security, governance, and auditability requirements
 
-“5 disconnected projects using LLM models on Foundry”
+- ROI-driven deployment rather than experimental performance
 
-That’s the classic early-AI pattern:
+- Domain-specific training on company data
+```
 
-Different teams
+# On the integration with existing business systems
+As established earlier, Enterprise AI operates within large organisations. Such organisations typically employ a heterogeneous landscape of software systems and technology stacks — a reality rooted in a legacy of on-premises infrastructure, but equally driven by a contemporary strategic imperative to mitigate over-reliance on any single hyperscaler.
 
-Different prompts, models, data sources
+As a consequence, Enterprise AI necessitates an ecosystem that facilitates interoperability across disparate systems. In an organisation comprising $N$ systems, an Enterprise AI solution should be architected to accommodate the worst-case integration scenario — where the final solution must interface with all $N$ systems. 
 
-Different risk tolerances
+As a result, one would want the ecosystem or platform to support communication standards to mitigate that worst case scenario whilst also facilitating (rewarding so to say) the best or average case scenario.
 
-No shared visibility
+In human-friendly terms that essentially means you want to build on standards to avoid a lock-in whilst also provider shortcuts for when you are building within the same stack.
 
-Governance exists to prevent:
+We've seen the rise of standards across agentic systems with MCP and A2A. This is still a work in progress but it's fair to assume that choosing technologies that support both is now the best choice.
 
-🔥 One team leaking sensitive data
+Many platforms such as Amazon Bedrock and Microsoft Foundry also provide a rich ecosytem to accelerate your journey.
 
-⚖️ Another violating licensing or regulations
+Many 
 
-🤖 Inconsistent or biased outputs hurting customers
+# On reliablity
+I'll venture again into some mathematics goodness.
 
-🧨 Surprise incidents no one “owns”
+Let $S$ be the set of systems requiring scalability, $R$ the set of systems requiring reliability, and $P$ the set of all production systems.
 
-What AI governance actually covers (practically)
-1. Ownership & accountability
+$$S \subset R \subset P$$
 
-Basic but huge:
+Reliability is a byproduct of production — any system running in production must be reliable, full stop. But I have seen countless times people directly associating scalability with enterprise AI, as if the two were synonymous. While reliability *can* entail scalability, it doesn't necessarily have to.
 
-Who owns each AI system?
+For example, an internal low-traffic AI system used by a handful of employees needs to be reliable but need not be scalable. On the other hand, customer-facing AI systems (e.g. B2B or B2C) can absolutely demand scalability, where SLAs and resilience become paramount to operations.
 
-Who approves production use?
+In other words, enterprise AI should be *ready* for scale — but not necessarily *built* for it from day one.
 
-Who gets paged when something goes wrong?
-
-Without this, incidents turn into “not my model” Olympics.
-
-2. Model & use-case approval
-
-Not all AI uses are equal.
-
-Governance usually answers:
-
-What use cases are allowed?
-
-Which require extra review?
-
-Which are banned entirely?
-
-Example:
-
-✅ Internal summarization → low risk
-
-⚠️ Customer-facing advice → higher risk
-
-🚫 Automated legal or medical decisions → probably no
-
-3. Data governance for LLMs
-
-This is where most companies get burned.
-
-Key questions:
-
-What data can be sent to LLMs?
-
-Are prompts logged?
-
-Is PII allowed?
-
-Are outputs stored?
-
-With multiple Foundry projects, you often see:
-
-One team scrubbing data
-
-Another “just testing something”
-
-A third not realizing logs exist at all
-
-Governance aligns these choices.
-
-4. Security & access control
-
-Who can deploy models?
-
-Who can change prompts?
-
-Who can access logs and outputs?
-
-This is especially important when:
-
-You have shared Foundry infrastructure
-
-Multiple teams reuse the same base models
-
-5. Quality, monitoring & drift
-
-LLMs don’t just “work forever.”
-
-Governance defines:
-
-What does “good output” mean?
-
-How do we detect hallucinations or degradation?
-
-When do we retrain, rollback, or shut down?
-
-Without this, production models quietly rot.
-
-6. Compliance & regulation
-
-Depending on your industry:
-
-GDPR / privacy
-
-SOC2 / ISO
-
-Upcoming AI laws (EU AI Act, etc.)
-
-Governance helps you answer regulators with:
-
-“Yes, we know where our AI is, what it does, and how it’s controlled.”
-
-What AI governance is not
-
-Let’s kill a few myths:
-
-❌ Not a single policy doc
-
-❌ Not a blocker for innovation
-
-❌ Not something only legal cares about
-
-Good governance actually speeds teams up by removing ambiguity.
-
-A simple mental model for your company
-
-Given your “5 disconnected projects,” I’d frame governance like this:
-
-Central guardrails, local autonomy
-
-Shared standards for data, security, and risk
-
-Teams still free to build and experiment
-
-Visibility across all Foundry LLM usage -->
-# Evaluation is overrated 
-Let's be honest, most metrics for your RAG dont make sense and you know it. You just use it as copium to get a pat on the shoulder knowing that your RAG is still grounded.
-
-In most cases, surprisngly the best evaluation is the one you do by hand. Gather a couple of data points or scenarios, put them in an Excel file and conduct.
-
-Evaluation made sense in the era of machine learning and deep learning. One had to have a dataset so one had data. 
-
-In the era of zero-shot and few-shot learning, agents and such despite best of the class attempts in the like of "oh youve got to hvae at least N datapoints no body has a ground truth. 
-
-Your best shot is trial and error. This, in and of itself pauses a massive issue when it comes to reliabiiltya nd building trust in certain AI systems such as user facing RAG. 
-Here we get into an interesting corner. 
-
-I test in prod now fully makes sense and your worst nightmare actually becomes reality.
-
-Be it as it may, there are two moments where you'd want to evaluate. 
-
-Before pushing to /main or whatever branch you'd want to push to. 
-
-Or evaluating on-demand while developing.
-
-
-
-
-<div style="text-align: center;">
-  <img src="https://res.cloudinary.com/teepublic/image/private/s--QP-eaxfe--/t_Resized%20Artwork/c_crop,x_10,y_10/c_fit,w_470/c_crop,g_north_west,h_626,w_470,x_0,y_0/g_north_west,u_upload:v1462829015:production:blanks:mtl53ofohwq5goqjo9ke,x_-395,y_-325/b_rgb:eeeeee/c_limit,f_auto,h_630,q_auto:good:420,w_630/v1605380432/production/designs/16107796_0.jpg" alt="I ONLY TEST IN PROD t-shirt" width="400">
-  </a>
-</div>
-
-# Observability is key
-
-# It comes at a cost
-FinOps
-
-# Security first
+# On security
 A year ago I was tasked by my manager to give a presentation about security for GenAI. I learnt about it 48 hours before and didn't know anythiong about the topic. In a fake it before you make it attempt I rushed the topic day and night. The biggest skill issue wasn't GenAI seciryt (filters, ...) but turned out to be traditional security concerns. Because before 
 
 - Network: always use private endpoints, dont' go through the internet when you don't have toand things like that
@@ -306,15 +174,24 @@ Now let's address what everyone talks about but no one uses Red Teaming for AI. 
 Refer to my slides from 
 
 Talk about myu deck about Security for genai
-# Integration, integration, integration
-If by definition of enterprise ⇒ should integrate with the stack
 
-Talk somewhere about DevOps, MLOps, GenAIOps, LLMOps
+# On governance and auditability
+First off what you are you governing? Some disconnectred projects using AI models (e.g. you might just want to govern your endpoints and models at least for cost control)
+So… what is AI governance?
 
-# So what? Let's talk about the artifacts
-Landing zones (infra, AI, Agentic, ...)
 
-MLOps, LLMOps, GenAIOps
-Evaluation in CI/CD
+
+<div style="text-align: center;">
+  <img src="https://res.cloudinary.com/teepublic/image/private/s--QP-eaxfe--/t_Resized%20Artwork/c_crop,x_10,y_10/c_fit,w_470/c_crop,g_north_west,h_626,w_470,x_0,y_0/g_north_west,u_upload:v1462829015:production:blanks:mtl53ofohwq5goqjo9ke,x_-395,y_-325/b_rgb:eeeeee/c_limit,f_auto,h_630,q_auto:good:420,w_630/v1605380432/production/designs/16107796_0.jpg" alt="I ONLY TEST IN PROD t-shirt" width="400">
+  </a>
+</div>
+
+
+# On strategy
+ROI-driven deployment
+
+# Leveraging your company data
+
+# Towards a decision framework
 # Conclusion
 
