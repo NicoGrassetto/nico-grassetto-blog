@@ -2,7 +2,7 @@
 title: "Spare thoughts on enterprise AI"
 date: "2026-01-04"
 description: "TL;DR Every enterprise AI system is production-ready, but not every production-ready AI system is enterprise AI."
-draft: false
+draft: true
 ---
 
 # Introduction
@@ -162,7 +162,7 @@ A production-ready RAG system grounded on public documentation is production AI.
 
 The distinction isn’t the technique; it’s the **data provenance and the organisational trust** required to use it.
 
-# The reliability ≠ scalability trap
+# Reliability ≠ scalability
 
 This deserves its own section because it’s the most common misconception I encounter.
 
@@ -176,29 +176,6 @@ Consider: an internal low-traffic AI system used by a handful of employees needs
 
 In other words, enterprise AI should be ***ready*** for scale — but not necessarily ***built*** for it from day one. Over-engineering for scale on a system that serves 50 users is not enterprise-grade thinking; it’s waste.
 
-# Towards a decision framework
-
-If we view a company as a system with AI solutions flowing through it — from data sources ($A$) to consumption points ($B$: an internal Teams chat, a customer-facing product, a decision-support dashboard) — then the enterprise AI problem can be framed as an optimisation:
-
-**Maximise:**
-- Security posture
-- Integration breadth (number of systems the solution can interoperate with)
-- Maintainability
-- Interoperability (adherence to standards)
-- Governance coverage
-
-**While minimising:**
-- Implementation effort
-- Operational complexity
-- Time to value
-
-The practical implication: not every AI project within an enterprise *needs* to be enterprise AI. Internal tools, one-off analyses, and experimental prototypes can and should be built as production AI (or less). The enterprise AI apparatus — governance, cross-system integration, organisational strategy — should be reserved for systems that warrant it.
-
-The decision hinges on two questions:
-1. **Where does the data come from?** If it touches proprietary or sensitive company data, enterprise-grade governance applies.
-2. **Where does the output go?** If it’s customer-facing, crosses departmental boundaries, or feeds into business-critical processes, enterprise-grade reliability and integration apply.
-
-When *both* answers point to high organisational impact, you’re looking at enterprise AI. Otherwise, you might just need production AI — and that’s perfectly fine.
 
 # Conclusion
 
