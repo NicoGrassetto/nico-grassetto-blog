@@ -58,7 +58,7 @@ Noticed anything so far? ChatGPT's definition doesn't align with what hyperscale
 
 # Hypothesis
 
-> Enterprise AI is a superset of production AI.
+> The set of Enterprise AI requirements is a superset of production AI requirements. Consequently, the set of Enterprise AI systems is a subset of production AI systems.
 
 Let $E$ be the set of all Enterprise AI systems, $P$ be the set of all production-ready AI systems, $R_E$ be the set of requirements for Enterprise AI, and $R_P$ be the set of requirements for production-ready AI.
 
@@ -66,7 +66,7 @@ Let $E$ be the set of all Enterprise AI systems, $P$ be the set of all productio
 
 $$R_P \subset R_E$$
 
-**In terms of systems**, every Enterprise AI system is production-ready, but not vice versa:
+**In terms of systems**, every Enterprise AI system is production-ready, but not vice versa — stricter requirements means fewer systems qualify:
 
 $$E \subset P$$
 
@@ -74,7 +74,7 @@ Or equivalently:
 
 $$(\forall x (x \in E \rightarrow x \in P)) \land (\exists y (y \in P \land y \notin E))$$
 
-![Enterprise AI is a superset of prod-ready AI](./Untitled-2025-12-19-1440.png)
+![Enterprise AI systems are a subset of prod-ready AI systems](./Untitled-2025-12-19-1440.png)
 
 Since I love overengineering answers let us walk through the requirements for each AI system.
 
@@ -160,51 +160,18 @@ For example, an internal low-traffic AI system used by a handful of employees ne
 
 In other words, enterprise AI should be *ready* for scale — but not necessarily *built* for it from day one.
 
-# On security
-A year ago I was tasked by my manager to give a presentation about security for GenAI. I learnt about it 48 hours before and didn't know anythiong about the topic. In a fake it before you make it attempt I rushed the topic day and night. The biggest skill issue wasn't GenAI seciryt (filters, ...) but turned out to be traditional security concerns. Because before 
-
-- Network: always use private endpoints, dont' go through the internet when you don't have toand things like that
-
-- If you're using some cloud provider?: use managed identities instead of key auth
-
-- Use Auth -> Explain some more
-
-Be it as it may, AI and especially GenAI introduce new security concerns. Some of which are:
-
-- Input sanitasiation:
-
-- Output sanitasition:
-
-- Model:
-
-Now let's address what everyone talks about but no one uses Red Teaming for AI. There's a body of literatuer from academia addressing the topic. It's a thing and yes, many systems can be hacked or jaiulbroked and sometimes rather easily. One hands-on case I experienced was when I was working at Microsoft during my internshuiop. We partnered with a local podcast and built for them a production grade RAG grounded on their podcast data. 
-
-- Security at heart (auth and such) - working with big teams
-    - Check for prompt hacks and such
-
-Refer to my slides from 
-
-Talk about myu deck about Security for genai
 
 # On governance and auditability
 First off what you are you governing? Some disconnectred projects using AI models (e.g. you might just want to govern your endpoints and models at least for cost control)
 So… what is AI governance?
 
+# Continuous updates
 
-
-<div style="text-align: center;">
-  <img src="https://res.cloudinary.com/teepublic/image/private/s--QP-eaxfe--/t_Resized%20Artwork/c_crop,x_10,y_10/c_fit,w_470/c_crop,g_north_west,h_626,w_470,x_0,y_0/g_north_west,u_upload:v1462829015:production:blanks:mtl53ofohwq5goqjo9ke,x_-395,y_-325/b_rgb:eeeeee/c_limit,f_auto,h_630,q_auto:good:420,w_630/v1605380432/production/designs/16107796_0.jpg" alt="I ONLY TEST IN PROD t-shirt" width="400">
-  </a>
-</div>
-
-
-# On strategy
-ROI-driven deployment
-
-# Leveraging your company data
+# Monitoring & logging
 
 # Towards a decision framework
 
 A -Systems-> B where A is the source (data e.g.) and B where ther output is leveraged e.g. internal Teams chat, customer facing, ...
+
 # Conclusion
 
