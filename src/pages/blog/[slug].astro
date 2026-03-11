@@ -6,9 +6,11 @@ import { formatDate } from '../../utils/formatDate';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
-  // Only generate pages for non-draft posts
-  const published = blogEntries.filter((e) => !e.data.draft);
-  return published.map(entry => ({
+  // In dev mode, show all posts including drafts; in production, filter them out
+  const entries = import.meta.env.DEV 
+    ? blogEntries 
+    : blogEntries.filter((e) => !e.data.draft);
+  return entries.map(entry => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
@@ -19,8 +21,8 @@ type Props = {
 };
 
 const { entry } = Astro.props;
-// Safety guard: if somehow a draft is attempted to render, return 404
-if (entry.data.draft) {
+// Safety guard: in production, drafts should not be accessible
+if (!import.meta.env.DEV && entry.data.draft) {
   throw new Response(null, { status: 404 });
 }
 const { Content } = await entry.render();

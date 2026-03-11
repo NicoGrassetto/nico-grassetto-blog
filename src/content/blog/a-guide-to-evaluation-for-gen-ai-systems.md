@@ -320,3 +320,28 @@ If you’d like, I can also:
 * Give a **framework for evaluating GenAI in an enterprise setting**
 * Show how evaluation differs for **LLMs vs diffusion models vs agents**
 * Or provide a **step-by-step evaluation plan for a startup/product team**
+https://www.superannotate.com/blog/llm-evaluation-guide?utm_source=chatgpt.com
+
+
+https://symflower.com/en/company/blog/2024/llm-complex-scorers-evaluation-frameworks/?utm_source=chatgpt.com
+
+
+We have a system with N components. Evals should aim at evaluating all N components.
+
+Two angles: per-component evaluation, and overall system evaluation
+
+
+You start with a test set /data/test
+
+Components:
+- LLM
+- Prompt
+- Retrieval (+ RERANKING)
+- function (for function calling)
+
+...
+
+Today we'll focus on LLM + Prompt
+
+Red teaming 
+

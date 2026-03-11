@@ -1,0 +1,307 @@
+---
+title: "AGI as a multi-dimensional spectrum: towards a unified definition"
+date: "2026-03-11"
+description: "Human intelligence is multifaceted, why should artificial intelligence be any different? In this article I propose a unified, multi-dimensional framework for defining and measuring AGI as a scalar score derived from capability dimensions and domain-agnostic properties, and show why high scores cannot be achieved by chance."
+draft: false
+---
+import PlotlyChart from '../../components/PlotlyChart.astro';
+import Cite from '../../components/Cite.astro';
+import Citation from '../../components/Citation.astro';
+import References from '../../components/References.astro';
+
+Artificial General Intelligence (AGI) today tends to be defined differently by everyone. Every month there is some hyperscaler claiming
+we've reached consciousness or AGI, but the truth is, how can we define artificial general intelligence if we cannot even define intelligence in the first place?
+
+There is a body of literature in psychology and philosophy (<Cite id="spearman1904" author="Spearman, C." year="1904" parenthetical={false} />; <Cite id="thurstone1938" author="Thurstone, L. L." year="1938" parenthetical={false} />, to name but a few) that has over the years come to the conclusion that human intelligence is multifaceted. Therefore, why would artificial intelligence be any different?
+For example, I'm decent at mathematics and computer science, but I'm horrendous at chemistry.
+
+It begs the question: how to empirically evaluate it? For humans, we tend to test abilities from primary school to university over many domains.
+The domains range from general (as in most intelligent societal beings should be knowledgeable in history, science, language, etc.) to specific (as in being able to solve a math problem or write a poem).
+
+For LLMs we have benchmark datasets and more datasets published every year.
+
+Some of the most popular benchmarks include: `GLUE`, `SuperGLUE`, `MMLU`, `BIG-bench`, `GSM8K`, `HumanEval`, `MBPP`, `TruthfulQA`, `HellaSwag`
+
+These benchmarks, too, are designed to probe different dimensions of intelligence — from general language understanding to domain-specific reasoning and code generation.
+
+# Towards a better definition
+
+While plotting humans on a graph feels ethically uncomfortable, plotting AI systems across different dimensions of intelligence is a useful way to visualise their capabilities and compare them to one another.
+
+None of this is novel — we already have benchmarks. What I find lacking is a unified way to define AGI across all of these dimensions. Such a definition would give us a principled answer to the question: *how close to AGI is a given system?*
+
+Consider a `2`-dimensional graph where each axis represents a domain of intelligence (e.g. mathematics, reasoning, language, knowledge, ...). 
+
+The point at the top-right corner — scoring maximally on every axis — represents the theoretical ceiling: a system that performs optimally across all dimensions. 
+
+In $N$ dimensions the same idea holds: AGI is the vertex at $(1, 1, \dots, 1)$ in an $N$-dimensional unit hypercube.
+
+This is our hypothetical most intelligent system — the system that can solve any problem, across any domain, with the highest accuracy.
+
+Let us say we have $N$ task domains. Assigning each domain to its own axis, we end up with a graph over $N$ dimensions as displayed below.
+
+As a result, any AI system — architecture-agnostic, whether a GPT model <Cite id="radford2018" author="Radford, A., Narasimhan, K., Salimans, T. & Sutskever, I." year="2018" />, an energy-based model <Cite id="lecun2006" author="LeCun, Y., Chopra, S., Hadsell, R., Ranzato, M. & Huang, F. J." year="2006" />, or otherwise — can be empirically evaluated across these dimensions and plotted as a point in this $N$-dimensional space.
+
+<PlotlyChart
+  id="agi-3d-scatter"
+  data='[{"x":[0.82,0.35,0.88,0.51,0.73,0.28,0.96],"y":[0.61,0.72,0.44,0.83,0.55,0.91,0.94],"z":[0.53,0.87,0.62,0.34,0.79,0.41,0.98],"mode":"markers+text","type":"scatter3d","marker":{"size":[7,7,7,7,7,7,10],"color":["#636EFA","#EF553B","#00CC96","#AB63FA","#FFA15A","#19D3F3","#FF6692"],"opacity":0.9},"text":["System A (e.g. GPT-4.1)","System B (e.g. Claude 3 Haiku)","System C (e.g. Gemini 2.5 Pro)","System D (e.g. Codex)","System E (e.g. Llama 4)","System F (e.g. DeepSeek Coder)","Hypothetical AGI"],"textposition":"top center","hovertemplate":"d₁: %{x}<br>d₂: %{y}<br>d₃: %{z}<br>%{text}<extra></extra>"}]'
+  layout='{"scene":{"xaxis":{"title":"d₁ (e.g. reasoning)","range":[0,1]},"yaxis":{"title":"d₂ (e.g. code generation)","range":[0,1]},"zaxis":{"title":"d₃ (e.g. language & knowledge)","range":[0,1]},"camera":{"eye":{"x":1.5,"y":1.5,"z":1.2}}},"margin":{"l":0,"r":0,"b":0,"t":40},"title":{"text":"AI systems across capability dimensions","font":{"size":14}},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","font":{"color":"#888"}}'
+  config='{"responsive":true,"displayModeBar":true,"modeBarButtonsToRemove":["toImage","sendDataToCloud"]}'
+/>
+
+Ideally, we would want a single metric that captures how close a given system is to that top-right corner — a scalar between $0$ and $1$, where $1$ represents the hypothetical most intelligent system across all dimensions.
+
+Why not, then, define such a measure? A score of $0.0$ would denote no capability whatsoever, and $1.0$ would denote perfect artificial general intelligence.
+
+To reduce that down to 1 dimension, we can project every system onto the main diagonal of the $N$-dimensional unit hypercube — the line from the origin $(0,0,\dots,0)$ to the AGI point $(1,1,\dots,1)$. The normalised scalar projection of a system's score vector $\mathbf{d} = (d_1, d_2, \dots, d_N)$ onto this diagonal is:
+
+$$s = \frac{1}{N}\sum_{i=1}^{N} d_i$$
+
+Which is simply the arithmetic mean of its dimension scores. This satisfies our requirements: AGI at $(1,1,\dots,1)$ maps to $1.0$, the origin maps to $0.0$, and every dimension carries equal weight. Any system in between receives a score that linearly reflects its average position across the space.
+
+<PlotlyChart
+  id="agi-1d-spectrum"
+  data='[{"x":[0.653,0.647,0.647,0.560,0.690,0.533,0.960],"y":[0,0,0,0,0,0,0],"mode":"markers+text","type":"scatter","marker":{"size":[12,12,12,12,12,12,16],"color":["#636EFA","#EF553B","#00CC96","#AB63FA","#FFA15A","#19D3F3","#FF6692"],"opacity":0.9,"symbol":"diamond"},"text":["System A (e.g. GPT-4.1)","System B (e.g. Claude 3 Haiku)","System C (e.g. Gemini 2.5 Pro)","System D (e.g. Codex)","System E (e.g. Llama 4)","System F (e.g. DeepSeek Coder)","Hypothetical AGI"],"textposition":"top center","hovertemplate":"AGI score: %{x:.3f}<br>%{text}<extra></extra>"}]'
+  layout='{"xaxis":{"title":"AGI score (s)","range":[0,1],"dtick":0.1,"showgrid":true,"gridcolor":"rgba(128,128,128,0.2)","zeroline":false},"yaxis":{"visible":false,"range":[-0.5,0.5],"fixedrange":true},"margin":{"l":50,"r":30,"b":50,"t":40},"title":{"text":"AI systems projected onto the AGI spectrum","font":{"size":14}},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","font":{"color":"#888"},"height":200,"shapes":[{"type":"line","x0":0,"x1":1,"y0":0,"y1":0,"line":{"color":"rgba(128,128,128,0.3)","width":2}}]}'
+  config='{"responsive":true,"displayModeBar":true,"modeBarButtonsToRemove":["toImage","sendDataToCloud"]}'
+/>
+
+Not all facets of intelligence are tied to a single domain. Cattell's distinction between fluid and crystallised intelligence <Cite id="cattell1963" author="Cattell, R. B." year="1963" /> implies that *learning velocity* — how quickly a system acquires a new capability — is a core facet of intelligence in its own right. Likewise, *power efficiency* — the computational cost of reaching a given performance level — matters: two systems with identical accuracy are not equally intelligent if one requires orders of magnitude more energy.
+
+We do not create additional axes for these properties because they are not capability domains in themselves. Instead, we introduce $M$ domain-agnostic scalars $\lambda_1, \lambda_2, \dots, \lambda_M$, each normalised to $[0, 1]$.
+
+The question is how to fold them into the AGI score while preserving our boundary condition: $s = 1$ if and only if the system is maximally capable across every domain *and* every agnostic scalar.
+
+To do that we simply extend the score vector. Define:
+
+$$\mathbf{v} = (d_1, \dots, d_N, \lambda_1, \dots, \lambda_M)$$
+
+This vector lives in an $(N+M)$-dimensional unit hypercube. The AGI vertex is still $(1, 1, \dots, 1)$, now with $N + M$ ones. Projecting onto the main diagonal exactly as before gives:
+
+$$s = \frac{1}{N + M}\left(\sum_{i=1}^{N} d_i \;+\; \sum_{j=1}^{M} \lambda_j\right)$$
+
+All the same properties hold: $s = 1$ at the AGI vertex, $s = 0$ at the origin, and $s \in [0, 1]$ everywhere. Every component — whether a domain score or an agnostic scalar — contributes equally.
+
+If we want to keep the two groups conceptually separate, we can rewrite this equivalently as a weighted combination of their respective means:
+
+$$s = \frac{N}{N+M}\,\bar{d} \;+\; \frac{M}{N+M}\,\bar{\lambda}$$
+
+where $\bar{d} = \frac{1}{N}\sum_{i=1}^{N} d_i$ is the domain mean and $\bar{\lambda} = \frac{1}{M}\sum_{j=1}^{M} \lambda_j$ is the agnostic-scalar mean. The weights are simply the proportion of components in each group — no free parameters, no arbitrary choices.
+
+## Can you reach AGI by chance?
+
+A natural objection to any scoring framework is: *couldn't a system stumble into a high AGI score by randomly performing well on some axes?* The answer turns out to be a resounding no — and the mathematics behind this actually strengthens the case for the framework.
+
+Suppose each of the $K = N + M$ components is drawn independently from $\text{Uniform}(0, 1)$. The AGI score $s = \frac{1}{K}\sum v_i$ is then the sample mean of $K$ i.i.d. uniform random variables:
+
+- $\mathbb{E}[s] = 0.5$, always, regardless of $K$
+- $\text{SD}(s) = \frac{1}{\sqrt{12K}}$
+
+By the Central Limit Theorem, for large $K$: $s \approx \mathcal{N}\!\left(0.5,\; \frac{1}{12K}\right)$
+
+The probability of randomly achieving $s \geq t$ (some AGI threshold, say $0.9$) is:
+
+$$P(s \geq t) \approx 1 - \Phi\!\left((t - 0.5)\sqrt{12K}\right)$$
+
+For $t = 0.9$: with $K = 3$ dimensions the probability is roughly $0.82\%$; at $K = 10$ it drops to $0.0006\%$; by $K = 50$ or more it is effectively zero. The expected score is always $0.5$, and as dimensions are added the variance *shrinks*, concentrating the random score ever more tightly around that midpoint. This is the **concentration of measure** phenomenon in high-dimensional spaces.
+
+The implication is threefold. First, **AGI cannot be fluked** — systematically high performance across all axes is required; luck will not get you there. Second, **more dimensions means more robustness** — each axis added makes the definition harder to satisfy by chance, so a high score becomes increasingly meaningful. Third, **lopsided systems are penalised** — a system that excels in a few random areas but fails in others will still land near $0.5$.
+
+If we adopt an even stricter criterion — requiring *every* dimension $\geq t$ — the probability decays exponentially: $P(\min(v_i) \geq t) = (1 - t)^K$. At $t = 0.9$ and $K = 10$, that gives $0.1^{10} = 10^{-10}$.
+
+# AGI and intelligence
+
+ChatGPT:
+```
+Artificial General Intelligence (AGI) is a type of artificial intelligence that can understand, 
+learn, and apply knowledge across a wide range of tasks at a level comparable to human intelligence. 
+Unlike today’s AI systems, which are designed for specific tasks, 
+AGI would be able to generalize knowledge and adapt to new situations without needing task-specific training.
+```
+
+I believe AGI and intelligence are two closely related but distinct concepts.
+
+*General intelligence* is the spectrum of capabilities across different domains, while *AGI* is its artificial counterpart — a machine that exhibits general intelligence.
+
+*Intelligence*, by contrast, is the ability to perform well within a single domain. Colloquially, the two are often conflated, but if we are to arrive at a more pragmatic definition we need to draw a clear line between them.
+
+# AGI and consciousness
+Consciousness is often conflated with AGI, but they are not the same thing.
+
+ChatGPT:
+```text
+Consciousness is the subjective experience of awareness—the fact that you can feel, 
+perceive, think, and experience things from a first-person perspective.
+```
+
+We do not fully know what consciousness is for humans; therefore, we cannot define its artificial counterpart.
+However, intelligence is more empirically measurable, while consciousness is more philosophical and subjective.
+That is why I purposefully omitted any mention of consciousness in the discussion on AGI. 
+
+<References>
+  <Citation
+    id="spearman1904"
+    author="Spearman, C."
+    year="1904"
+    title="General Intelligence, Objectively Determined and Measured"
+    type="article"
+    journal="American Journal of Psychology"
+    volume="15"
+    issue="2"
+    pages="201–293"
+  />
+  <Citation
+    id="thurstone1938"
+    author="Thurstone, L. L."
+    year="1938"
+    title="Primary Mental Abilities"
+    type="book"
+    publisher="University of Chicago Press"
+  />
+  <Citation
+    id="radford2018"
+    author="Radford, A., Narasimhan, K., Salimans, T. & Sutskever, I."
+    year="2018"
+    title="Improving Language Understanding by Generative Pre-Training"
+    type="report"
+    publisher="OpenAI"
+    url="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+  />
+  <Citation
+    id="lecun2006"
+    author="LeCun, Y., Chopra, S., Hadsell, R., Ranzato, M. & Huang, F. J."
+    year="2006"
+    title="A Tutorial on Energy-Based Learning"
+    type="chapter"
+    editors="Bakir, G., Hofmann, T., Schölkopf, B., Smola, A. J. & Taskar, B."
+    bookTitle="Predicting Structured Data"
+    publisher="MIT Press"
+  />
+  <Citation
+    id="cattell1963"
+    author="Cattell, R. B."
+    year="1963"
+    title="Theory of Fluid and Crystallized Intelligence: A Critical Experiment"
+    type="article"
+    journal="Journal of Educational Psychology"
+    volume="54"
+    issue="1"
+    pages="1–22"
+  />
+  <Citation
+    id="estes1950"
+    author="Estes, W. K."
+    year="1950"
+    title="Toward a Statistical Theory of Learning"
+    type="article"
+    journal="Psychological Review"
+    volume="57"
+    issue="2"
+    pages="94–107"
+  />
+  <Citation
+    id="jensen1998"
+    author="Jensen, A. R."
+    year="1998"
+    title="The g Factor: The Science of Mental Ability"
+    type="book"
+    publisher="Praeger"
+  />
+  <Citation
+    id="feuerstein1979"
+    author="Feuerstein, R., Rand, Y. & Hoffman, M."
+    year="1979"
+    title="The Dynamic Assessment of Retarded Performers"
+    type="book"
+    publisher="University Park Press"
+  />
+  <Citation
+    id="grigorenko1998"
+    author="Grigorenko, E. L. & Sternberg, R. J."
+    year="1998"
+    title="Dynamic Testing"
+    type="article"
+    journal="Psychological Bulletin"
+    volume="124"
+    issue="1"
+    pages="75–111"
+  />
+  <Citation
+    id="campione1987"
+    author="Campione, J. C. & Brown, A. L."
+    year="1987"
+    title="Linking Dynamic Assessment with School Achievement"
+    type="chapter"
+    editors="Lidz, C. S."
+    bookTitle="Dynamic Assessment: An Interactional Approach to Evaluating Learning Potential"
+    publisher="Guilford Press"
+  />
+  <Citation
+    id="rescorla1972"
+    author="Rescorla, R. A. & Wagner, A. R."
+    year="1972"
+    title="A Theory of Pavlovian Conditioning: Variations in the Effectiveness of Reinforcement and Nonreinforcement"
+    type="chapter"
+    editors="Black, A. H. & Prokasy, W. F."
+    bookTitle="Classical Conditioning II: Current Research and Theory"
+    publisher="Appleton-Century-Crofts"
+  />
+  <Citation
+    id="sutton1998"
+    author="Sutton, R. S. & Barto, A. G."
+    year="1998"
+    title="Reinforcement Learning: An Introduction"
+    type="book"
+    publisher="MIT Press"
+  />
+  <Citation
+    id="niv2009"
+    author="Niv, Y."
+    year="2009"
+    title="Reinforcement Learning in the Brain"
+    type="article"
+    journal="Journal of Mathematical Psychology"
+    volume="53"
+    issue="3"
+    pages="139–154"
+  />
+  <Citation
+    id="harlow1949"
+    author="Harlow, H. F."
+    year="1949"
+    title="The Formation of Learning Sets"
+    type="article"
+    journal="Psychological Review"
+    volume="56"
+    issue="1"
+    pages="51–65"
+  />
+  <Citation
+    id="schmidhuber1987"
+    author="Schmidhuber, J."
+    year="1987"
+    title="Evolutionary Principles in Self-Referential Learning"
+    type="report"
+    publisher="Technische Universität München"
+  />
+  <Citation
+    id="finn2017"
+    author="Finn, C., Abbeel, P. & Levine, S."
+    year="2017"
+    title="Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks"
+    type="article"
+    journal="Proceedings of the 34th International Conference on Machine Learning (ICML)"
+    pages="1126–1135"
+  />
+  <Citation
+    id="legg2007"
+    author="Legg, S. & Hutter, M."
+    year="2007"
+    title="Universal Intelligence: A Definition of Machine Intelligence"
+    type="article"
+    journal="Minds and Machines"
+    volume="17"
+    issue="4"
+    pages="391–444"
+  />
+</References>

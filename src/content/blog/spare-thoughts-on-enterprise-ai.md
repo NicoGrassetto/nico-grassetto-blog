@@ -7,17 +7,17 @@ draft: true
 
 # Introduction
 
-**TL;DR** The concept of enterprise AI is, in my view, frequently overcomplicated. I have encountered numerous instances where enterprise AI is conflated with production-ready AI, with practitioners treating the two as interchangeable. Others acknowledge only a subset of the characteristics that constitute enterprise AI while overlooking equally important factors.
+**TL;DR** I've found enterprise AI to be wildly overthought by most folks in the industry. Most of the time, people also confuse it for production-ready AI.
 
-My central claim is this: **every enterprise AI system is necessarily production-ready, but not every production-ready AI system qualifies as enterprise AI.**
+My bold claim is the following: **every enterprise AI system is necessarily production-ready, but not every production-ready AI system qualifies as enterprise AI.**
 
-I will substantiate this claim through formal logic, with a touch of set theory — because I love overthinking ;)
+I will substantiate it claim through formal logic, with a touch of set theory — because I love overthinking too ;)
 
 ## So what *is* enterprise AI?
 
 A definition that is reasonably correct is that enterprise AI seeks to solve business-level problems within organisations — typically focusing on automation, decision support, process optimisation, knowledge extraction, and customer operations.
 
-I didn’t really bother crafting my own — I went on ChatGPT and asked for a definition. Since it’s trained on publicly accessible data, one could assume that its output tends to statistically represent the most commonly accepted definition.
+I didn’t really bother crafting my own and I went on ChatGPT and asked for a definition. Since it’s trained on publicly accessible data, one could assume that its output tends to statistically represent the most commonly accepted definition.
 
 As per ChatGPT’s words:
 ```
@@ -57,7 +57,7 @@ All definitions mention **organisations**. Two of them mention ***large* organis
 
 Another notable finding is that Microsoft does not appear to have an official definition of enterprise AI. Formal definitions could only be sourced from Google, Amazon, Salesforce, and IBM.
 
-Noticed anything? ChatGPT’s definition doesn’t perfectly align with what hyperscalers define as enterprise AI. The hyperscalers emphasise the *organisational context* — the sheer complexity of deploying AI within large, existing businesses — while ChatGPT’s definition reads more like a checklist of technical properties. Both perspectives are valid; they’re just looking at the same elephant from different angles.
+Noticed anything? ChatGPT’s definition doesn’t perfectly align with what hyperscalers define as enterprise AI. The hyperscalers emphasise the *organisational context* while ChatGPT’s definition reads more like a checklist of technical properties. Both perspectives are valid; they’re just looking at it from different angles.
 
 # The hypothesis
 
@@ -77,7 +77,9 @@ Or equivalently:
 
 $$(\forall x (x \in E \rightarrow x \in P)) \land (\exists y (y \in P \land y \notin E))$$
 
-![Enterprise AI systems are a subset of prod-ready AI systems](./Untitled-2025-12-19-1440.png)
+<div style="text-align: center;">
+  <img src="./Untitled-2025-12-19-1440.png" alt="Enterprise AI systems are a subset of prod-ready AI systems" style="max-width: 500px; width: 50%;" />
+</div>
 
 To prove this, we need to establish two things:
 1. What production AI requires (the baseline, $R_P$)
@@ -89,12 +91,9 @@ To prove this, we need to establish two things:
 
 As per ChatGPT’s words:
 ```
-Production AI refers to artificial intelligence systems that are fully deployed,
-live, and actively being used in real-world environments — not just prototypes,
-experiments, or research models.
+Production AI refers to artificial intelligence systems that are fully deployed, live, and actively being used in real-world environments — not just prototypes, experiments, or research models.
 
-An AI system is considered production-grade when it includes more than just a
-trained model. It also has:
+An AI system is considered production-grade when it includes more than just a trained model. It also has:
 - Reliability
 - Monitoring & Logging
 - Integration
@@ -102,11 +101,11 @@ trained model. It also has:
 - Continuous Updates
 ```
 
-This article is about enterprise AI, not production-ready AI systems, so I won’t belabour this. But we should note the overlap with the enterprise AI definition established above:
+This article is about enterprise AI, not production-ready AI systems, so I won’t expand too much on this. But we should note the overlap with the enterprise AI definition established above:
 
-- **Reliability**, **integration**, and **security & compliance** appear in both definitions.
+- `Reliability`, `integration`, and `security & compliance` appear in both definitions.
 
-What remains are **continuous updates** and **monitoring & logging**. I posit that these are not independent requirements but rather *necessary conditions* for the shared ones:
+What remains are `continuous updates` and `monitoring & logging`. I argue that these are *necessary conditions* for the shared ones:
 
 - Continuous updates are a necessary condition for reliability — a system that is never updated will eventually degrade.
 - Monitoring & logging are a necessary condition for security & compliance — you cannot audit what you do not observe.

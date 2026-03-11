@@ -1,0 +1,49 @@
+---
+export interface Props {
+  id: string;
+  data: string;
+  layout?: string;
+  config?: string;
+}
+
+const { id, data, layout = '{}', config = '{"responsive": true}' } = Astro.props;
+---
+
+<div class="plotly-chart" id={id} data-chart-data={data} data-chart-layout={layout} data-chart-config={config}></div>
+
+<script>
+  function loadPlotly(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if ((window as any).Plotly) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.plot.ly/plotly-2.35.2.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Plotly.js'));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function initCharts() {
+    await loadPlotly();
+    const charts = document.querySelectorAll<HTMLDivElement>('.plotly-chart');
+    charts.forEach((el) => {
+      const data = JSON.parse(el.dataset.chartData || '[]');
+      const layout = JSON.parse(el.dataset.chartLayout || '{}');
+      const config = JSON.parse(el.dataset.chartConfig || '{"responsive": true}');
+      (window as any).Plotly.newPlot(el.id, data, layout, config);
+    });
+  }
+
+  initCharts();
+</script>
+
+<style>
+  .plotly-chart {
+    width: 100%;
+    min-height: 500px;
+    margin: 1.5rem 0;
+  }
+</style>
