@@ -185,3 +185,16 @@ $$R_P \subset R_E \implies E \subset P$$
 The next time someone presents a production-ready AI system and calls it "enterprise AI," ask them: *Where is the governance? Where is the cross-system integration? Where is the organisational strategy?* If the answer is silence, what they have is a solid production system — which is commendable — but it’s not enterprise AI.
 
 And conversely: if you’re building enterprise AI, don’t let the weight of the label paralyse you. Start with production-grade foundations, then layer on the enterprise dimensions where they matter. Not every internal tool needs a CoE approval chain. Be *ready* for enterprise — don’t over-engineer for it from day zero.
+
+
+
+Make the post provocative though
+
+Explain that people have no clue what the fuck enterprise AI is about 
+
+Most of the work isn't technical (actually that the easy part) the hard part is orgaisational.
+
+It takes months or even years.
+
+Explain that people think the goal is automation while it is rarely feasible, augmentation is more likely. Very few 
+processes can be fully automated. You can achieve more with less or more with the same --> hard to track 

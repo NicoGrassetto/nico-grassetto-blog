@@ -1,0 +1,269 @@
+---
+export interface Props {
+  /** Width of the canvas in pixels */
+  width?: number;
+  /** Height of the canvas in pixels */
+  height?: number;
+  /** Rate at which balls spawn (ms between spawns) */
+  spawnRate?: number;
+  /** Max number of balls alive at once */
+  maxBalls?: number;
+  /** Ball radius in pixels */
+  ballRadius?: number;
+}
+
+const {
+  width = 600,
+  height = 400,
+  spawnRate = 300,
+  maxBalls = 40,
+  ballRadius = 8,
+} = Astro.props;
+---
+
+<div class="spout-animation-wrapper">
+  <canvas
+    class="spout-canvas"
+    width={width}
+    height={height}
+    data-spawn-rate={spawnRate}
+    data-max-balls={maxBalls}
+    data-ball-radius={ballRadius}
+  ></canvas>
+</div>
+
+<script>
+  interface Ball {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+    color: string;
+    phase: 'falling' | 'funneling' | 'exiting';
+  }
+
+  function initSpoutAnimation(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const spawnRate = Number(canvas.dataset.spawnRate) || 300;
+    const maxBalls = Number(canvas.dataset.maxBalls) || 40;
+    const ballRadius = Number(canvas.dataset.ballRadius) || 8;
+
+    // Funnel geometry
+    const funnelTopY = H * 0.35;
+    const funnelBottomY = H * 0.65;
+    const funnelTopHalfWidth = W * 0.35;
+    const funnelBottomHalfWidth = W * 0.04;
+    const funnelCenterX = W / 2;
+
+    // Spout (pipe below funnel)
+    const spoutTopY = funnelBottomY;
+    const spoutBottomY = H;
+    const spoutHalfWidth = funnelBottomHalfWidth + 2;
+
+    const colors = [
+      '#4fc3f7', '#81d4fa', '#29b6f6', '#03a9f4',
+      '#0288d1', '#0277bd', '#80deea', '#4dd0e1',
+    ];
+
+    const balls: Ball[] = [];
+    const gravity = 0.15;
+    const friction = 0.98;
+
+    function funnelHalfWidthAt(y: number): number {
+      if (y < funnelTopY) return funnelTopHalfWidth;
+      if (y > funnelBottomY) return funnelBottomHalfWidth;
+      const t = (y - funnelTopY) / (funnelBottomY - funnelTopY);
+      return funnelTopHalfWidth + (funnelBottomHalfWidth - funnelTopHalfWidth) * t;
+    }
+
+    function spawnBall() {
+      if (balls.length >= maxBalls) return;
+      const x = funnelCenterX + (Math.random() - 0.5) * funnelTopHalfWidth * 1.4;
+      balls.push({
+        x,
+        y: -ballRadius,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: Math.random() * 1 + 0.5,
+        radius: ballRadius * (0.8 + Math.random() * 0.4),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        phase: 'falling',
+      });
+    }
+
+    function updateBall(b: Ball) {
+      // Gravity
+      b.vy += gravity;
+
+      // Funnel walls: constrain x within funnel
+      if (b.y >= funnelTopY - b.radius && b.y <= funnelBottomY) {
+        b.phase = 'funneling';
+        const hw = funnelHalfWidthAt(b.y) - b.radius;
+        const leftWall = funnelCenterX - hw;
+        const rightWall = funnelCenterX + hw;
+
+        if (b.x < leftWall) {
+          b.x = leftWall;
+          b.vx = Math.abs(b.vx) * 0.4;
+          // Slide along the wall
+          const slopeForce = 0.08;
+          b.vx += slopeForce;
+        }
+        if (b.x > rightWall) {
+          b.x = rightWall;
+          b.vx = -Math.abs(b.vx) * 0.4;
+          const slopeForce = 0.08;
+          b.vx -= slopeForce;
+        }
+
+        // Attract towards center as balls go deeper
+        const t = (b.y - funnelTopY) / (funnelBottomY - funnelTopY);
+        b.vx += (funnelCenterX - b.x) * 0.003 * (1 + t * 3);
+        b.vx *= friction;
+      }
+
+      // In the spout
+      if (b.y > spoutTopY) {
+        b.phase = 'exiting';
+        const leftWall = funnelCenterX - spoutHalfWidth + b.radius;
+        const rightWall = funnelCenterX + spoutHalfWidth - b.radius;
+        b.x = Math.max(leftWall, Math.min(rightWall, b.x));
+        b.vx *= 0.8;
+        b.vy = Math.min(b.vy, 4);
+      }
+
+      // Simple ball-ball collision (push apart)
+      for (const other of balls) {
+        if (other === b) continue;
+        const dx = other.x - b.x;
+        const dy = other.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const minDist = b.radius + other.radius;
+        if (dist < minDist && dist > 0) {
+          const overlap = (minDist - dist) / 2;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          b.x -= nx * overlap;
+          b.y -= ny * overlap;
+          other.x += nx * overlap;
+          other.y += ny * overlap;
+          // Exchange a bit of velocity
+          b.vx -= nx * 0.3;
+          b.vy -= ny * 0.3;
+          other.vx += nx * 0.3;
+          other.vy += ny * 0.3;
+        }
+      }
+
+      b.x += b.vx;
+      b.y += b.vy;
+    }
+
+    function drawFunnel() {
+      ctx!.save();
+
+      // Funnel body (trapezoidal)
+      ctx!.beginPath();
+      ctx!.moveTo(funnelCenterX - funnelTopHalfWidth, funnelTopY);
+      ctx!.lineTo(funnelCenterX + funnelTopHalfWidth, funnelTopY);
+      ctx!.lineTo(funnelCenterX + funnelBottomHalfWidth, funnelBottomY);
+      ctx!.lineTo(funnelCenterX - funnelBottomHalfWidth, funnelBottomY);
+      ctx!.closePath();
+      ctx!.fillStyle = 'rgba(100, 100, 120, 0.12)';
+      ctx!.fill();
+      ctx!.strokeStyle = 'rgba(100, 100, 120, 0.4)';
+      ctx!.lineWidth = 2;
+      ctx!.stroke();
+
+      // Spout (pipe)
+      ctx!.beginPath();
+      ctx!.moveTo(funnelCenterX - spoutHalfWidth, spoutTopY);
+      ctx!.lineTo(funnelCenterX - spoutHalfWidth, spoutBottomY);
+      ctx!.moveTo(funnelCenterX + spoutHalfWidth, spoutTopY);
+      ctx!.lineTo(funnelCenterX + spoutHalfWidth, spoutBottomY);
+      ctx!.strokeStyle = 'rgba(100, 100, 120, 0.4)';
+      ctx!.lineWidth = 2;
+      ctx!.stroke();
+
+      ctx!.restore();
+    }
+
+    function drawBall(b: Ball) {
+      ctx!.save();
+      ctx!.beginPath();
+      ctx!.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx!.fillStyle = b.color;
+      ctx!.fill();
+      // Highlight
+      ctx!.beginPath();
+      ctx!.arc(b.x - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.35, 0, Math.PI * 2);
+      ctx!.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx!.fill();
+      ctx!.restore();
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, W, H);
+      drawFunnel();
+      for (const b of balls) {
+        drawBall(b);
+      }
+    }
+
+    function tick() {
+      for (const b of balls) {
+        updateBall(b);
+      }
+      // Remove balls that have exited below canvas
+      for (let i = balls.length - 1; i >= 0; i--) {
+        if (balls[i].y > H + balls[i].radius * 2) {
+          balls.splice(i, 1);
+        }
+      }
+      draw();
+      requestAnimationFrame(tick);
+    }
+
+    // Spawn balls at interval
+    const spawnInterval = setInterval(spawnBall, spawnRate);
+
+    // Pause when not visible
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          // Could pause here if needed
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(canvas);
+
+    tick();
+
+    // Cleanup on page navigation
+    document.addEventListener('astro:before-preparation', () => {
+      clearInterval(spawnInterval);
+      observer.disconnect();
+    }, { once: true });
+  }
+
+  // Init all spout canvases
+  document.querySelectorAll<HTMLCanvasElement>('.spout-canvas').forEach(initSpoutAnimation);
+</script>
+
+<style>
+  .spout-animation-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+  .spout-canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+</style>
