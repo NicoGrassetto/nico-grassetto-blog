@@ -6,54 +6,164 @@ draft: false
 ---
 import PlotlyChart from '../../components/PlotlyChart.astro';
 import QuotaDiagram from '../../components/QuotaDiagram.astro';
-
-Anyone who has deployed an AI application on production facing thousands of users siulatneasouly knows the frustration:  you wake up one morning and your team got the alert, 429 Too Many Requests are popping up in your logs. You are victim of your own success, the good work of your team of engineers, in shamble. Your reputation, months of work, and an issue not even related to your application design but to cloud infrastructure realisties. 
-
-This limit is caused byt token-per-minute (TPMand request per moinute(RPM). Both cloud realities that cannot be ignored.
-
-I cannot 
-but recall a quote from Epictetus: 
-> "It's not what happens to you, but how you react to it that matters."
- and 
->“It is circumstances that show what men are.”
-
-where the latter one can obviously swap men for "system" ;)
-
-In this article I want to guide you through 
-
-- Why this happens
-    - 429 is by design not by mistake. It's a biproduct of the AI demand and compute scarcity if compute infrastrucutre. Most hyperscalers (not just Microsoft - my current employer) will impose a similar mechanism to guarantte fair and steady average response for all. When the number of reqs exceeds a TPM fixed by the provider, the innevitable happens, the server throttles your request.
-    - You can find smart workaround in your API design such as gracefuly handling such scenarios, falling back on other deployments, waiting some time.. but they are all doomed to be fixes not solutiosn and it gets messy very quickly.
-    - The question then becomes not 
-- How to avoid it
-    - For B2C apps all roads lead to PTU, it's a question of if but a question of when.
-    - Toi avoid it one must request a quota increase. the Quota increase only says "hey I want to be able to use and request that many PTUs" - it does not create any Commitment
-    - It's just a wya for MMIcrosoft to at least tell you whether using that much will be possible. Once approved you know (guarantte) that you will be able to request quotaNbr amount of PTUs.
-
-- What is PTU 
-- Stands for proviusional thgroufgout units.
+import PipeFlow from '../../components/PipeFlow.astro';
+import DemandCurve from '../../components/DemandCurve.astro';
+import TollBooths from '../../components/TollBooths.astro';
+import ServedBars from '../../components/ServedBars.astro';
 
 
-- How to request it
-    1. Request for quota: show image in the portla + Links
-    2. Request for PTU.
-- When to use it, and not use it
+It's Friday afternoon, you are the team lead of an airline app. You've been working for months on a chatbot experience. It will help your passengers and customers answer questions related to things like
+delays, refunds, gates, departures, arrivals, and more. This Friday feels a bit special: you just came from a pub where you celebrated many months of hard work. The app has been approved by management and your CTO, and IT has greenlit it as well.
 
-## What is PTU?
+After a well-deserved weekend, the app goes live on Monday. The team will be eagerly monitoring traffic and usage. You arrive on Monday and the app is launched. Flights tend to peak on Monday mornings, as this is a popular window for departures,
+and you just read in the newspaper that a strike is expected to happen on Monday. Suddenly, as you watch traffic and usage metrics while eating your breakfast 🍳, you start noticing
+that the average time for an answer from the chatbot skyrockets. After diagnosis you see users keep getting 429 — Too Many Requests from the server, and this is traced back directly to
+your Microsoft Foundry deployment. You've obviously planned for such a scenario and gracefully handled it in your backend: users just get the message "Sorry, the chatbot is currently experiencing high demand. Please try again in a few minutes.", and you are monitoring the logs to see how many users are affected by this.
+Depending on the number of retries, some users simply experience a higher delay in the answer from the chatbot, while others just give up and leave the app. You are getting mixed feedback from users: some are understanding and patient, while others are frustrated and disappointed. You know that this is not a problem with your app design or implementation, but rather a limitation of the cloud infrastructure you are using.
+This just adds up to the strike and flight-delay frustration, and no later than tomorrow your app is in the news: "Airline chatbot fails to handle high demand during strike, customers left frustrated". You are now in damage-control mode, trying to explain the situation to your management and customers while also looking for a solution to avoid this happening again in the future.
 
-A **Provisioned Throughput Unit (PTU)** is a unit of model compute capacity that Microsoft reserves exclusively for your deployment. Unlike pay-as-you-go (PAYG), where your deployment shares a pool of Azure capacity with other tenants and is subject to quota-based rate limits (tokens-per-minute / requests-per-minute), PTU gives you a dedicated slice of infrastructure — no competing for capacity, no throttling.
+There was a solution that would have partially — if not mostly — solved this: Provisioned Throughput Units (PTU) on Microsoft Foundry.
 
-Think of it as the difference between riding a shared bus (PAYG) and owning a car (PTU): the bus may or may not have a seat when you need it, and it runs on its own schedule. Your own car is always there.
-
-The diagram below illustrates the real-world impact: under sustained high load, a PAYG deployment starts returning `HTTP 429` errors once the quota ceiling is hit, while a PTU deployment handles every request.
-
-<PlotlyChart
-  id="ptu-vs-payg-chart"
-  data='[{"type":"bar","orientation":"h","name":"Requests Served","x":[65,100],"y":["Pay-as-you-go (PAYG)","Provisioned (PTU)"],"marker":{"color":["#f97316","#22c55e"]},"text":["65%","100%"],"textposition":"inside","insidetextanchor":"middle"},{"type":"bar","orientation":"h","name":"Throttled — HTTP 429","x":[35,0],"y":["Pay-as-you-go (PAYG)","Provisioned (PTU)"],"marker":{"color":"#ef4444"},"text":["35% throttled",""],"textposition":"inside","insidetextanchor":"middle"}]'
-  layout='{"barmode":"stack","title":{"text":"Request Handling Under Sustained High Load: PAYG vs PTU","font":{"size":15}},"xaxis":{"title":"% of incoming requests","range":[0,100],"ticksuffix":"%","gridcolor":"rgba(128,128,128,0.15)"},"yaxis":{"automargin":true},"height":280,"margin":{"l":20,"r":30,"t":55,"b":50},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","font":{"color":"#888"},"legend":{"x":0.5,"xanchor":"center","y":-0.2,"orientation":"h"}}'
-  config='{"responsive":true,"displayModeBar":false}'
+<ServedBars
+  rows={[
+    { label: 'Pay-as-you-go (PAYG)', servedPct: 65 },
+    { label: 'Provisioned (PTU)', servedPct: 100 },
+  ]}
+  title="Request handling under sustained high load: PAYG vs PTU"
+  caption="Under load, PAYG drops 35% of requests as 429s; PTU serves them all"
 />
 
+# What is PTU?
+
+To understand PTU, you first need to understand why you get 429s in the first place. When you deploy a model on Microsoft Foundry, you can choose between two modes: **pay-as-you-go (PAYG)** or **provisioned (PTU)**. PAYG is the default and the most common: your deployment shares a pool of Azure capacity with every other tenant in the region, and Microsoft enforces quota-based rate limits — tokens-per-minute (TPM) and requests-per-minute (RPM) — to keep that shared pool fair. The moment your traffic exceeds those limits, the service starts returning `429 Too Many Requests` until the spike subsides.
+
+This isn't a Microsoft-specific quirk. Every hyperscaler (OpenAI, Anthropic, AWS Bedrock, Google Vertex, Mistral) does some version of the same thing — shared capacity has to be rationed somehow.
+
+**Provisioned Throughput Units (PTU)** are the opposite model: instead of sharing, you reserve. A PTU is a unit of model compute capacity that Azure carves out exclusively for your deployment. With a PTU deployment you're not competing with anyone else for capacity, and you're not subject to PAYG's TPM/RPM throttling — your ceiling is whatever you've provisioned.
+
+I find flow analogies particularly helpful here.
+
+Think of your deployment as a pipe between your client and the model, and each request as a drop of water flowing through it. **The number of PTUs you've provisioned is the pipe's diameter** — it determines how much traffic can flow side-by-side at any given moment. Push more water than the pipe can carry and pressure builds up at the inlet; the overflow comes back as 429s.
+
+<PipeFlow
+  height={160}
+  diameter={70}
+  fluidPx={70}
+  speed={55}
+  particles={18}
+  caption="A deployment, in cartoon form — requests flow from client to Azure through a fixed-width channel"
+/>
+
+So to handle more traffic, you make the pipe wider — i.e. you provision more PTUs. But there's a catch: how wide you're *allowed* to make it is governed by your **quota**. Quota is the maximum pipe diameter Microsoft permits you to install in a given subscription, region, and deployment type. It's a ceiling, not a bill — you don't pay for quota, you only pay for the PTUs you actually deploy against it. If you want a wider pipe than your current quota allows, you file a quota-increase request.
+
+<PipeFlow
+  height={200}
+  diameter={120}
+  fluidPx={44}
+  speed={55}
+  particles={18}
+  widthLabel="higher quota"
+  caption="Same flow, wider pipe — the fluid no longer fills the channel, so there's headroom before 429s"
+/>
+
+A wider pipe doesn't make the water flow any faster — per-request latency is unchanged — it just means more requests can fit through at the same time before anyone has to wait. Think of the difference between riding a shared bus (PAYG) and owning a car (PTU): the bus may or may not have a seat when you need it and runs on its own schedule; your own car is always there.
+
+Now let's come back to our initial story. The reality of any production app is that you have a **floor of demand** you always need to meet, and **spikes** you have to plan for on top of it. How aggressively you plan for those spikes depends on your sector.
+
+TikTok (for lack of a better example) needs to be on, always — so they almost certainly over-provision, because the business can't afford to go down. The same applies to critical infrastructure: if lives depend on your service, you plan for well beyond any realistic peak. Our airline example sits somewhere in the middle: what was at stake was customer satisfaction and, ultimately, the airline's reputation. How much of the peak you choose to cover is a strategic call, and it belongs with whoever owns the product (the PM, the engineering lead, the business owner — whoever signs off on the cost/risk tradeoff).
+
+It's almost never financially realistic to provision for every conceivable peak. A sensible baseline is to cover the **floor demand** — what you know you'll serve 24/7 — and then cover a chosen percentage of the **recurrent peaks**. In our airline case the peaks come from strikes and travel disruptions; for a commuter-rail operator they'd be the morning and evening rush hours; for TikTok the "peak" is barely a peak at all because the floor is already close to the ceiling.
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 2rem 0;">
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.28}
+    peak1Height={1.0}
+    peak2X={0.78}
+    peak2Height={0.55}
+    baseline={0.18}
+    showFloor={true}
+    caption="Airline — morning departure surge, smaller evening bump"
+  />
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.28}
+    peak1Height={0.95}
+    peak2X={0.72}
+    peak2Height={0.95}
+    baseline={0.15}
+    showFloor={true}
+    caption="Commuter rail — twin rush hours, quiet midday"
+  />
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.45}
+    peak1Height={0.9}
+    peak2X={0.82}
+    peak2Height={0.98}
+    baseline={0.78}
+    showFloor={true}
+    caption="TikTok — always-on baseline, mild evening lift"
+  />
+</div>
+
+As you see, all roads lead to Rome, some just in different ways. Let's talk about the different PTU strategies you can use to navigate this demand curve.
+
+# PTU strategies
+Ultimately, it boils down to two routes: underspending (under-provisioning) and ramping up as you go, or overspending (over-provisioning). The former is more budget-friendly but risks 429s if your traffic spikes beyond your provisioned capacity; the latter is more expensive but gives you a buffer to handle unexpected surges without dropping requests.
+
+Using the same airline-demand curve as before, here's what each strategy looks like geometrically. The orange band is the part you should care about: with under-provisioning it's traffic you'll **drop or spill onto PAYG**, and with over-provisioning it's **paid-for headroom you didn't use**.
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 2rem 0;">
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.28}
+    peak1Height={1.0}
+    peak2X={0.78}
+    peak2Height={0.55}
+    baseline={0.18}
+    showFloor={true}
+    ceiling={0.32}
+    ceilingLabel="provisioned PTU"
+    shade="overflow"
+    caption="Under-provision — ceiling barely above the floor; both peaks spill over as 429s (or PAYG fallback)"
+  />
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.28}
+    peak1Height={1.0}
+    peak2X={0.78}
+    peak2Height={0.55}
+    baseline={0.18}
+    showFloor={true}
+    ceiling={0.65}
+    ceilingLabel="provisioned PTU"
+    shade="overflow"
+    caption="Hybrid — covers the evening bump fully; only the tip of the morning surge spills over"
+  />
+  <DemandCurve
+    width={400}
+    height={260}
+    peak1X={0.28}
+    peak1Height={1.0}
+    peak2X={0.78}
+    peak2Height={0.55}
+    baseline={0.18}
+    showFloor={true}
+    ceiling={1.05}
+    ceilingLabel="provisioned PTU"
+    shade="waste"
+    caption="Over-provision — ceiling above every peak; the whole orange band is paid-for capacity left unused"
+  />
+</div>
+
+# How much PTU should you provision
+Now that you hopefuly ahve a decent understand of PTU let'sdivew into the calculations.
 ### Quota vs. PTU
 
 Before you can deploy a single PTU, you need **quota**. Quota is your total PTU allowance in a given region — set by Microsoft per subscription, per region, and per deployment type. It is a ceiling, not a bill: quota itself is free, and you only pay for the PTUs you actually deploy against it.
@@ -174,25 +284,62 @@ Scaling the deployment down does **not** reduce a reservation. To adjust the fin
 
 ## TODO PTU and reservation
 
-Right idea, but it's two different *axes* — capacity vs. price. Here's the mental model:
+The right idea, but two different *axes* — capacity vs. price. Here's the mental model:
 
 | Step | What it is | Do you pay? |
 |------|-----------|-------------|
-| **1. Quota** | *Permission.* A ceiling on how many PTUs you're allowed to deploy for a given model + region + deployment type. | Free — it's just a limit |
-| **2. PTU deployment** | *Capacity.* You actually create a provisioned deployment consuming some of that quota. This is the running throughput. | Yes — **hourly** by default |
+| **1. Quota** | *Permission.* A ceiling on how many PTUs you're allowed to deploy in a given subscription, region, and deployment type. | Free — it's just a limit |
+| **2. PTU deployment** | *Capacity.* You actually create a provisioned deployment that consumes some of that quota. This is the running throughput. | Yes — **hourly** by default |
 | **3. Reservation** | *Price.* A financial commitment (1-month or 1-year term) to pre-pay for N PTUs at a big discount vs. the hourly rate. | Yes — but much cheaper per PTU |
 
 The key thing that trips people up: **a reservation is not a technical thing — it deploys nothing and grants no capacity.** It's purely a billing discount that automatically maps onto whatever provisioned deployments you already have.
 
 So the layers are independent:
-- **Quota, no deployment** → allowed, but nothing running, pay $0
-- **Deployment, no reservation** → running, paying expensive hourly
-- **Deployment + reservation** → running, paying the cheap committed rate
-- **Reservation, no (or smaller) deployment** → you committed financially but aren't using it = wasted money ("unused reservation coverage" — exactly the scale-down trap in your post)
+
+- **Quota, no deployment** → allowed, but nothing running — pay $0.
+- **Deployment, no reservation** → running, paying the expensive hourly rate.
+- **Deployment + reservation** → running, paying the cheap committed rate.
+- **Reservation, no (or smaller) deployment** → you committed financially but aren't using it = wasted money ("unused reservation coverage" — exactly the scale-down trap above).
 
 **Analogy:**
-- Quota = the size of parking lot the city *lets* you build (permission, free)
-- PTU deployment = cars you actually park (metered hourly)
-- Reservation = a prepaid monthly parking pass — same spot, much cheaper than feeding the meter, but you pay even on days you don't park
+
+- Quota = the size of the parking lot the city *lets* you build (permission, free).
+- PTU deployment = cars you actually park (metered hourly).
+- Reservation = a prepaid monthly parking pass — same spot, much cheaper than feeding the meter, but you pay even on days you don't park.
 
 So the real flow is: **request quota → deploy PTUs (billed hourly) → optionally buy a reservation to discount those PTUs.** You never *need* a reservation to run PTU; it's just the cost-optimization layer on top.
+
+## TODO Scope of PTU quota (notes to reuse)
+
+Short answer: **PTU quota is not just "per subscription".** It's scoped along **three** dimensions simultaneously — subscription × region × deployment type — and it is shared across models, not per-model.
+
+Verbatim from Microsoft Learn:
+
+**On scope** (from [What is provisioned throughput for Foundry Models?](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput#what-is-ptu-quota)):
+
+> "PTU quota is the maximum number of PTUs you can deploy **per subscription, per region, and per deployment type**. Quota is a policy limit enforced by Azure, and it has no associated cost. Quota is scoped at the offering level (Global Provisioned, Data Zone Provisioned, and Regional Provisioned are separate quota pools) and at the region level (for example, quota in East US doesn't apply to West Europe)."
+
+**On model independence** (same page, "Provisioned throughput units"):
+
+> "**Model-independent**: The same PTU quota can be used to deploy any supported model. You don't buy PTUs for a specific model."
+
+And from the [billing page](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#how-ptu-billing-works):
+
+> "Your PTU quota is shared across all supported models in a region and deployment type. The same PTU pool can be used to deploy any supported model."
+
+### Implication for the table above
+
+The row **"1. Quota"** previously said *"for a given model + region + deployment type"* — that's **wrong**. Quota is *not* per-model. A single quota pool in `(subscription, region, deployment type)` can be spent on any supported model in that pool. The correct scoping is: `subscription + region + deployment type`.
+
+### Don't confuse PTU quota with Azure Reservations
+
+These are different axes:
+
+| Concept | Scope | Per what? |
+|---|---|---|
+| **PTU quota** | Per subscription **×** per region **×** per deployment type. Model-independent. | A *permission ceiling*. |
+| **Azure Reservation** | Flexible — resource group, subscription, group of subscriptions in a management group, or whole billing account. Per deployment type. Global reservations are not region-bound. | A *financial discount*. |
+
+Verbatim on reservation scope (from the [billing page](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#key-reservation-facts)):
+
+> "**Flexibly scoped** — A reservation can be scoped to cover an individual resource group or subscription, a group of subscriptions in a management group, or all subscriptions in a billing account."

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <title>pipe-flow / preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="dark"] {
+      --bg-primary: #000000;
+      --text-primary: #ffffff;
+      --text-muted: #888888;
+      --accent-hover: #ff6b00;
+      --border-primary: #222222;
+    }
+    :root[data-theme="light"] {
+      --bg-primary: #ffffff;
+      --text-primary: #000000;
+      --text-muted: #666666;
+      --accent-hover: #ff6b00;
+      --border-primary: #e0e0e0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 1px,
+        rgba(255, 255, 255, 0.03) 1px, rgba(255, 255, 255, 0.03) 2px
+      );
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main { max-width: 820px; margin: 0 auto; padding: 3rem 1.25rem 6rem; }
+
+    header.preview-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+    h1 { font-size: 1.1rem; font-weight: 500; letter-spacing: 0.02em; }
+    h1::before { content: '// '; color: var(--text-muted); }
+    h2 {
+      font-size: 0.85rem; font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin: 2.5rem 0 0.5rem;
+    }
+    h2::before { content: '— '; color: var(--text-muted); }
+
+    .toggle {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-primary);
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      text-transform: lowercase;
+      letter-spacing: 0.04em;
+    }
+    .toggle:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .pipe-flow {
+      margin: 1rem 0;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border-primary);
+      border-bottom: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .pipe-flow-svg {
+      --pf-pipe: var(--text-muted);
+      --pf-fluid: var(--text-primary);
+      max-width: 100%; height: auto; display: block;
+    }
+    .pipe-flow-caption {
+      font-size: 0.8rem; color: var(--text-muted);
+      text-align: center; letter-spacing: 0.02em; text-transform: lowercase;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="preview-header">
+      <h1>pipe-flow / d3.js</h1>
+      <button class="toggle" id="theme-toggle">toggle theme</button>
+    </header>
+
+    <h2>slow trickle</h2>
+    <figure class="pipe-flow">
+      <svg class="pipe-flow-svg" width="720" height="120" viewBox="0 0 720 120"
+           data-speed="45" data-particles="14"
+           data-diameter="44" data-wall-px="1" data-fluid-px="44"></svg>
+      <figcaption class="pipe-flow-caption">speed 45 — 14 particles</figcaption>
+    </figure>
+
+    <h2>same flow, bigger pipe</h2>
+    <figure class="pipe-flow">
+      <svg class="pipe-flow-svg" width="720" height="200" viewBox="0 0 720 200"
+           data-speed="45" data-particles="14"
+           data-diameter="120" data-wall-px="1" data-fluid-px="44"
+           data-width-label="higher quota"></svg>
+      <figcaption class="pipe-flow-caption">same speed · same particles · same fluid stream — only the pipe is wider</figcaption>
+    </figure>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+    function readThemeColors(svgEl) {
+      const cs = getComputedStyle(svgEl);
+      return {
+        pipeStroke: cs.getPropertyValue('--pf-pipe').trim() || '#888',
+        fluid: cs.getPropertyValue('--pf-fluid').trim() || '#fff',
+      };
+    }
+
+    function initPipeFlow(svgEl) {
+      const d3 = window.d3;
+      const W = svgEl.viewBox.baseVal.width;
+      const H = svgEl.viewBox.baseVal.height;
+      const speed = Number(svgEl.dataset.speed || 110);
+      const particleCount = Number(svgEl.dataset.particles || 24);
+      const diameter = Number(svgEl.dataset.diameter || 60);
+      const wallPx = Number(svgEl.dataset.wallPx || 1);
+      const fluidOverride = svgEl.dataset.fluidPx ? Number(svgEl.dataset.fluidPx) : null;
+      const widthLabel = svgEl.dataset.widthLabel || '';
+      const hasLabel = widthLabel.length > 0;
+
+      const fluidPx = fluidOverride !== null
+        ? Math.min(fluidOverride, diameter)
+        : diameter;
+
+      const midY = H / 2;
+      const margin = 24;
+      const labelOffset = hasLabel ? (diameter / 2 + 42) : 0;
+      const leftLabelReserve = 72;
+      const rightLabelReserve = 140;
+      const x1 = margin + labelOffset + leftLabelReserve;
+      const x2 = W - margin - rightLabelReserve;
+      const topY = midY - diameter / 2;
+      const botY = midY + diameter / 2;
+
+      const uid = 'pf-' + Math.random().toString(36).slice(2, 9);
+      const svg = d3.select(svgEl);
+      svg.selectAll('*').remove();
+      const colors = readThemeColors(svgEl);
+      const defs = svg.append('defs');
+
+      const fluidGrad = defs.append('linearGradient')
+        .attr('id', uid + '-fluid-grad')
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', x1).attr('y1', 0)
+        .attr('x2', x1 + 60).attr('y2', 0)
+        .attr('spreadMethod', 'repeat');
+      fluidGrad.append('stop').attr('offset', '0%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.04);
+      fluidGrad.append('stop').attr('offset', '50%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.22);
+      fluidGrad.append('stop').attr('offset', '100%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.04);
+
+      defs.append('clipPath').attr('id', uid + '-clip')
+        .append('rect')
+        .attr('x', x1).attr('y', midY - fluidPx / 2)
+        .attr('width', x2 - x1).attr('height', fluidPx);
+
+      // Fluid stream
+      svg.append('rect')
+        .attr('x', x1).attr('y', midY - fluidPx / 2)
+        .attr('width', x2 - x1).attr('height', fluidPx)
+        .attr('fill', 'url(#' + uid + '-fluid-grad)')
+        .attr('class', 'pf-fluid');
+
+      // Pipe walls: two thin straight lines
+      svg.append('line')
+        .attr('x1', x1 - wallPx / 2).attr('y1', topY)
+        .attr('x2', x2 + wallPx / 2).attr('y2', topY)
+        .attr('stroke', colors.pipeStroke)
+        .attr('stroke-width', wallPx)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'pf-pipe-stroke');
+
+      svg.append('line')
+        .attr('x1', x1 - wallPx / 2).attr('y1', botY)
+        .attr('x2', x2 + wallPx / 2).attr('y2', botY)
+        .attr('stroke', colors.pipeStroke)
+        .attr('stroke-width', wallPx)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'pf-pipe-stroke');
+
+      // End labels: client (left) — server (Azure) (right).
+      const endLabelGap = 8;
+      const clientX = margin + leftLabelReserve - endLabelGap;
+      svg.append('text')
+        .attr('x', clientX)
+        .attr('y', midY)
+        .attr('text-anchor', 'end')
+        .attr('dominant-baseline', 'central')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 14)
+        .attr('letter-spacing', '0.06em')
+        .attr('fill', colors.pipeStroke)
+        .attr('class', 'pf-end-label')
+        .text('client');
+
+      svg.append('text')
+        .attr('x', x2 + endLabelGap)
+        .attr('y', midY)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'central')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 14)
+        .attr('letter-spacing', '0.06em')
+        .attr('fill', colors.pipeStroke)
+        .attr('class', 'pf-end-label')
+        .text('server (Azure)');
+
+      // Particles inside the fluid stream
+      const bubblesG = svg.append('g').attr('clip-path', 'url(#' + uid + '-clip)');
+      const halfChannel = fluidPx / 2 - 4;
+      const channelLen = x2 - x1;
+
+      const bubbles = d3.range(particleCount).map(() => ({
+        x: x1 + Math.random() * channelLen,
+        y: midY + (Math.random() - 0.5) * 2 * halfChannel,
+        alpha: 0.45 + Math.random() * 0.45,
+        vJitter: (Math.random() - 0.5) * 0.6,
+      }));
+
+      const bubbleSel = bubblesG.selectAll('text')
+        .data(bubbles)
+        .join('text')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 9)
+        .attr('letter-spacing', '0.02em')
+        .attr('fill', colors.fluid)
+        .attr('opacity', d => d.alpha)
+        .text('req');
+
+      // Caliper annotation
+      if (hasLabel) {
+        const calX = x1 - 24;
+
+        const marker = defs.append('marker')
+          .attr('id', uid + '-arrow')
+          .attr('viewBox', '0 0 10 10')
+          .attr('refX', 9).attr('refY', 5)
+          .attr('markerWidth', 5).attr('markerHeight', 5)
+          .attr('orient', 'auto-start-reverse');
+        marker.append('path')
+          .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+          .attr('fill', colors.pipeStroke)
+          .attr('class', 'pf-cal-fill');
+
+        svg.append('line')
+          .attr('x1', x1 - 4).attr('y1', topY)
+          .attr('x2', calX - 4).attr('y2', topY)
+          .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+          .attr('shape-rendering', 'crispEdges')
+          .attr('class', 'pf-cal-stroke');
+        svg.append('line')
+          .attr('x1', x1 - 4).attr('y1', botY)
+          .attr('x2', calX - 4).attr('y2', botY)
+          .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+          .attr('shape-rendering', 'crispEdges')
+          .attr('class', 'pf-cal-stroke');
+
+        const arrowGap = 10;
+        svg.append('line')
+          .attr('x1', calX).attr('y1', topY + arrowGap)
+          .attr('x2', calX).attr('y2', botY - arrowGap)
+          .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+          .attr('marker-start', 'url(#' + uid + '-arrow)')
+          .attr('marker-end', 'url(#' + uid + '-arrow)')
+          .attr('class', 'pf-cal-stroke');
+
+        const midDimY = (topY + botY) / 2;
+        svg.append('text')
+          .attr('x', calX - 10)
+          .attr('y', midDimY)
+          .attr('transform', `rotate(-90, ${calX - 10}, ${midDimY})`)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', colors.pipeStroke)
+          .attr('font-family', 'JetBrains Mono, monospace')
+          .attr('font-size', 11)
+          .attr('letter-spacing', '0.08em')
+          .attr('class', 'pf-cal-text')
+          .text(widthLabel);
+      }
+
+      let last = performance.now();
+      let gradOffset = 0;
+
+      function frame(now) {
+        const dt = (now - last) / 1000;
+        last = now;
+        const dx = speed * dt;
+
+        gradOffset = (gradOffset + dx) % 60;
+        fluidGrad
+          .attr('x1', x1 + gradOffset)
+          .attr('x2', x1 + gradOffset + 60);
+
+        bubbleSel.each(function (d) {
+          d.x += dx;
+          d.y += d.vJitter * dt * 6;
+          if (d.x > x2 + 12) {
+            d.x = x1 - 12;
+            d.y = midY + (Math.random() - 0.5) * 2 * halfChannel;
+            d.vJitter = (Math.random() - 0.5) * 0.6;
+          }
+          if (d.y > midY + halfChannel) d.y = midY + halfChannel;
+          if (d.y < midY - halfChannel) d.y = midY - halfChannel;
+          this.setAttribute('x', String(d.x));
+          this.setAttribute('y', String(d.y));
+        });
+
+        rafId = requestAnimationFrame(frame);
+      }
+
+      let rafId = requestAnimationFrame(frame);
+
+      const themeObserver = new MutationObserver(() => {
+        const c = readThemeColors(svgEl);
+        svg.selectAll('.pf-pipe-stroke').attr('stroke', c.pipeStroke);
+        bubbleSel.attr('fill', c.fluid);
+        fluidGrad.selectAll('stop').attr('stop-color', c.fluid);
+        svg.selectAll('.pf-cal-stroke').attr('stroke', c.pipeStroke);
+        svg.selectAll('.pf-cal-text').attr('fill', c.pipeStroke);
+        svg.selectAll('.pf-cal-fill').attr('fill', c.pipeStroke);
+        svg.selectAll('.pf-end-label').attr('fill', c.pipeStroke);
+      });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+
+    document.querySelectorAll('svg.pipe-flow-svg').forEach(initPipeFlow);
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+---
+export interface Props {
+  /** SVG width in pixels */
+  width?: number;
+  /** SVG height in pixels */
+  height?: number;
+  /** Label on the X axis */
+  xLabel?: string;
+  /** Label on the Y axis */
+  yLabel?: string;
+  /** Position of the first (big) peak, 0..1 of the x range */
+  peak1X?: number;
+  /** Height of the first peak, 0..1 of the y range */
+  peak1Height?: number;
+  /** Position of the second (smaller) peak, 0..1 of the x range */
+  peak2X?: number;
+  /** Height of the second peak, 0..1 of the y range */
+  peak2Height?: number;
+  /** Baseline level between the peaks, 0..1 of the y range */
+  baseline?: number;
+  /** Number of samples used to draw the curve */
+  samples?: number;
+  /** If true, draw a dotted horizontal line at y=baseline labelled as the floor PTU coverage */
+  showFloor?: boolean;
+  /** Label for the dotted floor line */
+  floorLabel?: string;
+  /** Optional dashed line representing the provisioned PTU ceiling, 0..1 of y range */
+  ceiling?: number;
+  /** Label for the ceiling line */
+  ceilingLabel?: string;
+  /** Shade region between curve and ceiling. 'overflow' shades demand above ceiling (dropped/PAYG spillover); 'waste' shades ceiling above demand (paid-for headroom unused); 'none' draws nothing. */
+  shade?: 'overflow' | 'waste' | 'none';
+  /** Unique id (allow multiple instances per page) */
+  id?: string;
+  /** Optional caption shown under the figure */
+  caption?: string;
+}
+
+const {
+  width = 720,
+  height = 280,
+  xLabel = 'time',
+  yLabel = 'demand',
+  peak1X = 0.15,
+  peak1Height = 1.0,
+  peak2X = 0.82,
+  peak2Height = 0.55,
+  baseline = 0.2,
+  samples = 240,
+  showFloor = false,
+  floorLabel = 'floor PTU',
+  ceiling,
+  ceilingLabel = 'PTU ceiling',
+  shade = 'none',
+  id = `demand-curve-${Math.random().toString(36).slice(2, 9)}`,
+  caption,
+} = Astro.props;
+---
+
+<figure class="demand-curve">
+  <svg
+    id={id}
+    class="demand-curve-svg"
+    width={width}
+    height={height}
+    viewBox={`0 0 ${width} ${height}`}
+    data-peak1-x={peak1X}
+    data-peak1-h={peak1Height}
+    data-peak2-x={peak2X}
+    data-peak2-h={peak2Height}
+    data-baseline={baseline}
+    data-samples={samples}
+    data-show-floor={showFloor ? 'true' : 'false'}
+    data-floor-label={floorLabel}
+    data-ceiling={ceiling ?? ''}
+    data-ceiling-label={ceilingLabel}
+    data-shade={shade}
+    data-x-label={xLabel}
+    data-y-label={yLabel}
+    aria-label="Line chart showing demand over time with two peaks"
+    role="img"
+  ></svg>
+  {caption && <figcaption class="demand-curve-caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  async function loadD3(): Promise<any> {
+    if ((window as any).d3) return (window as any).d3;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js';
+      s.onload = () => resolve((window as any).d3);
+      s.onerror = () => reject(new Error('Failed to load D3.js'));
+      document.head.appendChild(s);
+    });
+  }
+
+  function readThemeColors(svgEl: SVGSVGElement) {
+    const cs = getComputedStyle(svgEl);
+    return {
+      axis: cs.getPropertyValue('--dc-axis').trim() || '#888888',
+      line: cs.getPropertyValue('--dc-line').trim() || '#ffffff',
+      fill: cs.getPropertyValue('--dc-fill').trim() || '#ffffff',
+      warn: cs.getPropertyValue('--dc-warn').trim() || '#e0853a',
+    };
+  }
+
+  // Smooth bump centred on mu, narrow sigma → tall narrow peak.
+  function gaussian(x: number, mu: number, sigma: number) {
+    const z = (x - mu) / sigma;
+    return Math.exp(-0.5 * z * z);
+  }
+
+  // Smoothstep used to taper the baseline to 0 at the very edges so the
+  // curve starts and ends on the x axis.
+  function smoothstep(edge0: number, edge1: number, x: number) {
+    const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3 - 2 * t);
+  }
+
+  async function initDemandCurve(svgEl: SVGSVGElement) {
+    const d3 = await loadD3();
+
+    const W = svgEl.viewBox.baseVal.width;
+    const H = svgEl.viewBox.baseVal.height;
+
+    const peak1X = Number(svgEl.dataset.peak1X || 0.15);
+    const peak1H = Number(svgEl.dataset.peak1H || 1.0);
+    const peak2X = Number(svgEl.dataset.peak2X || 0.82);
+    const peak2H = Number(svgEl.dataset.peak2H || 0.55);
+    const baseline = Number(svgEl.dataset.baseline || 0.2);
+    const samples = Number(svgEl.dataset.samples || 240);
+    const showFloor = svgEl.dataset.showFloor === 'true';
+    const floorLabel = svgEl.dataset.floorLabel || 'floor PTU';
+    const ceilingRaw = svgEl.dataset.ceiling;
+    const hasCeiling = ceilingRaw !== undefined && ceilingRaw !== '';
+    const ceiling = hasCeiling ? Number(ceilingRaw) : NaN;
+    const ceilingLabel = svgEl.dataset.ceilingLabel || 'PTU ceiling';
+    const shade = (svgEl.dataset.shade as 'overflow' | 'waste' | 'none') || 'none';
+    const xLabel = svgEl.dataset.xLabel || 'time';
+    const yLabel = svgEl.dataset.yLabel || 'demand';
+
+    // Plot area margins — leave room for axis labels.
+    const margin = { top: 18, right: 22, bottom: 42, left: 52 };
+    const innerW = W - margin.left - margin.right;
+    const innerH = H - margin.top - margin.bottom;
+
+    const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerW]);
+    const yScale = d3.scaleLinear().domain([0, 1.05]).range([innerH, 0]);
+
+    // Two gaussian peaks sitting on a tapered baseline. Sigmas tuned so the
+    // first peak reads as visibly taller and slightly broader than the second.
+    const sigma1 = 0.055;
+    const sigma2 = 0.05;
+    const data = d3.range(samples + 1).map((i: number) => {
+      const x = i / samples;
+      const g1 = peak1H * gaussian(x, peak1X, sigma1);
+      const g2 = peak2H * gaussian(x, peak2X, sigma2);
+      const baseMask = smoothstep(0.0, 0.08, x) * (1 - smoothstep(0.92, 1.0, x));
+      const base = baseline * baseMask;
+      return { x, y: Math.max(base, g1, g2) };
+    });
+
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+
+    const colors = readThemeColors(svgEl);
+
+    const root = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Gradient fill under the curve.
+    const defs = svg.append('defs');
+    const grad = defs.append('linearGradient')
+      .attr('id', `${svgEl.id}-fill`)
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', 0).attr('y1', 0)
+      .attr('x2', 0).attr('y2', innerH);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', colors.fill).attr('stop-opacity', 0.22);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', colors.fill).attr('stop-opacity', 0.0);
+
+    // Axes — minimal, monochrome, no tick numbers (matches the rest of the blog).
+    const axisStroke = colors.axis;
+
+    // X axis line
+    root.append('line')
+      .attr('x1', 0).attr('y1', innerH)
+      .attr('x2', innerW).attr('y2', innerH)
+      .attr('stroke', axisStroke)
+      .attr('stroke-width', 1)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'dc-axis-stroke');
+
+    // Y axis line
+    root.append('line')
+      .attr('x1', 0).attr('y1', 0)
+      .attr('x2', 0).attr('y2', innerH)
+      .attr('stroke', axisStroke)
+      .attr('stroke-width', 1)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'dc-axis-stroke');
+
+    // Arrow head for axes
+    const marker = defs.append('marker')
+      .attr('id', `${svgEl.id}-arrow`)
+      .attr('viewBox', '0 0 10 10')
+      .attr('refX', 9).attr('refY', 5)
+      .attr('markerWidth', 5).attr('markerHeight', 5)
+      .attr('orient', 'auto-start-reverse');
+    marker.append('path')
+      .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+      .attr('fill', axisStroke)
+      .attr('class', 'dc-axis-fill');
+
+    // Arrowed extensions
+    root.append('line')
+      .attr('x1', innerW).attr('y1', innerH)
+      .attr('x2', innerW + 8).attr('y2', innerH)
+      .attr('stroke', axisStroke)
+      .attr('stroke-width', 1)
+      .attr('marker-end', `url(#${svgEl.id}-arrow)`)
+      .attr('class', 'dc-axis-stroke');
+
+    root.append('line')
+      .attr('x1', 0).attr('y1', 0)
+      .attr('x2', 0).attr('y2', -8)
+      .attr('stroke', axisStroke)
+      .attr('stroke-width', 1)
+      .attr('marker-end', `url(#${svgEl.id}-arrow)`)
+      .attr('class', 'dc-axis-stroke');
+
+    // Axis labels
+    root.append('text')
+      .attr('x', innerW)
+      .attr('y', innerH + 28)
+      .attr('text-anchor', 'end')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 12)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', axisStroke)
+      .attr('class', 'dc-axis-label')
+      .text(xLabel);
+
+    root.append('text')
+      .attr('transform', `translate(-32, 0) rotate(-90)`)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('text-anchor', 'end')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 12)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', axisStroke)
+      .attr('class', 'dc-axis-label')
+      .text(yLabel);
+
+    // Area + line generators
+    type Pt = { x: number; y: number };
+    const area = d3.area()
+      .x((d: Pt) => xScale(d.x))
+      .y0(innerH)
+      .y1((d: Pt) => yScale(d.y))
+      .curve(d3.curveBasis);
+
+    const line = d3.line()
+      .x((d: Pt) => xScale(d.x))
+      .y((d: Pt) => yScale(d.y))
+      .curve(d3.curveBasis);
+
+    root.append('path')
+      .datum(data)
+      .attr('d', area as any)
+      .attr('fill', `url(#${svgEl.id}-fill)`)
+      .attr('class', 'dc-area');
+
+    const linePath = root.append('path')
+      .datum(data)
+      .attr('d', line as any)
+      .attr('fill', 'none')
+      .attr('stroke', colors.line)
+      .attr('stroke-width', 1.75)
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+      .attr('class', 'dc-line');
+
+    // Subtle "draw on" animation when first painted.
+    const totalLen = (linePath.node() as SVGPathElement).getTotalLength();
+    linePath
+      .attr('stroke-dasharray', `${totalLen} ${totalLen}`)
+      .attr('stroke-dashoffset', totalLen)
+      .transition()
+      .duration(1200)
+      .ease(d3.easeCubicInOut)
+      .attr('stroke-dashoffset', 0);
+
+    // Optional shaded region between curve and ceiling — inserted before the
+    // line so the curve stroke stays on top.
+    if (hasCeiling && shade !== 'none') {
+      const shadeArea = d3.area()
+        .x((d: Pt) => xScale(d.x))
+        .y0(yScale(ceiling))
+        .y1((d: Pt) =>
+          shade === 'overflow'
+            ? yScale(Math.max(d.y, ceiling))
+            : yScale(Math.min(d.y, ceiling))
+        )
+        .curve(d3.curveBasis);
+
+      root.insert('path', '.dc-line')
+        .datum(data)
+        .attr('d', shadeArea as any)
+        .attr('fill', colors.warn)
+        .attr('fill-opacity', 0.22)
+        .attr('class', 'dc-shade-fill');
+    }
+
+    // Optional dotted floor line at y=baseline.
+    if (showFloor) {
+      const floorY = yScale(baseline);
+      root.append('line')
+        .attr('x1', 0)
+        .attr('y1', floorY)
+        .attr('x2', innerW)
+        .attr('y2', floorY)
+        .attr('stroke', colors.warn)
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '3 3')
+        .attr('class', 'dc-floor-stroke');
+
+      root.append('text')
+        .attr('x', innerW - 4)
+        .attr('y', floorY - 5)
+        .attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 10)
+        .attr('letter-spacing', '0.08em')
+        .attr('fill', colors.warn)
+        .attr('class', 'dc-floor-label')
+        .text(floorLabel);
+    }
+
+    // Optional dashed ceiling line at y=ceiling.
+    if (hasCeiling) {
+      const ceilingY = yScale(ceiling);
+      root.append('line')
+        .attr('x1', 0)
+        .attr('y1', ceilingY)
+        .attr('x2', innerW)
+        .attr('y2', ceilingY)
+        .attr('stroke', colors.warn)
+        .attr('stroke-width', 1.25)
+        .attr('stroke-dasharray', '6 3')
+        .attr('class', 'dc-ceiling-stroke');
+
+      root.append('text')
+        .attr('x', 4)
+        .attr('y', ceilingY - 5)
+        .attr('text-anchor', 'start')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 10)
+        .attr('letter-spacing', '0.08em')
+        .attr('fill', colors.warn)
+        .attr('class', 'dc-ceiling-label')
+        .text(ceilingLabel);
+    }
+
+    // Re-pick colors on theme toggle.
+    const themeObserver = new MutationObserver(() => {
+      const c = readThemeColors(svgEl);
+      svg.selectAll('.dc-axis-stroke').attr('stroke', c.axis);
+      svg.selectAll('.dc-axis-fill').attr('fill', c.axis);
+      svg.selectAll('.dc-axis-label').attr('fill', c.axis);
+      svg.selectAll('.dc-line').attr('stroke', c.line);
+      svg.selectAll('.dc-floor-stroke').attr('stroke', c.warn);
+      svg.selectAll('.dc-floor-label').attr('fill', c.warn);
+      svg.selectAll('.dc-ceiling-stroke').attr('stroke', c.warn);
+      svg.selectAll('.dc-ceiling-label').attr('fill', c.warn);
+      svg.selectAll('.dc-shade-fill').attr('fill', c.warn);
+      grad.selectAll('stop').attr('stop-color', c.fill);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  function initAll() {
+    document.querySelectorAll<SVGSVGElement>('svg.demand-curve-svg').forEach((el) => {
+      initDemandCurve(el).catch((err) => console.error('DemandCurve init failed', err));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+</script>
+
+<style>
+  .demand-curve {
+    margin: 2rem 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-primary, #222);
+    border-bottom: 1px solid var(--border-primary, #222);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .demand-curve-svg {
+    --dc-axis: var(--text-muted, #888);
+    --dc-line: var(--text-primary, #fff);
+    --dc-fill: var(--text-primary, #fff);
+    --dc-warn: #e0853a;
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .demand-curve-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+</style>

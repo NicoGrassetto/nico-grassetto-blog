@@ -1,0 +1,381 @@
+---
+export interface Props {
+  /** Width of the SVG in pixels */
+  width?: number;
+  /** Height of the SVG in pixels */
+  height?: number;
+  /** Inner pipe diameter in pixels (the channel the fluid flows through) */
+  diameter?: number;
+  /** Pipe wall thickness in pixels */
+  wallPx?: number;
+  /** Flow speed (px/sec). Higher = faster fluid. */
+  speed?: number;
+  /** Number of particles flowing inside the pipe */
+  particles?: number;
+  /**
+   * Override the visible fluid stream thickness (px). Useful for keeping the
+   * "amount of flow" visually consistent across pipes of different diameters.
+   * Defaults to `diameter` (fills the channel).
+   */
+  fluidPx?: number;
+  /**
+   * If set, draws a caliper + label across the pipe's vertical diameter
+   * (e.g. "higher quota").
+   */
+  widthLabel?: string;
+  /** Unique id (allow multiple instances per page) */
+  id?: string;
+  /** Optional caption shown under the figure */
+  caption?: string;
+}
+
+const {
+  width = 720,
+  height = 220,
+  diameter = 60,
+  wallPx = 1,
+  speed = 110,
+  particles = 24,
+  fluidPx,
+  widthLabel,
+  id = `pipe-flow-${Math.random().toString(36).slice(2, 9)}`,
+  caption,
+} = Astro.props;
+---
+
+<figure class="pipe-flow">
+  <svg
+    id={id}
+    class="pipe-flow-svg"
+    width={width}
+    height={height}
+    viewBox={`0 0 ${width} ${height}`}
+    data-speed={speed}
+    data-particles={particles}
+    data-diameter={diameter}
+    data-wall-px={wallPx}
+    data-fluid-px={fluidPx ?? ''}
+    data-width-label={widthLabel ?? ''}
+    aria-label="Animated diagram of a pipe with fluid flowing through it"
+    role="img"
+  ></svg>
+  {caption && <figcaption class="pipe-flow-caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  async function loadD3(): Promise<any> {
+    if ((window as any).d3) return (window as any).d3;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js';
+      s.onload = () => resolve((window as any).d3);
+      s.onerror = () => reject(new Error('Failed to load D3.js'));
+      document.head.appendChild(s);
+    });
+  }
+
+  function readThemeColors(svgEl: SVGSVGElement) {
+    const cs = getComputedStyle(svgEl);
+    return {
+      pipeStroke: cs.getPropertyValue('--pf-pipe').trim() || '#888888',
+      fluid: cs.getPropertyValue('--pf-fluid').trim() || '#ffffff',
+    };
+  }
+
+  async function initPipeFlow(svgEl: SVGSVGElement) {
+    const d3 = await loadD3();
+
+    const W = svgEl.viewBox.baseVal.width;
+    const H = svgEl.viewBox.baseVal.height;
+    const speed = Number(svgEl.dataset.speed || 110);
+    const particleCount = Number(svgEl.dataset.particles || 24);
+    const diameter = Number(svgEl.dataset.diameter || 60);
+    const wallPx = Number(svgEl.dataset.wallPx || 1);
+    const fluidOverride = svgEl.dataset.fluidPx ? Number(svgEl.dataset.fluidPx) : null;
+    const widthLabel = svgEl.dataset.widthLabel || '';
+    const hasLabel = widthLabel.length > 0;
+
+    const fluidPx = fluidOverride !== null
+      ? Math.min(fluidOverride, diameter)
+      : diameter;
+
+    const midY = H / 2;
+    const margin = 24;
+    // Reserve horizontal room for the caliper annotation if present,
+    // and for the "client" / "server (Azure)" end labels.
+    const labelOffset = hasLabel ? (diameter / 2 + 42) : 0;
+    const leftLabelReserve = 72;   // room for "client"
+    const rightLabelReserve = 140; // room for "server (Azure)"
+    const x1 = margin + labelOffset + leftLabelReserve;
+    const x2 = W - margin - rightLabelReserve;
+    const topY = midY - diameter / 2;
+    const botY = midY + diameter / 2;
+
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+
+    const colors = readThemeColors(svgEl);
+    const defs = svg.append('defs');
+
+    // Gradient for the fluid: subtle moving light along the flow direction.
+    const fluidGrad = defs.append('linearGradient')
+      .attr('id', `${svgEl.id}-fluid-grad`)
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', x1).attr('y1', 0)
+      .attr('x2', x1 + 60).attr('y2', 0)
+      .attr('spreadMethod', 'repeat');
+    fluidGrad.append('stop').attr('offset', '0%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.04);
+    fluidGrad.append('stop').attr('offset', '50%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.22);
+    fluidGrad.append('stop').attr('offset', '100%').attr('stop-color', colors.fluid).attr('stop-opacity', 0.04);
+
+    // Clip particles to the fluid stream.
+    defs.append('clipPath')
+      .attr('id', `${svgEl.id}-clip`)
+      .append('rect')
+      .attr('x', x1).attr('y', midY - fluidPx / 2)
+      .attr('width', x2 - x1).attr('height', fluidPx);
+
+    // 1. Fluid stream — translucent, no orange. Light wash that animates.
+    svg.append('rect')
+      .attr('x', x1).attr('y', midY - fluidPx / 2)
+      .attr('width', x2 - x1).attr('height', fluidPx)
+      .attr('fill', `url(#${svgEl.id}-fluid-grad)`)
+      .attr('class', 'pf-fluid');
+
+    // 2. Pipe walls — thin straight lines, top + bottom.
+    svg.append('line')
+      .attr('x1', x1 - wallPx / 2).attr('y1', topY)
+      .attr('x2', x2 + wallPx / 2).attr('y2', topY)
+      .attr('stroke', colors.pipeStroke)
+      .attr('stroke-width', wallPx)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'pf-pipe-stroke');
+
+    svg.append('line')
+      .attr('x1', x1 - wallPx / 2).attr('y1', botY)
+      .attr('x2', x2 + wallPx / 2).attr('y2', botY)
+      .attr('stroke', colors.pipeStroke)
+      .attr('stroke-width', wallPx)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'pf-pipe-stroke');
+
+    // End labels: client (left) — server / Azure (right).
+    // "client" lives in its own reserved zone so it never collides with the
+    // caliper annotation drawn just outside the pipe entrance.
+    const endLabelGap = 8;
+    const clientX = margin + leftLabelReserve - endLabelGap;
+    svg.append('text')
+      .attr('x', clientX)
+      .attr('y', midY)
+      .attr('text-anchor', 'end')
+      .attr('dominant-baseline', 'central')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 14)
+      .attr('letter-spacing', '0.06em')
+      .attr('fill', colors.pipeStroke)
+      .attr('class', 'pf-end-label')
+      .text('client');
+
+    svg.append('text')
+      .attr('x', x2 + endLabelGap)
+      .attr('y', midY)
+      .attr('text-anchor', 'start')
+      .attr('dominant-baseline', 'central')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 14)
+      .attr('letter-spacing', '0.06em')
+      .attr('fill', colors.pipeStroke)
+      .attr('class', 'pf-end-label')
+      .text('server (Azure)');
+
+    // 3. Particles flowing inside the channel.
+    const bubblesG = svg.append('g')
+      .attr('clip-path', `url(#${svgEl.id}-clip)`);
+
+    interface Bubble {
+      x: number;
+      y: number;
+      alpha: number;
+      vJitter: number;
+    }
+
+    const halfChannel = fluidPx / 2 - 4;
+    const channelLen = x2 - x1;
+
+    const bubbles: Bubble[] = d3.range(particleCount).map(() => ({
+      x: x1 + Math.random() * channelLen,
+      y: midY + (Math.random() - 0.5) * 2 * halfChannel,
+      alpha: 0.45 + Math.random() * 0.45,
+      vJitter: (Math.random() - 0.5) * 0.6,
+    }));
+
+    const bubbleSel = bubblesG.selectAll<SVGTextElement, Bubble>('text')
+      .data(bubbles)
+      .join('text')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 9)
+      .attr('letter-spacing', '0.02em')
+      .attr('fill', colors.fluid)
+      .attr('opacity', d => d.alpha)
+      .text('req');
+
+    // Caliper annotation across the pipe diameter.
+    if (hasLabel) {
+      const calX = x1 - 24;
+
+      const marker = defs.append('marker')
+        .attr('id', `${svgEl.id}-arrow`)
+        .attr('viewBox', '0 0 10 10')
+        .attr('refX', 9).attr('refY', 5)
+        .attr('markerWidth', 5).attr('markerHeight', 5)
+        .attr('orient', 'auto-start-reverse');
+      marker.append('path')
+        .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+        .attr('fill', colors.pipeStroke)
+        .attr('class', 'pf-cal-fill');
+
+      // Extension ticks.
+      svg.append('line')
+        .attr('x1', x1 - 4).attr('y1', topY)
+        .attr('x2', calX - 4).attr('y2', topY)
+        .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'pf-cal-stroke');
+      svg.append('line')
+        .attr('x1', x1 - 4).attr('y1', botY)
+        .attr('x2', calX - 4).attr('y2', botY)
+        .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'pf-cal-stroke');
+
+      // Double-headed dimension line. Leave a small gap so the arrow tips
+      // do not touch the pipe walls.
+      const arrowGap = 10;
+      svg.append('line')
+        .attr('x1', calX).attr('y1', topY + arrowGap)
+        .attr('x2', calX).attr('y2', botY - arrowGap)
+        .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
+        .attr('marker-start', `url(#${svgEl.id}-arrow)`)
+        .attr('marker-end', `url(#${svgEl.id}-arrow)`)
+        .attr('class', 'pf-cal-stroke');
+
+      // Rotated label, reads bottom-to-top.
+      const midDimY = (topY + botY) / 2;
+      svg.append('text')
+        .attr('x', calX - 10)
+        .attr('y', midDimY)
+        .attr('transform', `rotate(-90, ${calX - 10}, ${midDimY})`)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('fill', colors.pipeStroke)
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 11)
+        .attr('letter-spacing', '0.08em')
+        .attr('class', 'pf-cal-text')
+        .text(widthLabel);
+    }
+
+    let last = performance.now();
+    let gradOffset = 0;
+
+    function frame(now: number) {
+      const dt = (now - last) / 1000;
+      last = now;
+      const dx = speed * dt;
+
+      // Slide the fluid gradient to create the "light wash" motion.
+      gradOffset = (gradOffset + dx) % 60;
+      fluidGrad
+        .attr('x1', x1 + gradOffset)
+        .attr('x2', x1 + gradOffset + 60);
+
+      bubbleSel.each(function (d) {
+        d.x += dx;
+        d.y += d.vJitter * dt * 6;
+        if (d.x > x2 + 12) {
+          d.x = x1 - 12;
+          d.y = midY + (Math.random() - 0.5) * 2 * halfChannel;
+          d.vJitter = (Math.random() - 0.5) * 0.6;
+        }
+        if (d.y > midY + halfChannel) d.y = midY + halfChannel;
+        if (d.y < midY - halfChannel) d.y = midY - halfChannel;
+        (this as SVGTextElement).setAttribute('x', String(d.x));
+        (this as SVGTextElement).setAttribute('y', String(d.y));
+      });
+
+      rafId = requestAnimationFrame(frame);
+    }
+
+    let rafId = requestAnimationFrame(frame);
+
+    // Re-pick colors on theme toggle.
+    const themeObserver = new MutationObserver(() => {
+      const c = readThemeColors(svgEl);
+      svg.selectAll('.pf-pipe-stroke').attr('stroke', c.pipeStroke);
+      bubbleSel.attr('fill', c.fluid);
+      fluidGrad.selectAll('stop').attr('stop-color', c.fluid);
+      svg.selectAll('.pf-cal-stroke').attr('stroke', c.pipeStroke);
+      svg.selectAll('.pf-cal-text').attr('fill', c.pipeStroke);
+      svg.selectAll('.pf-cal-fill').attr('fill', c.pipeStroke);
+      svg.selectAll('.pf-end-label').attr('fill', c.pipeStroke);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting && !rafId) {
+          last = performance.now();
+          rafId = requestAnimationFrame(frame);
+        } else if (!e.isIntersecting && rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+      }
+    }, { threshold: 0 });
+    io.observe(svgEl);
+  }
+
+  function initAll() {
+    document.querySelectorAll<SVGSVGElement>('svg.pipe-flow-svg').forEach((el) => {
+      initPipeFlow(el).catch((err) => console.error('PipeFlow init failed', err));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+</script>
+
+<style>
+  .pipe-flow {
+    margin: 2rem 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-primary, #222);
+    border-bottom: 1px solid var(--border-primary, #222);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .pipe-flow-svg {
+    --pf-pipe: var(--text-muted, #888);
+    --pf-fluid: var(--text-primary, #fff);
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .pipe-flow-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+</style>

@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PipeFlow from '../components/PipeFlow.astro';
+---
+
+<Layout title="PipeFlow preview">
+  <main style="max-width: 820px; margin: 0 auto; padding: 2rem 1rem;">
+    <h1>PipeFlow preview</h1>
+    <p style="color: var(--text-muted);">D3.js — schematic pipe with requests flowing through.</p>
+
+    <h2 style="margin-top: 2rem;">Slow trickle</h2>
+    <PipeFlow
+      height={120}
+      diameter={44}
+      fluidPx={44}
+      speed={45}
+      particles={14}
+      caption="baseline quota — channel is full"
+    />
+
+    <h2 style="margin-top: 2rem;">Same flow, bigger pipe</h2>
+    <PipeFlow
+      height={200}
+      diameter={120}
+      fluidPx={44}
+      speed={45}
+      particles={14}
+      widthLabel="higher quota"
+      caption="same flow, wider pipe — more headroom before 429s"
+    />
+  </main>
+</Layout>

@@ -1,0 +1,361 @@
+---
+export interface Props {
+  /** SVG width in pixels */
+  width?: number;
+  /** SVG height in pixels */
+  height?: number;
+  /**
+   * Rows to render, top-to-bottom. Each row is one stacked bar with a
+   * "served" portion (0..100) and the implicit remainder is "throttled".
+   */
+  rows?: Array<{ label: string; servedPct: number }>;
+  /** Title shown above the chart */
+  title?: string;
+  /** Unique id (allow multiple instances per page) */
+  id?: string;
+  /** Optional caption shown under the figure */
+  caption?: string;
+}
+
+const {
+  width = 720,
+  height = 240,
+  rows = [
+    { label: 'Pay-as-you-go (PAYG)', servedPct: 65 },
+    { label: 'Provisioned (PTU)', servedPct: 100 },
+  ],
+  title = 'Request handling under sustained high load',
+  id = `served-bars-${Math.random().toString(36).slice(2, 9)}`,
+  caption,
+} = Astro.props;
+---
+
+<figure class="served-bars">
+  <svg
+    id={id}
+    class="served-bars-svg"
+    width={width}
+    height={height}
+    viewBox={`0 0 ${width} ${height}`}
+    data-rows={JSON.stringify(rows)}
+    data-title={title}
+    aria-label={title}
+    role="img"
+  ></svg>
+  {caption && <figcaption class="served-bars-caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  async function loadD3(): Promise<any> {
+    if ((window as any).d3) return (window as any).d3;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js';
+      s.onload = () => resolve((window as any).d3);
+      s.onerror = () => reject(new Error('Failed to load D3.js'));
+      document.head.appendChild(s);
+    });
+  }
+
+  function readThemeColors(svgEl: SVGSVGElement) {
+    const cs = getComputedStyle(svgEl);
+    return {
+      stroke: cs.getPropertyValue('--sb-stroke').trim() || '#888888',
+      fill: cs.getPropertyValue('--sb-fill').trim() || '#ffffff',
+      warn: cs.getPropertyValue('--sb-warn').trim() || '#e0853a',
+    };
+  }
+
+  async function initServedBars(svgEl: SVGSVGElement) {
+    const d3 = await loadD3();
+
+    const W = svgEl.viewBox.baseVal.width;
+    const H = svgEl.viewBox.baseVal.height;
+
+    const title = svgEl.dataset.title || '';
+    let rows: Array<{ label: string; servedPct: number }> = [];
+    try {
+      rows = JSON.parse(svgEl.dataset.rows || '[]');
+    } catch {
+      rows = [];
+    }
+    if (!rows.length) return;
+
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+    const colors = readThemeColors(svgEl);
+
+    // Layout
+    const margin = { top: 44, right: 24, bottom: 44, left: 170 };
+    const innerW = W - margin.left - margin.right;
+    const innerH = H - margin.top - margin.bottom;
+
+    const root = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Title
+    svg.append('text')
+      .attr('x', margin.left)
+      .attr('y', margin.top - 22)
+      .attr('text-anchor', 'start')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 12)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'sb-label')
+      .text(title);
+
+    const xScale = d3.scaleLinear().domain([0, 100]).range([0, innerW]);
+    const yScale = d3.scaleBand()
+      .domain(rows.map((_r: any, i: number) => `${i}`))
+      .range([0, innerH])
+      .padding(0.4);
+
+    const barH = yScale.bandwidth();
+
+    // Baseline axis under the bars
+    root.append('line')
+      .attr('x1', 0).attr('y1', innerH + 2)
+      .attr('x2', innerW).attr('y2', innerH + 2)
+      .attr('stroke', colors.stroke)
+      .attr('stroke-width', 1)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'sb-stroke');
+
+    // Tick marks at 0, 25, 50, 75, 100
+    const ticks = [0, 25, 50, 75, 100];
+    ticks.forEach((t) => {
+      const x = xScale(t);
+      root.append('line')
+        .attr('x1', x).attr('y1', innerH + 2)
+        .attr('x2', x).attr('y2', innerH + 6)
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'sb-stroke');
+      root.append('text')
+        .attr('x', x)
+        .attr('y', innerH + 18)
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 10)
+        .attr('letter-spacing', '0.06em')
+        .attr('fill', colors.stroke)
+        .attr('class', 'sb-label')
+        .text(`${t}%`);
+    });
+
+    // Axis title
+    root.append('text')
+      .attr('x', innerW)
+      .attr('y', innerH + 34)
+      .attr('text-anchor', 'end')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 11)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'sb-label')
+      .text('% of incoming requests');
+
+    // Rows
+    rows.forEach((row: { label: string; servedPct: number }, i: number) => {
+      const yTop = yScale(`${i}`) as number;
+      const yMid = yTop + barH / 2;
+      const served = Math.max(0, Math.min(100, row.servedPct));
+      const throttled = 100 - served;
+      const servedW = xScale(served);
+      const throttledW = xScale(throttled);
+      const throttledX = xScale(served);
+
+      // Row label (left)
+      root.append('text')
+        .attr('x', -12)
+        .attr('y', yMid)
+        .attr('text-anchor', 'end')
+        .attr('dominant-baseline', 'central')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 12)
+        .attr('letter-spacing', '0.06em')
+        .attr('fill', colors.stroke)
+        .attr('class', 'sb-label')
+        .text(row.label);
+
+      // Full bar outline
+      root.append('rect')
+        .attr('x', 0)
+        .attr('y', yTop)
+        .attr('width', innerW)
+        .attr('height', barH)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'sb-stroke');
+
+      // Served segment (filled with text color, semi-translucent so theme
+      // works in both modes)
+      if (servedW > 0) {
+        root.append('rect')
+          .attr('x', 0)
+          .attr('y', yTop)
+          .attr('width', servedW)
+          .attr('height', barH)
+          .attr('fill', colors.fill)
+          .attr('opacity', 0.78)
+          .attr('class', 'sb-served');
+
+        // Inline label inside the served segment if it fits
+        if (servedW > 60) {
+          root.append('text')
+            .attr('x', servedW / 2)
+            .attr('y', yMid)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('font-family', 'JetBrains Mono, monospace')
+            .attr('font-size', 11)
+            .attr('letter-spacing', '0.08em')
+            .attr('fill', 'var(--sb-bg, #000)')
+            .attr('class', 'sb-served-label')
+            .text(`${Math.round(served)}% served`);
+        }
+      }
+
+      // Throttled segment (warn fill with diagonal hatching feel via opacity)
+      if (throttledW > 0) {
+        root.append('rect')
+          .attr('x', throttledX)
+          .attr('y', yTop)
+          .attr('width', throttledW)
+          .attr('height', barH)
+          .attr('fill', colors.warn)
+          .attr('opacity', 0.82)
+          .attr('class', 'sb-throttled');
+
+        if (throttledW > 80) {
+          root.append('text')
+            .attr('x', throttledX + throttledW / 2)
+            .attr('y', yMid)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('font-family', 'JetBrains Mono, monospace')
+            .attr('font-size', 11)
+            .attr('letter-spacing', '0.08em')
+            .attr('fill', 'var(--sb-bg, #000)')
+            .attr('class', 'sb-throttled-label')
+            .text(`${Math.round(throttled)}% throttled — HTTP 429`);
+        } else if (throttledW > 24) {
+          // Compact label outside the bar
+          root.append('text')
+            .attr('x', throttledX + throttledW + 6)
+            .attr('y', yMid)
+            .attr('text-anchor', 'start')
+            .attr('dominant-baseline', 'central')
+            .attr('font-family', 'JetBrains Mono, monospace')
+            .attr('font-size', 10)
+            .attr('letter-spacing', '0.06em')
+            .attr('fill', colors.warn)
+            .attr('class', 'sb-warn-label')
+            .text(`${Math.round(throttled)}% 429`);
+        }
+      }
+    });
+
+    // Legend
+    const legendY = innerH + 34;
+    const legendX = 0;
+    const swatch = 10;
+    const gap = 6;
+
+    const legendG = root.append('g').attr('transform', `translate(${legendX}, ${legendY})`);
+
+    // Served swatch
+    legendG.append('rect')
+      .attr('x', 0).attr('y', -swatch + 1)
+      .attr('width', swatch).attr('height', swatch)
+      .attr('fill', colors.fill)
+      .attr('opacity', 0.78)
+      .attr('class', 'sb-served');
+    legendG.append('text')
+      .attr('x', swatch + gap)
+      .attr('y', 0)
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 10)
+      .attr('letter-spacing', '0.06em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'sb-label')
+      .text('requests served');
+
+    // Throttled swatch
+    const tx = 150;
+    legendG.append('rect')
+      .attr('x', tx).attr('y', -swatch + 1)
+      .attr('width', swatch).attr('height', swatch)
+      .attr('fill', colors.warn)
+      .attr('opacity', 0.82)
+      .attr('class', 'sb-throttled');
+    legendG.append('text')
+      .attr('x', tx + swatch + gap)
+      .attr('y', 0)
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 10)
+      .attr('letter-spacing', '0.06em')
+      .attr('fill', colors.warn)
+      .attr('class', 'sb-warn-label')
+      .text('throttled (HTTP 429)');
+
+    // Theme toggle
+    const themeObserver = new MutationObserver(() => {
+      const c = readThemeColors(svgEl);
+      svg.selectAll('.sb-stroke').attr('stroke', c.stroke);
+      svg.selectAll('.sb-label').attr('fill', c.stroke);
+      svg.selectAll('.sb-served').attr('fill', c.fill);
+      svg.selectAll('.sb-throttled').attr('fill', c.warn);
+      svg.selectAll('.sb-warn-label').attr('fill', c.warn);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  function initAll() {
+    document.querySelectorAll<SVGSVGElement>('svg.served-bars-svg').forEach((el) => {
+      initServedBars(el).catch((err) => console.error('ServedBars init failed', err));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+</script>
+
+<style>
+  .served-bars {
+    margin: 2rem 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-primary, #222);
+    border-bottom: 1px solid var(--border-primary, #222);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .served-bars-svg {
+    --sb-stroke: var(--text-muted, #888);
+    --sb-fill: var(--text-primary, #fff);
+    --sb-warn: #e0853a;
+    --sb-bg: var(--bg-primary, #000);
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .served-bars-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+</style>

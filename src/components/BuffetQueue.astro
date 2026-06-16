@@ -1,0 +1,561 @@
+---
+export interface Props {
+  /** SVG width in pixels */
+  width?: number;
+  /** SVG height in pixels */
+  height?: number;
+  /** Number of people currently at the buffet, serving themselves */
+  servers?: number;
+  /** Number of people queueing behind them */
+  queue?: number;
+  /** Number of food slots on the table */
+  foodSlots?: number;
+  /** How many of those slots still have food (rest are empty plates) */
+  foodRemaining?: number;
+  /** Number of cooks currently working in the kitchen */
+  cooks?: number;
+  /** Number of stoves the kitchen has (idle stoves = no cook on them) */
+  stoves?: number;
+  /** Unique id (allow multiple instances per page) */
+  id?: string;
+  /** Optional caption shown under the figure */
+  caption?: string;
+}
+
+const {
+  width = 720,
+  height = 360,
+  servers = 3,
+  queue = 9,
+  foodSlots = 6,
+  foodRemaining = 2,
+  cooks = 2,
+  stoves = 5,
+  id = `buffet-queue-${Math.random().toString(36).slice(2, 9)}`,
+  caption,
+} = Astro.props;
+---
+
+<figure class="buffet-queue">
+  <svg
+    id={id}
+    class="buffet-queue-svg"
+    width={width}
+    height={height}
+    viewBox={`0 0 ${width} ${height}`}
+    data-servers={servers}
+    data-queue={queue}
+    data-food-slots={foodSlots}
+    data-food-remaining={foodRemaining}
+    data-cooks={cooks}
+    data-stoves={stoves}
+    aria-label="A buffet table with a queue of people, showing not enough food for everyone"
+    role="img"
+  ></svg>
+  {caption && <figcaption class="buffet-queue-caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  async function loadD3(): Promise<any> {
+    if ((window as any).d3) return (window as any).d3;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js';
+      s.onload = () => resolve((window as any).d3);
+      s.onerror = () => reject(new Error('Failed to load D3.js'));
+      document.head.appendChild(s);
+    });
+  }
+
+  function readThemeColors(svgEl: SVGSVGElement) {
+    const cs = getComputedStyle(svgEl);
+    return {
+      stroke: cs.getPropertyValue('--bq-stroke').trim() || '#888888',
+      fill: cs.getPropertyValue('--bq-fill').trim() || '#ffffff',
+      warn: cs.getPropertyValue('--bq-warn').trim() || '#d97706',
+    };
+  }
+
+  async function initBuffetQueue(svgEl: SVGSVGElement) {
+    const d3 = await loadD3();
+
+    const W = svgEl.viewBox.baseVal.width;
+    const H = svgEl.viewBox.baseVal.height;
+
+    const servers = Number(svgEl.dataset.servers || 3);
+    const queueCount = Number(svgEl.dataset.queue || 9);
+    const foodSlots = Number(svgEl.dataset.foodSlots || 6);
+    const foodRemaining = Math.min(
+      Number(svgEl.dataset.foodRemaining || 2),
+      foodSlots,
+    );
+    const stoves = Number(svgEl.dataset.stoves || 5);
+    const cooks = Math.min(Number(svgEl.dataset.cooks || 2), stoves);
+
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+    const colors = readThemeColors(svgEl);
+
+    // --- Layout -------------------------------------------------------------
+    const margin = { top: 18, right: 24, bottom: 30, left: 24 };
+    const innerW = W - margin.left - margin.right;
+
+    // Kitchen sits on top, buffet below it, queue at the bottom.
+    const kitchenW = innerW * 0.55;
+    const kitchenX = margin.left;
+    const kitchenY = margin.top + 16;
+    const kitchenH = 92;
+
+    // Buffet sits below the kitchen with a small gap (arrow connector).
+    const tableW = innerW * 0.55;
+    const tableH = 22;
+    const tableX = margin.left;
+    const tableY = kitchenY + kitchenH + 34;
+
+    // People baseline (feet).
+    const personFeetY = H - margin.bottom;
+    const personH = 60;
+    const headR = 7;
+    const bodyW = 14;
+    const personSpacing = 22;
+
+    const root = svg.append('g');
+
+    // --- Kitchen ------------------------------------------------------------
+    // Kitchen "room" outline
+    root.append('rect')
+      .attr('x', kitchenX)
+      .attr('y', kitchenY)
+      .attr('width', kitchenW)
+      .attr('height', kitchenH)
+      .attr('fill', 'none')
+      .attr('stroke', colors.stroke)
+      .attr('stroke-width', 1.25)
+      .attr('stroke-dasharray', '4 3')
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'bq-stroke');
+
+    // Kitchen label
+    root.append('text')
+      .attr('x', kitchenX + kitchenW / 2)
+      .attr('y', kitchenY - 8)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 11)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'bq-label')
+      .text('kitchen (throughput)');
+
+    // Stove row + a cook standing at the front of each manned stove.
+    const stovePadX = 18;
+    const stoveW = (kitchenW - stovePadX * 2) / stoves;
+    const stoveBoxW = Math.min(stoveW * 0.62, 34);
+    const stoveBoxH = 20;
+    const stoveY = kitchenY + 18;
+    const burnerR = 3;
+
+    // Cook glyph: same body as a regular person but with a triangular chef hat.
+    function drawCook(g: any, cx: number, feetY: number, opts: { idle?: boolean } = {}) {
+      const op = opts.idle ? 0.5 : 1;
+      const cookH = 44;
+      const cookHeadR = 6;
+      const cookBodyW = 12;
+
+      // Chef hat (triangle on top of head)
+      const hatBaseY = feetY - cookH;
+      const hatTopY = hatBaseY - 8;
+      g.append('path')
+        .attr('d', `M ${cx - 6} ${hatBaseY} L ${cx} ${hatTopY} L ${cx + 6} ${hatBaseY} Z`)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.1)
+        .attr('opacity', op)
+        .attr('class', 'bq-stroke');
+
+      // Head (just below hat base)
+      const headCY = hatBaseY + cookHeadR;
+      g.append('circle')
+        .attr('cx', cx)
+        .attr('cy', headCY)
+        .attr('r', cookHeadR)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.1)
+        .attr('opacity', op)
+        .attr('class', 'bq-stroke');
+
+      // Body
+      const bodyTop = headCY + cookHeadR + 2;
+      const bodyBottom = feetY - 2;
+      g.append('rect')
+        .attr('x', cx - cookBodyW / 2)
+        .attr('y', bodyTop)
+        .attr('width', cookBodyW)
+        .attr('height', Math.max(0, bodyBottom - bodyTop))
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.1)
+        .attr('opacity', op)
+        .attr('class', 'bq-stroke');
+    }
+
+    const cookFeetY = kitchenY + kitchenH - 6;
+
+    for (let i = 0; i < stoves; i++) {
+      const sx = kitchenX + stovePadX + stoveW * (i + 0.5);
+      const manned = i < cooks;
+
+      // Stove box
+      root.append('rect')
+        .attr('x', sx - stoveBoxW / 2)
+        .attr('y', stoveY)
+        .attr('width', stoveBoxW)
+        .attr('height', stoveBoxH)
+        .attr('fill', 'none')
+        .attr('stroke', manned ? colors.stroke : colors.warn)
+        .attr('stroke-width', 1)
+        .attr('opacity', manned ? 1 : 0.7)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', manned ? 'bq-stroke' : 'bq-warn-stroke');
+
+      // Two burners on the stove top
+      [-1, 1].forEach((sign) => {
+        root.append('circle')
+          .attr('cx', sx + sign * (stoveBoxW * 0.22))
+          .attr('cy', stoveY + stoveBoxH * 0.45)
+          .attr('r', burnerR)
+          .attr('fill', manned ? colors.fill : 'none')
+          .attr('stroke', manned ? colors.stroke : colors.warn)
+          .attr('stroke-width', 0.9)
+          .attr('opacity', manned ? 0.85 : 0.6)
+          .attr('class', manned ? 'bq-food' : 'bq-warn-stroke');
+      });
+
+      if (manned) {
+        // Cook stands just in front of the stove
+        drawCook(root, sx, cookFeetY);
+      } else {
+        // Idle stove: small "off" mark across the burners
+        root.append('line')
+          .attr('x1', sx - stoveBoxW / 2 + 2)
+          .attr('y1', stoveY + stoveBoxH + 2)
+          .attr('x2', sx + stoveBoxW / 2 - 2)
+          .attr('y2', stoveY + stoveBoxH + 2)
+          .attr('stroke', colors.warn)
+          .attr('stroke-width', 1)
+          .attr('opacity', 0.6)
+          .attr('class', 'bq-warn-stroke');
+      }
+    }
+
+    // "understaffed" annotation if there are fewer cooks than stoves
+    if (cooks < stoves) {
+      root.append('text')
+        .attr('x', kitchenX + kitchenW - 6)
+        .attr('y', kitchenY + kitchenH - 4)
+        .attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 10)
+        .attr('letter-spacing', '0.08em')
+        .attr('fill', colors.warn)
+        .attr('class', 'bq-warn-label')
+        .text(`${cooks}/${stoves} stoves staffed`);
+    }
+
+    // --- Kitchen → buffet connector (food being plated) -------------------
+    // A thin dashed arrow from the bottom-centre of the kitchen down to the
+    // top-centre of the buffet table. Dashed = trickle, not a torrent.
+    const connFromX = kitchenX + kitchenW / 2;
+    const connFromY = kitchenY + kitchenH + 2;
+    const connToY = tableY - 6;
+    const connMarkerId = `${svgEl.id}-conn-arrow`;
+    const connDefs = svg.append('defs');
+    const connMarker = connDefs.append('marker')
+      .attr('id', connMarkerId)
+      .attr('viewBox', '0 0 10 10')
+      .attr('refX', 9).attr('refY', 5)
+      .attr('markerWidth', 5).attr('markerHeight', 5)
+      .attr('orient', 'auto-start-reverse');
+    connMarker.append('path')
+      .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+      .attr('fill', colors.stroke)
+      .attr('class', 'bq-conn-fill');
+
+    root.append('line')
+      .attr('x1', connFromX).attr('y1', connFromY)
+      .attr('x2', connFromX).attr('y2', connToY)
+      .attr('stroke', colors.stroke)
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '3 4')
+      .attr('opacity', 0.7)
+      .attr('marker-end', `url(#${connMarkerId})`)
+      .attr('class', 'bq-stroke');
+
+    root.append('text')
+      .attr('x', connFromX + 8)
+      .attr('y', (connFromY + connToY) / 2 + 4)
+      .attr('text-anchor', 'start')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 10)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('opacity', 0.8)
+      .attr('class', 'bq-label')
+      .text('refill');
+
+    // --- Buffet table -------------------------------------------------------
+    // Table top
+    root.append('rect')
+      .attr('x', tableX)
+      .attr('y', tableY)
+      .attr('width', tableW)
+      .attr('height', tableH)
+      .attr('fill', 'none')
+      .attr('stroke', colors.stroke)
+      .attr('stroke-width', 1.25)
+      .attr('shape-rendering', 'crispEdges')
+      .attr('class', 'bq-stroke');
+
+    // Table legs
+    const legY1 = tableY + tableH;
+    const legY2 = legY1 + 14;
+    [tableX + 6, tableX + tableW - 6].forEach((lx) => {
+      root.append('line')
+        .attr('x1', lx).attr('y1', legY1)
+        .attr('x2', lx).attr('y2', legY2)
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.25)
+        .attr('shape-rendering', 'crispEdges')
+        .attr('class', 'bq-stroke');
+    });
+
+    // Table label
+    root.append('text')
+      .attr('x', tableX + tableW / 2)
+      .attr('y', tableY - 8)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 11)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'bq-label')
+      .text('buffet (capacity)');
+
+    // --- Food slots on the table -------------------------------------------
+    const slotPad = 12;
+    const slotW = (tableW - slotPad * 2) / foodSlots;
+    const slotR = Math.min(slotW * 0.32, 9);
+    const slotCY = tableY + tableH / 2;
+
+    for (let i = 0; i < foodSlots; i++) {
+      const cx = tableX + slotPad + slotW * (i + 0.5);
+      const hasFood = i < foodRemaining;
+
+      // Plate outline
+      root.append('circle')
+        .attr('cx', cx)
+        .attr('cy', slotCY)
+        .attr('r', slotR + 2)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1)
+        .attr('class', 'bq-stroke');
+
+      if (hasFood) {
+        // Food: filled blob
+        root.append('circle')
+          .attr('cx', cx)
+          .attr('cy', slotCY)
+          .attr('r', slotR)
+          .attr('fill', colors.fill)
+          .attr('opacity', 0.85)
+          .attr('class', 'bq-food');
+      } else {
+        // Empty plate: faint X
+        root.append('line')
+          .attr('x1', cx - slotR + 1).attr('y1', slotCY - slotR + 1)
+          .attr('x2', cx + slotR - 1).attr('y2', slotCY + slotR - 1)
+          .attr('stroke', colors.warn)
+          .attr('stroke-width', 1)
+          .attr('opacity', 0.7)
+          .attr('class', 'bq-warn-stroke');
+        root.append('line')
+          .attr('x1', cx - slotR + 1).attr('y1', slotCY + slotR - 1)
+          .attr('x2', cx + slotR - 1).attr('y2', slotCY - slotR + 1)
+          .attr('stroke', colors.warn)
+          .attr('stroke-width', 1)
+          .attr('opacity', 0.7)
+          .attr('class', 'bq-warn-stroke');
+      }
+    }
+
+    // --- Person glyph (head + simple body) ---------------------------------
+    function drawPerson(g: any, cx: number, opts: { dimmed?: boolean } = {}) {
+      const op = opts.dimmed ? 0.55 : 1;
+      // Head
+      g.append('circle')
+        .attr('cx', cx)
+        .attr('cy', personFeetY - personH + headR)
+        .attr('r', headR)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.25)
+        .attr('opacity', op)
+        .attr('class', 'bq-stroke');
+
+      // Body (rounded rectangle)
+      const bodyTop = personFeetY - personH + headR * 2 + 2;
+      const bodyH = personFeetY - bodyTop - 2;
+      g.append('rect')
+        .attr('x', cx - bodyW / 2)
+        .attr('y', bodyTop)
+        .attr('width', bodyW)
+        .attr('height', bodyH)
+        .attr('rx', 4)
+        .attr('ry', 4)
+        .attr('fill', 'none')
+        .attr('stroke', colors.stroke)
+        .attr('stroke-width', 1.25)
+        .attr('opacity', op)
+        .attr('class', 'bq-stroke');
+    }
+
+    // --- Servers in front of the table -------------------------------------
+    // Spread the servers evenly along the table front.
+    const serversG = root.append('g');
+    const serverSpan = tableW - 40;
+    for (let i = 0; i < servers; i++) {
+      const t = servers === 1 ? 0.5 : i / (servers - 1);
+      const cx = tableX + 20 + t * serverSpan;
+      drawPerson(serversG, cx);
+    }
+
+    // --- Queue stretching to the right of the table ------------------------
+    // Queue starts just past the right edge of the table and continues toward
+    // the right margin. If it overflows, we compress spacing.
+    const queueStartX = tableX + tableW + 28;
+    const queueAvail = W - margin.right - queueStartX;
+    const spacing = Math.min(
+      personSpacing,
+      queueCount > 1 ? queueAvail / (queueCount - 0.5) : personSpacing,
+    );
+
+    const queueG = root.append('g');
+    for (let i = 0; i < queueCount; i++) {
+      const cx = queueStartX + spacing * i;
+      // Tail of the queue dims slightly to emphasise "running out".
+      const dimmed = i >= Math.max(0, queueCount - 3);
+      drawPerson(queueG, cx, { dimmed });
+    }
+
+    // Bracket + label spanning the queue
+    const qLeft = queueStartX - 6;
+    const qRight = queueStartX + spacing * (queueCount - 1) + 8;
+    const bracketY = personFeetY + 8;
+    root.append('path')
+      .attr('d', `M ${qLeft} ${bracketY - 4} L ${qLeft} ${bracketY} L ${qRight} ${bracketY} L ${qRight} ${bracketY - 4}`)
+      .attr('fill', 'none')
+      .attr('stroke', colors.stroke)
+      .attr('stroke-width', 1)
+      .attr('class', 'bq-stroke');
+    root.append('text')
+      .attr('x', (qLeft + qRight) / 2)
+      .attr('y', bracketY + 16)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 11)
+      .attr('letter-spacing', '0.08em')
+      .attr('fill', colors.stroke)
+      .attr('class', 'bq-label')
+      .text(`queue (${queueCount} waiting)`);
+
+    // "not enough" warning above the empty plates
+    const emptyCount = foodSlots - foodRemaining;
+    if (emptyCount > 0) {
+      const firstEmptyX = tableX + slotPad + slotW * (foodRemaining + emptyCount / 2);
+      root.append('text')
+        .attr('x', firstEmptyX)
+        .attr('y', tableY + tableH + 28)
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 11)
+        .attr('letter-spacing', '0.08em')
+        .attr('fill', colors.warn)
+        .attr('class', 'bq-warn-label')
+        .text('not enough to go around');
+
+      // Small arrow from label up to the empty plates region
+      const arrowFromX = firstEmptyX;
+      const arrowFromY = tableY + tableH + 16;
+      const arrowToY = slotCY + slotR + 4;
+      root.append('line')
+        .attr('x1', arrowFromX)
+        .attr('y1', arrowFromY)
+        .attr('x2', arrowFromX)
+        .attr('y2', arrowToY)
+        .attr('stroke', colors.warn)
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.8)
+        .attr('class', 'bq-warn-stroke');
+    }
+
+    // Re-pick colors on theme toggle.
+    const themeObserver = new MutationObserver(() => {
+      const c = readThemeColors(svgEl);
+      svg.selectAll('.bq-stroke').attr('stroke', c.stroke);
+      svg.selectAll('.bq-label').attr('fill', c.stroke);
+      svg.selectAll('.bq-food').attr('fill', c.fill);
+      svg.selectAll('.bq-warn-stroke').attr('stroke', c.warn);
+      svg.selectAll('.bq-warn-label').attr('fill', c.warn);
+      svg.selectAll('.bq-conn-fill').attr('fill', c.stroke);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  function initAll() {
+    document.querySelectorAll<SVGSVGElement>('svg.buffet-queue-svg').forEach((el) => {
+      initBuffetQueue(el).catch((err) => console.error('BuffetQueue init failed', err));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+</script>
+
+<style>
+  .buffet-queue {
+    margin: 2rem 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-primary, #222);
+    border-bottom: 1px solid var(--border-primary, #222);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .buffet-queue-svg {
+    --bq-stroke: var(--text-muted, #888);
+    --bq-fill: var(--text-primary, #fff);
+    --bq-warn: #e0853a;
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .buffet-queue-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    text-align: center;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+  }
+</style>
