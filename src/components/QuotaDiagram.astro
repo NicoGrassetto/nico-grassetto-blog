@@ -1,0 +1,223 @@
+---
+interface Deployment {
+  name: string;
+  ptus: number;
+}
+
+interface Props {
+  total?: number;
+  region?: string;
+  deployments?: Deployment[];
+}
+
+const {
+  total = 500,
+  region = 'a region',
+  deployments = [
+    { name: 'GPT-4.1', ptus: 200 },
+    { name: 'DeepSeek-R1', ptus: 100 },
+  ],
+} = Astro.props;
+
+const used = deployments.reduce((sum, d) => sum + d.ptus, 0);
+const free = Math.max(total - used, 0);
+
+const palette = [
+  { bg: 'linear-gradient(135deg, #0f7560, #0b5546)', text: '#7fe6c4', border: '#13836c' },
+  { bg: 'linear-gradient(135deg, #a8431a, #7c3113)', text: '#fba874', border: '#bd5226' },
+  { bg: 'linear-gradient(135deg, #1e5aa8, #143f7e)', text: '#8fbcf2', border: '#2467bf' },
+  { bg: 'linear-gradient(135deg, #6b3fa0, #4d2d76)', text: '#caa9f2', border: '#7d4cbb' },
+];
+---
+
+<figure class="quota-diagram">
+  <div class="quota-outer">
+    <header class="quota-header">
+      <div class="quota-title">
+        <strong>Quota</strong> — your total allowance in {region} (e.g. {total} PTUs)
+      </div>
+      <div class="quota-subtitle">
+        Set by Microsoft per subscription · per region · per deployment type
+      </div>
+    </header>
+
+    <div class="quota-cards">
+      {deployments.map((d, i) => (
+        <div
+          class="quota-card"
+          style={`flex-grow:${d.ptus}; background:${palette[i % palette.length].bg}; border-color:${palette[i % palette.length].border};`}
+        >
+          <div class="card-name">{d.name}</div>
+          <div class="card-ptus" style={`color:${palette[i % palette.length].text};`}>{d.ptus} PTUs</div>
+          <div class="card-state" style={`color:${palette[i % palette.length].text};`}>deployed</div>
+        </div>
+      ))}
+
+      {free > 0 && (
+        <div class="quota-card quota-card--free" style={`flex-grow:${free};`}>
+          <div class="card-name">Available</div>
+          <div class="card-ptus">{free} PTUs</div>
+          <div class="card-state">unused quota</div>
+        </div>
+      )}
+    </div>
+
+    <footer class="quota-footer">
+      <div class="quota-legend">
+        <span class="legend-item"><span class="swatch swatch--used"></span>= PTUs in use</span>
+        <span class="legend-item"><span class="swatch swatch--free"></span>= Available quota (not yet deployed)</span>
+      </div>
+      <div class="quota-totals">
+        Total quota = {total} PTUs · Used = {used} · Free = {free}
+      </div>
+    </footer>
+  </div>
+  <figcaption class="quota-caption">
+    Quota is free — you only pay for PTUs you actually deploy
+  </figcaption>
+</figure>
+
+<style>
+  .quota-diagram {
+    margin: 1.75rem 0;
+    font-family: inherit;
+  }
+
+  .quota-outer {
+    border: 1px solid #3d6fb4;
+    border-radius: 16px;
+    background: #12161f;
+    padding: 1.5rem 1.5rem 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .quota-header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .quota-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #e8edf4;
+    line-height: 1.4;
+  }
+
+  .quota-title strong {
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .quota-subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    color: #8b95a5;
+  }
+
+  .quota-cards {
+    display: flex;
+    gap: 0.9rem;
+    align-items: stretch;
+  }
+
+  .quota-card {
+    flex-basis: 0;
+    min-width: 0;
+    min-height: 180px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.4rem;
+  }
+
+  .quota-card--free {
+    background: #34394480;
+    border: 1px dashed #6b7280;
+  }
+
+  .card-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f1f4f8;
+  }
+
+  .card-ptus {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .card-state {
+    font-size: 0.95rem;
+    opacity: 0.95;
+  }
+
+  .quota-card--free .card-ptus,
+  .quota-card--free .card-state {
+    color: #9aa3b0;
+  }
+
+  .quota-footer {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+  }
+
+  .quota-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.75rem;
+    font-size: 0.92rem;
+    color: #c2c9d4;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .swatch--used {
+    background: #0f7560;
+  }
+
+  .swatch--free {
+    background: #4a4f5a;
+    border: 1px dashed #8b95a5;
+  }
+
+  .quota-totals {
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+    color: #d4dae2;
+  }
+
+  .quota-caption {
+    margin-top: 0.85rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #7a8493;
+  }
+
+  @media (max-width: 640px) {
+    .quota-cards {
+      flex-direction: column;
+    }
+    .quota-card {
+      min-height: 120px;
+    }
+  }
+</style>

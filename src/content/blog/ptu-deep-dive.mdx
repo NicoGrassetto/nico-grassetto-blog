@@ -1,0 +1,198 @@
+---
+title: "The road to Provisioned Throughput Units (PTU) on Microsoft Foundry"
+date: "2026-01-06"
+description: "A (hopefully useful) article about Provisioned Throughput Units (PTU): what they are, how to request them, when to use them, and how they compare to priority processing and standard pay-as-you-go."
+draft: false
+---
+import PlotlyChart from '../../components/PlotlyChart.astro';
+import QuotaDiagram from '../../components/QuotaDiagram.astro';
+
+Anyone who has deployed an AI application on production facing thousands of users siulatneasouly knows the frustration:  you wake up one morning and your team got the alert, 429 Too Many Requests are popping up in your logs. You are victim of your own success, the good work of your team of engineers, in shamble. Your reputation, months of work, and an issue not even related to your application design but to cloud infrastructure realisties. 
+
+This limit is caused byt token-per-minute (TPMand request per moinute(RPM). Both cloud realities that cannot be ignored.
+
+I cannot 
+but recall a quote from Epictetus: 
+> "It's not what happens to you, but how you react to it that matters."
+ and 
+>“It is circumstances that show what men are.”
+
+where the latter one can obviously swap men for "system" ;)
+
+In this article I want to guide you through 
+
+- Why this happens
+    - 429 is by design not by mistake. It's a biproduct of the AI demand and compute scarcity if compute infrastrucutre. Most hyperscalers (not just Microsoft - my current employer) will impose a similar mechanism to guarantte fair and steady average response for all. When the number of reqs exceeds a TPM fixed by the provider, the innevitable happens, the server throttles your request.
+    - You can find smart workaround in your API design such as gracefuly handling such scenarios, falling back on other deployments, waiting some time.. but they are all doomed to be fixes not solutiosn and it gets messy very quickly.
+    - The question then becomes not 
+- How to avoid it
+    - For B2C apps all roads lead to PTU, it's a question of if but a question of when.
+    - Toi avoid it one must request a quota increase. the Quota increase only says "hey I want to be able to use and request that many PTUs" - it does not create any Commitment
+    - It's just a wya for MMIcrosoft to at least tell you whether using that much will be possible. Once approved you know (guarantte) that you will be able to request quotaNbr amount of PTUs.
+
+- What is PTU 
+- Stands for proviusional thgroufgout units.
+
+
+- How to request it
+    1. Request for quota: show image in the portla + Links
+    2. Request for PTU.
+- When to use it, and not use it
+
+## What is PTU?
+
+A **Provisioned Throughput Unit (PTU)** is a unit of model compute capacity that Microsoft reserves exclusively for your deployment. Unlike pay-as-you-go (PAYG), where your deployment shares a pool of Azure capacity with other tenants and is subject to quota-based rate limits (tokens-per-minute / requests-per-minute), PTU gives you a dedicated slice of infrastructure — no competing for capacity, no throttling.
+
+Think of it as the difference between riding a shared bus (PAYG) and owning a car (PTU): the bus may or may not have a seat when you need it, and it runs on its own schedule. Your own car is always there.
+
+The diagram below illustrates the real-world impact: under sustained high load, a PAYG deployment starts returning `HTTP 429` errors once the quota ceiling is hit, while a PTU deployment handles every request.
+
+<PlotlyChart
+  id="ptu-vs-payg-chart"
+  data='[{"type":"bar","orientation":"h","name":"Requests Served","x":[65,100],"y":["Pay-as-you-go (PAYG)","Provisioned (PTU)"],"marker":{"color":["#f97316","#22c55e"]},"text":["65%","100%"],"textposition":"inside","insidetextanchor":"middle"},{"type":"bar","orientation":"h","name":"Throttled — HTTP 429","x":[35,0],"y":["Pay-as-you-go (PAYG)","Provisioned (PTU)"],"marker":{"color":"#ef4444"},"text":["35% throttled",""],"textposition":"inside","insidetextanchor":"middle"}]'
+  layout='{"barmode":"stack","title":{"text":"Request Handling Under Sustained High Load: PAYG vs PTU","font":{"size":15}},"xaxis":{"title":"% of incoming requests","range":[0,100],"ticksuffix":"%","gridcolor":"rgba(128,128,128,0.15)"},"yaxis":{"automargin":true},"height":280,"margin":{"l":20,"r":30,"t":55,"b":50},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","font":{"color":"#888"},"legend":{"x":0.5,"xanchor":"center","y":-0.2,"orientation":"h"}}'
+  config='{"responsive":true,"displayModeBar":false}'
+/>
+
+### Quota vs. PTU
+
+Before you can deploy a single PTU, you need **quota**. Quota is your total PTU allowance in a given region — set by Microsoft per subscription, per region, and per deployment type. It is a ceiling, not a bill: quota itself is free, and you only pay for the PTUs you actually deploy against it.
+
+The diagram below shows a subscription with a 500-PTU quota in one region. Two models are deployed against it (consuming 300 PTUs), leaving 200 PTUs of headroom you can deploy at any time without requesting more.
+
+<QuotaDiagram
+  total={500}
+  region="a region"
+  deployments={[
+    { name: 'GPT-4.1', ptus: 200 },
+    { name: 'DeepSeek-R1', ptus: 100 },
+  ]}
+/>
+
+### This isn't just a Microsoft thing
+
+Every major hyperscaler offers an equivalent reserved-capacity mechanism — the names differ, but the idea is the same: commit to capacity, escape rate limits. A few even fall back to pay-as-you-go automatically when you exceed your reservation.
+
+| Provider | What they call it | Commitment | Auto-overflow to standard? |
+| --- | --- | --- | --- |
+| **Microsoft Foundry** | PTU | Hourly / monthly / annual | No |
+| **OpenAI** | Reserved Capacity | Enterprise contract | No |
+| **Anthropic** | Priority Tier | Monthly | ✅ Yes |
+| **AWS Bedrock** | Reserved Tier / Provisioned Throughput | 1–6 months | ✅ Yes (Reserved Tier) |
+| **Google Vertex AI** | Provisioned Throughput | 1 week – 1 year | No |
+| **Mistral** | Enterprise APIs (SLA-based) | Negotiated | N/A |
+
+Anthropic and Bedrock's Reserved Tier stand out: their automatic overflow means you're never left hanging if you burst past your reservation.
+
+
+
+
+2 ways: 
+
+- Underspend and ramp up -> rest falls onto pay as you go
+- Overspend and spillover(can be used for other stuff)
+
+
+You can reduce your deployment anytime. You can scale down the PTU count on a provisioned deployment through the Foundry portal or Azure CLI whenever you want — no need to delete and recreate it.
+However, your reservation is a separate problem. If you already purchased an Azure Reservation for 50 PTUs, that's a financial commitment and you can't just "resize" it downward freely. Your options are:
+
+Exchange it — Azure allows you to exchange a reservation for a new one of a different size (e.g. swap your 50 PTU reservation for a 13 PTU one). The price difference is refunded or charged pro-rata.
+Cancel it — Azure allows early cancellation with a 12% early termination fee, and there's a $50,000/year cap on refunds.
+Keep it and right-size later — If you're still early in the commitment period, you might absorb the overage now and plan to right-size at renewal.
+
+If you haven't bought a reservation yet (i.e. you're on hourly billing), then it's simple — just scale the deployment down to 13 PTUs and your hourly charges drop immediately. No penalties.
+The practical step right now:
+
+```bash
+az cognitiveservices account deployment update \
+  --name <myResourceName> \
+  --resource-group <myResourceGroupName> \
+  --deployment-name <myDeploymentName> \
+  --sku-capacity 13
+```
+
+Have you already purchased a reservation, or are you still on hourly billing? That determines how painful the change actually is.Want to be n
+
+
+What happens if I want to decrease my PTU?
+
+
+You can increase or decrease the PTU count of an existing provisioned deployment at any time — via the Foundry portal or the API/CLI. No delete-and-recreate needed. Key facts:
+
+Billing adjusts immediately, prorated to the minute, to the new PTU count.
+Scaling down releases capacity permanently — the freed PTUs go back to the regional pool, and there's no guarantee you can get that same capacity back if you scale up later.
+Reservations are NOT affected by resizing. If a reservation covers the deployment and you scale below the reserved quantity, the reservation keeps billing at its original PTU amount — you just get unused reservation coverage.
+
+2. Decreasing a reservation (the financial commitment)
+Doc: Adjust reservations as your workload changes
+Detailed terms: Exchanges and refunds for Azure Reservations
+
+A reservation is a term commitment, so you can't freely resize it. Options:
+
+Exchange — swap for a new reservation of a different PTU quantity/term (in the Azure portal). Note: exchanges reset the term, and you can't exchange across deployment types (e.g. Global → Regional).
+Cancel — early cancellation may incur a fee. (Azure's standard policy is a 12% early termination fee with a
+
+## TODO info on reservation
+
+### How to decrease your PTU
+
+**Primary doc:** [Scale provisioned deployments](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#scale-provisioned-deployments) — *Provisioned throughput billing and cost management*
+
+> You can increase or decrease the PTU count of an existing provisioned deployment at any time in the Foundry portal or via the API. Billing adjusts immediately to the new PTU count.
+
+The four constraints the doc calls out when scaling **down**:
+
+| Constraint | What it means |
+| --- | --- |
+| **Releases capacity permanently** | Freed PTUs go back to the regional pool — no guarantee you can scale back up later |
+| **Billing adjusts immediately** | New (lower) PTU count is charged from the moment the resize completes, prorated to the minute |
+| **Reservations aren't affected** | If covered by a reservation, scaling the deployment down leaves the reservation at its original quantity → you get **unused reservation coverage** (you keep paying for it) |
+| **Scaling up later** | Requires capacity availability — verify before planning |
+
+#### How to actually do it
+
+**Portal:** Foundry portal → your deployment → Edit → lower the PTU count.
+
+**CLI:**
+
+```bash
+az cognitiveservices account deployment update \
+  --name <myResourceName> \
+  --resource-group <myResourceGroupName> \
+  --deployment-name <myDeploymentName> \
+  --sku-capacity 13
+```
+
+#### If you have a reservation
+
+Scaling the deployment down does **not** reduce a reservation. To adjust the financial commitment, see [Adjust reservations as your workload changes](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#adjust-reservations-as-your-workload-changes):
+
+- **Exchange** — change PTU quantity/term in the Azure portal (resets the term; can't cross deployment types like Global → Regional)
+- **Cancel** — may incur an early termination fee
+- **Disable auto-renew** — stop it renewing at term end
+- Full fee/eligibility terms: [Exchanges and refunds for Azure Reservations](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/exchange-and-refund-azure-reservations)
+
+## TODO PTU and reservation
+
+Right idea, but it's two different *axes* — capacity vs. price. Here's the mental model:
+
+| Step | What it is | Do you pay? |
+|------|-----------|-------------|
+| **1. Quota** | *Permission.* A ceiling on how many PTUs you're allowed to deploy for a given model + region + deployment type. | Free — it's just a limit |
+| **2. PTU deployment** | *Capacity.* You actually create a provisioned deployment consuming some of that quota. This is the running throughput. | Yes — **hourly** by default |
+| **3. Reservation** | *Price.* A financial commitment (1-month or 1-year term) to pre-pay for N PTUs at a big discount vs. the hourly rate. | Yes — but much cheaper per PTU |
+
+The key thing that trips people up: **a reservation is not a technical thing — it deploys nothing and grants no capacity.** It's purely a billing discount that automatically maps onto whatever provisioned deployments you already have.
+
+So the layers are independent:
+- **Quota, no deployment** → allowed, but nothing running, pay $0
+- **Deployment, no reservation** → running, paying expensive hourly
+- **Deployment + reservation** → running, paying the cheap committed rate
+- **Reservation, no (or smaller) deployment** → you committed financially but aren't using it = wasted money ("unused reservation coverage" — exactly the scale-down trap in your post)
+
+**Analogy:**
+- Quota = the size of parking lot the city *lets* you build (permission, free)
+- PTU deployment = cars you actually park (metered hourly)
+- Reservation = a prepaid monthly parking pass — same spot, much cheaper than feeding the meter, but you pay even on days you don't park
+
+So the real flow is: **request quota → deploy PTUs (billed hourly) → optionally buy a reservation to discount those PTUs.** You never *need* a reservation to run PTU; it's just the cost-optimization layer on top.
