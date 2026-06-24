@@ -1,0 +1,114 @@
+---
+interface Props {
+  subscriptions?: string[];
+  regions?: string[];
+  deploymentTypes?: string[];
+  title?: string;
+}
+
+const {
+  subscriptions = ['Subscription A', 'Subscription B'],
+  regions = ['East US', 'West Europe'],
+  deploymentTypes = ['Global', 'Data Zone', 'Regional'],
+  title = 'Quota Pools Generated From Axes',
+} = Astro.props;
+
+const pools = subscriptions.flatMap((subscription) =>
+  regions.flatMap((region) =>
+    deploymentTypes.map((deploymentType) => ({
+      subscription,
+      region,
+      deploymentType,
+    }))
+  )
+);
+---
+
+<figure class="qpg">
+  <div class="qpg-head">
+    <h4>{title}</h4>
+    <p>
+      <code>subscription x region x deployment_type</code>
+      <span> = </span>
+      <strong>{pools.length}</strong>
+      <span> quota pools</span>
+    </p>
+  </div>
+
+  <div class="qpg-grid">
+    {pools.map((pool, index) => (
+      <div class="qpg-card">
+        <div class="qpg-index">Pool {index + 1}</div>
+        <div><span>subscription:</span> <code>{pool.subscription}</code></div>
+        <div><span>region:</span> <code>{pool.region}</code></div>
+        <div><span>deployment_type:</span> <code>{pool.deploymentType}</code></div>
+      </div>
+    ))}
+  </div>
+
+  <figcaption>
+    Each card is one independent quota pool. Usage in one card does not consume quota from another card.
+  </figcaption>
+</figure>
+
+<style>
+  .qpg {
+    margin: 1.5rem 0;
+    border: 1px solid #2b3548;
+    border-radius: 12px;
+    padding: 1rem;
+    background: #0f141d;
+  }
+
+  .qpg-head h4 {
+    margin: 0 0 0.3rem;
+    color: #e6edf7;
+    font-size: 1.05rem;
+  }
+
+  .qpg-head p {
+    margin: 0 0 1rem;
+    color: #c8d1dd;
+    font-size: 0.95rem;
+  }
+
+  .qpg-head strong {
+    color: #7fd6a6;
+    font-weight: 800;
+  }
+
+  .qpg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .qpg-card {
+    border: 1px solid #33425d;
+    border-radius: 10px;
+    padding: 0.7rem;
+    background: #131b28;
+    color: #dce5f0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .qpg-index {
+    font-size: 0.78rem;
+    color: #8ea0b8;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .qpg-card span {
+    color: #8ea0b8;
+  }
+
+  .qpg figcaption {
+    margin-top: 0.85rem;
+    color: #98a7bb;
+    font-size: 0.86rem;
+    text-align: center;
+  }
+</style>
