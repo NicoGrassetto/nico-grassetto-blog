@@ -23,6 +23,14 @@ export interface Props {
    * (e.g. "higher quota").
    */
   widthLabel?: string;
+  /**
+   * If set (and larger than `diameter`), draws a dashed "max allowed width"
+   * envelope around the pipe representing quota — the ceiling on how wide the
+   * pipe is permitted to grow in a given subscription/region/deployment type.
+   */
+  quotaPx?: number;
+  /** Label for the quota envelope caliper. Defaults to "quota". */
+  quotaLabel?: string;
   /** Unique id (allow multiple instances per page) */
   id?: string;
   /** Optional caption shown under the figure */
@@ -38,6 +46,8 @@ const {
   particles = 24,
   fluidPx,
   widthLabel,
+  quotaPx,
+  quotaLabel = 'quota',
   id = `pipe-flow-${Math.random().toString(36).slice(2, 9)}`,
   caption,
 } = Astro.props;
@@ -56,6 +66,8 @@ const {
     data-wall-px={wallPx}
     data-fluid-px={fluidPx ?? ''}
     data-width-label={widthLabel ?? ''}
+    data-quota-px={quotaPx ?? ''}
+    data-quota-label={quotaLabel}
     aria-label="Animated diagram of a pipe with fluid flowing through it"
     role="img"
   ></svg>
@@ -94,6 +106,10 @@ const {
     const fluidOverride = svgEl.dataset.fluidPx ? Number(svgEl.dataset.fluidPx) : null;
     const widthLabel = svgEl.dataset.widthLabel || '';
     const hasLabel = widthLabel.length > 0;
+    const quotaOverride = svgEl.dataset.quotaPx ? Number(svgEl.dataset.quotaPx) : null;
+    const quotaLabel = svgEl.dataset.quotaLabel || 'quota';
+    const hasQuota = quotaOverride !== null && quotaOverride > diameter;
+    const quotaPx = hasQuota ? quotaOverride : diameter;
 
     const fluidPx = fluidOverride !== null
       ? Math.min(fluidOverride, diameter)
@@ -102,14 +118,18 @@ const {
     const midY = H / 2;
     const margin = 24;
     // Reserve horizontal room for the caliper annotation if present,
-    // and for the "client" / "server (Azure)" end labels.
-    const labelOffset = hasLabel ? (diameter / 2 + 42) : 0;
+    // and for the "client" / "server (Azure)" end labels. The caliper spans the
+    // quota envelope when present, so reserve room for the larger of the two.
+    const envelopePx = Math.max(diameter, quotaPx);
+    const labelOffset = (hasLabel || hasQuota) ? (envelopePx / 2 + 42) : 0;
     const leftLabelReserve = 72;   // room for "client"
     const rightLabelReserve = 140; // room for "server (Azure)"
     const x1 = margin + labelOffset + leftLabelReserve;
     const x2 = W - margin - rightLabelReserve;
     const topY = midY - diameter / 2;
     const botY = midY + diameter / 2;
+    const quotaTopY = midY - quotaPx / 2;
+    const quotaBotY = midY + quotaPx / 2;
 
     const svg = d3.select(svgEl);
     svg.selectAll('*').remove();
@@ -158,6 +178,23 @@ const {
       .attr('stroke-width', wallPx)
       .attr('shape-rendering', 'crispEdges')
       .attr('class', 'pf-pipe-stroke');
+
+    // Quota envelope — dashed "max allowed width" lines above & below the pipe.
+    // The gap between each dashed line and the solid pipe wall is unused
+    // headroom you can grow into without requesting more quota.
+    if (hasQuota) {
+      for (const qy of [quotaTopY, quotaBotY]) {
+        svg.append('line')
+          .attr('x1', x1 - wallPx / 2).attr('y1', qy)
+          .attr('x2', x2 + wallPx / 2).attr('y2', qy)
+          .attr('stroke', colors.pipeStroke)
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '5 4')
+          .attr('opacity', 0.7)
+          .attr('shape-rendering', 'crispEdges')
+          .attr('class', 'pf-quota-stroke');
+      }
+    }
 
     // End labels: client (left) — server / Azure (right).
     // "client" lives in its own reserved zone so it never collides with the
@@ -221,8 +258,11 @@ const {
       .attr('opacity', d => d.alpha)
       .text('req');
 
-    // Caliper annotation across the pipe diameter.
-    if (hasLabel) {
+    // Caliper annotation — spans the quota envelope when present, else the pipe.
+    if (hasLabel || hasQuota) {
+      const calTopY = hasQuota ? quotaTopY : topY;
+      const calBotY = hasQuota ? quotaBotY : botY;
+      const calLabel = hasQuota ? quotaLabel : widthLabel;
       const calX = x1 - 24;
 
       const marker = defs.append('marker')
@@ -238,31 +278,31 @@ const {
 
       // Extension ticks.
       svg.append('line')
-        .attr('x1', x1 - 4).attr('y1', topY)
-        .attr('x2', calX - 4).attr('y2', topY)
+        .attr('x1', x1 - 4).attr('y1', calTopY)
+        .attr('x2', calX - 4).attr('y2', calTopY)
         .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
         .attr('shape-rendering', 'crispEdges')
         .attr('class', 'pf-cal-stroke');
       svg.append('line')
-        .attr('x1', x1 - 4).attr('y1', botY)
-        .attr('x2', calX - 4).attr('y2', botY)
+        .attr('x1', x1 - 4).attr('y1', calBotY)
+        .attr('x2', calX - 4).attr('y2', calBotY)
         .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
         .attr('shape-rendering', 'crispEdges')
         .attr('class', 'pf-cal-stroke');
 
       // Double-headed dimension line. Leave a small gap so the arrow tips
-      // do not touch the pipe walls.
+      // do not touch the walls.
       const arrowGap = 10;
       svg.append('line')
-        .attr('x1', calX).attr('y1', topY + arrowGap)
-        .attr('x2', calX).attr('y2', botY - arrowGap)
+        .attr('x1', calX).attr('y1', calTopY + arrowGap)
+        .attr('x2', calX).attr('y2', calBotY - arrowGap)
         .attr('stroke', colors.pipeStroke).attr('stroke-width', 1)
         .attr('marker-start', `url(#${svgEl.id}-arrow)`)
         .attr('marker-end', `url(#${svgEl.id}-arrow)`)
         .attr('class', 'pf-cal-stroke');
 
       // Rotated label, reads bottom-to-top.
-      const midDimY = (topY + botY) / 2;
+      const midDimY = (calTopY + calBotY) / 2;
       svg.append('text')
         .attr('x', calX - 10)
         .attr('y', midDimY)
@@ -274,7 +314,7 @@ const {
         .attr('font-size', 11)
         .attr('letter-spacing', '0.08em')
         .attr('class', 'pf-cal-text')
-        .text(widthLabel);
+        .text(calLabel);
     }
 
     let last = performance.now();
@@ -317,6 +357,7 @@ const {
       bubbleSel.attr('fill', c.fluid);
       fluidGrad.selectAll('stop').attr('stop-color', c.fluid);
       svg.selectAll('.pf-cal-stroke').attr('stroke', c.pipeStroke);
+      svg.selectAll('.pf-quota-stroke').attr('stroke', c.pipeStroke);
       svg.selectAll('.pf-cal-text').attr('fill', c.pipeStroke);
       svg.selectAll('.pf-cal-fill').attr('fill', c.pipeStroke);
       svg.selectAll('.pf-end-label').attr('fill', c.pipeStroke);

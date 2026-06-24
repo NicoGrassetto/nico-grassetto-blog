@@ -1,7 +1,7 @@
 ---
 title: "Designing for Throughput: PTU Capacity Planning on Microsoft Foundry"
 date: "2026-01-06"
-description: "A (hopefully useful) article about Provisioned Throughput Units (PTU): what they are, how to request them, when to use them, and how they compare to priority processing and standard pay-as-you-go."
+description: "A (hopefully useful) article about Provisioned Throughput Units (PTU): what they are, how to request them, and when to use them"
 draft: false
 ---
 import PlotlyChart from '../../components/PlotlyChart.astro';
@@ -10,7 +10,6 @@ import PipeFlow from '../../components/PipeFlow.astro';
 import DemandCurve from '../../components/DemandCurve.astro';
 import TollBooths from '../../components/TollBooths.astro';
 import ServedBars from '../../components/ServedBars.astro';
-import QuotaPoolsGrid from '../../components/QuotaPoolsGrid.astro';
 import ptuOperateView from './ptu-operate-view.png';
 import ptuProvisionedThroughputTab from './ptu-provisioned-throughput-tab.png';
 import ptuCalculatorWorkloads from './ptu-calculator-workloads.png';
@@ -209,6 +208,16 @@ Once you have your PTU number, you need to request quota increase. This is done 
 
 Before you can deploy a single PTU, you need **quota**. Quota is your total PTU allowance in a given region — set by Microsoft per subscription, per region, and per deployment type. It is a ceiling: quota itself is free, and you only pay for the PTUs you actually deploy against it.
 
+<PipeFlow
+  height={240}
+  diameter={70}
+  fluidPx={70}
+  quotaPx={150}
+  quotaLabel="quota"
+  speed={55}
+  particles={18}
+  caption="Quota is the dashed ceiling — the widest pipe Microsoft lets you install in a given subscription, region, and deployment type. Your deployed PTUs are the solid pipe inside it; the gap up to the dashes is free headroom you can grow into before filing a quota-increase request."
+/>
 
 Quota is scoped across three axes: subscription, region, and deployment type. In practice, each unique combination is a separate quota pool.
 
@@ -216,41 +225,9 @@ If you want to count how many distinct quota pools exist, the simple rule is:
 
 `#pools = #subscriptions x #regions x #deployment_types`
 
-To get the point across, here are a few examples:
-
-**Example 1**
-
-`N_subscriptions = 1`, `N_regions = 2`, `N_deployment_types = 3` so `N_pools = 1 x 2 x 3 = 6`.
-
-<QuotaPoolsGrid
-  subscriptions={['Subscription A']}
-  regions={['East US', 'West Europe']}
-  deploymentTypes={['Global', 'Data Zone', 'Regional']}
-/>
-
-**Example 2**
-
-`N_subscriptions = 2`, `N_regions = 1`, `N_deployment_types = 1` so `N_pools = 2 x 1 x 1 = 2`.
-This means usage in `Subscription A` does not consume the quota pool in `Subscription B`.
-
-<QuotaPoolsGrid
-  subscriptions={['Subscription A', 'Subscription B']}
-  regions={['East US']}
-  deploymentTypes={['Global']}
-/>
-
-**Example 3 (already within quota)**
-
-`N_subscriptions = 1`, `N_regions = 1`, `N_deployment_types = 1` so `N_pools = 1`.
-In `Subscription A + East US + Global`, suppose quota is 500 PTU and current usage is 300 PTU. A new 120-PTU deployment gives `300 + 120 = 420 <= 500`, so this fits under existing quota (no quota-increase request needed).
-
-<QuotaPoolsGrid
-  subscriptions={['Subscription A']}
-  regions={['East US']}
-  deploymentTypes={['Global']}
-/>
-
 The diagram below shows a subscription with a 500-PTU quota in one region. Two models are deployed against it (consuming 300 PTUs), leaving 200 PTUs of headroom you can deploy at any time without requesting more.
+
+Quota is also **model-independent**: the same pool can be spent on any supported model, which is why a single 500-PTU allowance covers both GPT-4.1 and DeepSeek-R1 below. You don't request quota per model.
 
 <QuotaDiagram
   total={500}
@@ -261,173 +238,82 @@ The diagram below shows a subscription with a 500-PTU quota in one region. Two m
   ]}
 />
 
-https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing
+PTU pricing, regional availability, and quota rules shift over time, so treat the numbers here as illustrative rather than current. For the authoritative and continuously updated details, see Microsoft's official docs on [Provisioned throughput for Foundry Models](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput) and [Provisioned throughput billing and cost management](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing).
 
+## 3. Deploy your PTU
+Quota only grants *permission* — nothing is running and you're charged nothing until you actually create a provisioned deployment against it. This is the step where the pipe finally gets installed: you create a deployment, choose a **provisioned** SKU (Global, Data Zone, or Regional — whichever matches the quota pool you were granted), and set its PTU count to the number you computed in step 1. The moment it goes live it starts billing **hourly**, prorated to the minute, whether or not a single request flows through it.
 
-
-
-
-### This isn't just a Microsoft thing
-
-Every major hyperscaler offers an equivalent reserved-capacity mechanism — the names differ, but the idea is the same: commit to capacity, escape rate limits. A few even fall back to pay-as-you-go automatically when you exceed your reservation.
-
-| Provider | What they call it | Commitment | Auto-overflow to standard? |
-| --- | --- | --- | --- |
-| **Microsoft Foundry** | PTU | Hourly / monthly / annual | No |
-| **OpenAI** | Reserved Capacity | Enterprise contract | No |
-| **Anthropic** | Priority Tier | Monthly | ✅ Yes |
-| **AWS Bedrock** | Reserved Tier / Provisioned Throughput | 1–6 months | ✅ Yes (Reserved Tier) |
-| **Google Vertex AI** | Provisioned Throughput | 1 week – 1 year | No |
-| **Mistral** | Enterprise APIs (SLA-based) | Negotiated | N/A |
-
-Anthropic and Bedrock's Reserved Tier stand out: their automatic overflow means you're never left hanging if you burst past your reservation.
-
-
-
-
-
-
-
-You can reduce your deployment anytime. You can scale down the PTU count on a provisioned deployment through the Foundry portal or Azure CLI whenever you want — no need to delete and recreate it.
-However, your reservation is a separate problem. If you already purchased an Azure Reservation for 50 PTUs, that's a financial commitment and you can't just "resize" it downward freely. Your options are:
-
-Exchange it — Azure allows you to exchange a reservation for a new one of a different size (e.g. swap your 50 PTU reservation for a 13 PTU one). The price difference is refunded or charged pro-rata.
-Cancel it — Azure allows early cancellation with a 12% early termination fee, and there's a $50,000/year cap on refunds.
-Keep it and right-size later — If you're still early in the commitment period, you might absorb the overage now and plan to right-size at renewal.
-
-If you haven't bought a reservation yet (i.e. you're on hourly billing), then it's simple — just scale the deployment down to 13 PTUs and your hourly charges drop immediately. No penalties.
-The practical step right now:
+You can do this from the Foundry portal — your model → **Deploy** → pick a provisioned deployment type → set the PTU count — or from the CLI:
 
 ```bash
-az cognitiveservices account deployment update \
+az cognitiveservices account deployment create \
   --name <myResourceName> \
   --resource-group <myResourceGroupName> \
   --deployment-name <myDeploymentName> \
-  --sku-capacity 13
+  --model-name <model> \
+  --model-version <version> \
+  --model-format OpenAI \
+  --sku-name GlobalProvisionedManaged \
+  --sku-capacity <ptuCount>
 ```
 
-Have you already purchased a reservation, or are you still on hourly billing? That determines how painful the change actually is.Want to be n
+A few things worth knowing before you click deploy:
 
+- **Billing is hourly by default.** You pay for every PTU you've deployed for as long as it's deployed — this is the expensive, on-demand rate for capacity. A reservation (step 4) is what brings it down.
+- **You can resize anytime.** Increase or decrease the PTU count later in the Foundry portal or via the deployment API — billing adjusts to the new count immediately, prorated to the minute, with no delete-and-recreate. (The CLI has no dedicated `update` verb here; re-running `deployment create` with the same `--deployment-name` and a new `--sku-capacity` performs a create-or-update.)
+- **Scaling down releases capacity permanently.** Freed PTUs go back to the regional pool, and there's no guarantee the same capacity is available if you scale back up — so don't shed PTUs you'll want again next Monday morning.
 
-What happens if I want to decrease my PTU?
+## 4. (Optional) Buy a reservation to cut the cost
+At this point you have a working PTU deployment billed at the hourly rate. If your usage is steady — that **floor demand** we keep coming back to — paying hourly leaves money on the table. An **Azure Reservation** is a financial commitment (1‑month or 1‑year term) to pre‑pay for *N* PTUs at a large discount versus the hourly rate.
 
+The thing that trips people up: **a reservation deploys nothing and grants no capacity.** It's purely a billing discount that automatically maps onto whatever provisioned deployments you already have. So the three layers stay independent:
 
-You can increase or decrease the PTU count of an existing provisioned deployment at any time — via the Foundry portal or the API/CLI. No delete-and-recreate needed. Key facts:
-
-Billing adjusts immediately, prorated to the minute, to the new PTU count.
-Scaling down releases capacity permanently — the freed PTUs go back to the regional pool, and there's no guarantee you can get that same capacity back if you scale up later.
-Reservations are NOT affected by resizing. If a reservation covers the deployment and you scale below the reserved quantity, the reservation keeps billing at its original PTU amount — you just get unused reservation coverage.
-
-2. Decreasing a reservation (the financial commitment)
-Doc: Adjust reservations as your workload changes
-Detailed terms: Exchanges and refunds for Azure Reservations
-
-A reservation is a term commitment, so you can't freely resize it. Options:
-
-Exchange — swap for a new reservation of a different PTU quantity/term (in the Azure portal). Note: exchanges reset the term, and you can't exchange across deployment types (e.g. Global → Regional).
-Cancel — early cancellation may incur a fee. (Azure's standard policy is a 12% early termination fee with a
-
-## TODO info on reservation
-
-### How to decrease your PTU
-
-**Primary doc:** [Scale provisioned deployments](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#scale-provisioned-deployments) — *Provisioned throughput billing and cost management*
-
-> You can increase or decrease the PTU count of an existing provisioned deployment at any time in the Foundry portal or via the API. Billing adjusts immediately to the new PTU count.
-
-The four constraints the doc calls out when scaling **down**:
-
-| Constraint | What it means |
-| --- | --- |
-| **Releases capacity permanently** | Freed PTUs go back to the regional pool — no guarantee you can scale back up later |
-| **Billing adjusts immediately** | New (lower) PTU count is charged from the moment the resize completes, prorated to the minute |
-| **Reservations aren't affected** | If covered by a reservation, scaling the deployment down leaves the reservation at its original quantity → you get **unused reservation coverage** (you keep paying for it) |
-| **Scaling up later** | Requires capacity availability — verify before planning |
-
-#### How to actually do it
-
-**Portal:** Foundry portal → your deployment → Edit → lower the PTU count.
-
-**CLI:**
-
-```bash
-az cognitiveservices account deployment update \
-  --name <myResourceName> \
-  --resource-group <myResourceGroupName> \
-  --deployment-name <myDeploymentName> \
-  --sku-capacity 13
-```
-
-#### If you have a reservation
-
-Scaling the deployment down does **not** reduce a reservation. To adjust the financial commitment, see [Adjust reservations as your workload changes](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#adjust-reservations-as-your-workload-changes):
-
-- **Exchange** — change PTU quantity/term in the Azure portal (resets the term; can't cross deployment types like Global → Regional)
-- **Cancel** — may incur an early termination fee
-- **Disable auto-renew** — stop it renewing at term end
-- Full fee/eligibility terms: [Exchanges and refunds for Azure Reservations](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/exchange-and-refund-azure-reservations)
-
-## TODO PTU and reservation
-
-The right idea, but two different *axes* — capacity vs. price. Here's the mental model:
-
-| Step | What it is | Do you pay? |
-|------|-----------|-------------|
-| **1. Quota** | *Permission.* A ceiling on how many PTUs you're allowed to deploy in a given subscription, region, and deployment type. | Free — it's just a limit |
-| **2. PTU deployment** | *Capacity.* You actually create a provisioned deployment that consumes some of that quota. This is the running throughput. | Yes — **hourly** by default |
-| **3. Reservation** | *Price.* A financial commitment (1-month or 1-year term) to pre-pay for N PTUs at a big discount vs. the hourly rate. | Yes — but much cheaper per PTU |
-
-The key thing that trips people up: **a reservation is not a technical thing — it deploys nothing and grants no capacity.** It's purely a billing discount that automatically maps onto whatever provisioned deployments you already have.
-
-So the layers are independent:
-
-- **Quota, no deployment** → allowed, but nothing running — pay $0.
+- **Quota, no deployment** → allowed, but nothing running — you pay $0.
 - **Deployment, no reservation** → running, paying the expensive hourly rate.
 - **Deployment + reservation** → running, paying the cheap committed rate.
-- **Reservation, no (or smaller) deployment** → you committed financially but aren't using it = wasted money ("unused reservation coverage" — exactly the scale-down trap above).
+- **Reservation, no (or smaller) deployment** → you committed financially but aren't using it = wasted money (Azure calls this *unused reservation coverage*).
 
-**Analogy:**
+That last bullet is the trap: because scaling a deployment down doesn't shrink a reservation, dropping below your reserved PTU count means you keep paying for capacity you're no longer running. Size the reservation to your **floor**, not your peak — the spiky top of the curve is better left on hourly billing (or on PAYG fallback) than locked into a year-long commitment.
 
-- Quota = the size of the parking lot the city *lets* you build (permission, free).
-- PTU deployment = cars you actually park (metered hourly).
-- Reservation = a prepaid monthly parking pass — same spot, much cheaper than feeding the meter, but you pay even on days you don't park.
+A reservation is also **flexibly scoped**: you can point it at a single resource group, one subscription, a management group spanning several subscriptions, or your whole billing account — and you buy one per deployment type. Global reservations aren't even region-bound, so a single Global commitment can discount Global PTU deployments across multiple regions at once.
 
-So the real flow is: **request quota → deploy PTUs (billed hourly) → optionally buy a reservation to discount those PTUs.** You never *need* a reservation to run PTU; it's just the cost-optimization layer on top.
+And when your needs change, remember the deployment and the reservation move on independent axes. Scaling the **deployment** down is instant and penalty-free; the **reservation** is a term commitment with only three levers:
 
-## TODO Scope of PTU quota (notes to reuse)
+- **Exchange** — swap it for a new reservation of a different PTU quantity or term in the Azure portal. The new commitment must be at least the remaining value of the old one, the term resets, and you can't cross deployment types (Global → Regional). Exchanges carry no fee and no annual limit.
+- **Cancel (refund)** — return it for the prorated residual value. Azure isn't charging an early-termination fee today (though it has signalled a possible 12% fee in future), and total cancellations can't exceed **$50,000 in a rolling 12-month window** per billing profile or enrollment.
+- **Disable auto-renew** — the low-drama option: let it lapse at the end of its term instead of renewing.
 
-Short answer: **PTU quota is not just "per subscription".** It's scoped along **three** dimensions simultaneously — subscription × region × deployment type — and it is shared across models, not per-model.
-
-Verbatim from Microsoft Learn:
-
-**On scope** (from [What is provisioned throughput for Foundry Models?](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput#what-is-ptu-quota)):
-
-> "PTU quota is the maximum number of PTUs you can deploy **per subscription, per region, and per deployment type**. Quota is a policy limit enforced by Azure, and it has no associated cost. Quota is scoped at the offering level (Global Provisioned, Data Zone Provisioned, and Regional Provisioned are separate quota pools) and at the region level (for example, quota in East US doesn't apply to West Europe)."
-
-**On model independence** (same page, "Provisioned throughput units"):
-
-> "**Model-independent**: The same PTU quota can be used to deploy any supported model. You don't buy PTUs for a specific model."
-
-And from the [billing page](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#how-ptu-billing-works):
-
-> "Your PTU quota is shared across all supported models in a region and deployment type. The same PTU pool can be used to deploy any supported model."
-
-### Implication for the table above
-
-The row **"1. Quota"** previously said *"for a given model + region + deployment type"* — that's **wrong**. Quota is *not* per-model. A single quota pool in `(subscription, region, deployment type)` can be spent on any supported model in that pool. The correct scoping is: `subscription + region + deployment type`.
-
-### Don't confuse PTU quota with Azure Reservations
-
-These are different axes:
-
-| Concept | Scope | Per what? |
-|---|---|---|
-| **PTU quota** | Per subscription **×** per region **×** per deployment type. Model-independent. | A *permission ceiling*. |
-| **Azure Reservation** | Flexible — resource group, subscription, group of subscriptions in a management group, or whole billing account. Per deployment type. Global reservations are not region-bound. | A *financial discount*. |
-
-Verbatim on reservation scope (from the [billing page](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#key-reservation-facts)):
-
-> "**Flexibly scoped** — A reservation can be scoped to cover an individual resource group or subscription, a group of subscriptions in a management group, or all subscriptions in a billing account."
+For the exact eligibility and fee terms, see [Adjust reservations as your workload changes](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/provisioned-throughput-billing#adjust-reservations-as-your-workload-changes) and [Exchanges and refunds for Azure Reservations](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/exchange-and-refund-azure-reservations).
 
 
-Also talk about still graceuflly handling 429s and how to do that.
+# Handle overflow gracefully
+
+{/* DRAFT — flesh out and refine before publishing */}
+
+Even when going for PTU you will potentially hit 429... It changes *why* you get a 429 though — it becomes a capacity limit *you* chose — yet it doesn't make the error disappear. Two reasons keep it on the table:
+
+- **Traffic exceeds your provisioned ceiling.** Unless you over-provision for every conceivable peak — which the strategy section argues is rarely worth it — some spike eventually pushes past your floor, and the service returns 429 the instant utilization hits 100%.
+- **Your PAYG fallback can itself be throttled.** If you spill overflow onto a standard deployment, that deployment is back on shared TPM/RPM quota and can return 429 too. The fallback is not guaranteed.
+
+So the handling code is still mandatory. Here's what it looks like, built up in layers:
+
+1. **Honor the retry-after headers.** Every 429 comes back with `retry-after` and `retry-after-ms`, telling you exactly how long to wait before the next call will be accepted. Sleep for that long, then retry — don't guess at a backoff. The Azure OpenAI SDKs already do this for you, honoring the header automatically; the default is `max_retries = 2`, and you can raise or disable it:
+
+   ```python
+   client = OpenAI(
+       api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+       base_url="https://<myResourceName>.openai.azure.com/openai/v1/",
+       max_retries=5,  # default is 2
+   )
+   ```
+
+2. **Bound the retries and add jitter.** Cap how many times you retry, and add a little randomness to each wait so that a fleet of clients all bouncing off the same 429 doesn't resynchronize into a fresh spike a moment later.
+
+3. **Redirect overflow to a fallback.** Rather than wait, you can act the instant the 429 lands and send the request to a second deployment — typically a **standard (pay-as-you-go)** deployment of the same model. This is exactly the "provisioned floor + PAYG peak" shape we keep coming back to: your PTU absorbs steady demand at the committed rate, and the spiky top spills over to per-token billing instead of erroring out. Azure can automate this with the **spillover** feature, which routes would-be-429 requests to a designated standard deployment. (Spillover is supported by Azure OpenAI models, but not by every family — DeepSeek and Llama, for instance — so check support first, and remember from above that the fallback can be throttled too.)
+
+4. **Degrade gracefully when everything else is spent.** Once retries *and* fallback are exhausted, fail soft rather than hard — this is the airline chatbot from the opening, returning a friendly "high demand, try again in a moment" instead of a stack trace. Queue the request for asynchronous processing, serve a cached or cheaper answer, or drop to a smaller model. The user should never see the raw 429.
+
+5. **Observe all of it.** Meter your 429 rate, retry counts, spillover volume, and utilization %. That telemetry is the feedback loop for capacity planning.
+
+
+Happy journey ;)

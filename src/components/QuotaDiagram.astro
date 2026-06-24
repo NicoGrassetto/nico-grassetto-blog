@@ -21,203 +21,174 @@ const {
 
 const used = deployments.reduce((sum, d) => sum + d.ptus, 0);
 const free = Math.max(total - used, 0);
-
-const palette = [
-  { bg: 'linear-gradient(135deg, #0f7560, #0b5546)', text: '#7fe6c4', border: '#13836c' },
-  { bg: 'linear-gradient(135deg, #a8431a, #7c3113)', text: '#fba874', border: '#bd5226' },
-  { bg: 'linear-gradient(135deg, #1e5aa8, #143f7e)', text: '#8fbcf2', border: '#2467bf' },
-  { bg: 'linear-gradient(135deg, #6b3fa0, #4d2d76)', text: '#caa9f2', border: '#7d4cbb' },
-];
 ---
 
 <figure class="quota-diagram">
-  <div class="quota-outer">
-    <header class="quota-header">
-      <div class="quota-title">
-        <strong>Quota</strong> — your total allowance in {region} (e.g. {total} PTUs)
-      </div>
-      <div class="quota-subtitle">
-        Set by Microsoft per subscription · per region · per deployment type
-      </div>
-    </header>
+  <div class="qd-frame">
+    <div class="qd-head">
+      <div class="qd-title"><b>quota</b> — total allowance in {region} · e.g. {total} PTUs</div>
+      <div class="qd-sub">per subscription · per region · per deployment type</div>
+    </div>
 
-    <div class="quota-cards">
-      {deployments.map((d, i) => (
-        <div
-          class="quota-card"
-          style={`flex-grow:${d.ptus}; background:${palette[i % palette.length].bg}; border-color:${palette[i % palette.length].border};`}
-        >
-          <div class="card-name">{d.name}</div>
-          <div class="card-ptus" style={`color:${palette[i % palette.length].text};`}>{d.ptus} PTUs</div>
-          <div class="card-state" style={`color:${palette[i % palette.length].text};`}>deployed</div>
+    <div
+      class="qd-bar"
+      role="img"
+      aria-label={`Quota of ${total} PTUs in ${region}: ${used} deployed, ${free} available`}
+    >
+      {deployments.map((d) => (
+        <div class="qd-seg qd-seg--used" style={`flex-grow:${d.ptus};`}>
+          <span class="qd-seg-name">{d.name}</span>
+          <span class="qd-seg-ptus">{d.ptus} PTU</span>
+          <span class="qd-seg-tag">deployed</span>
         </div>
       ))}
 
       {free > 0 && (
-        <div class="quota-card quota-card--free" style={`flex-grow:${free};`}>
-          <div class="card-name">Available</div>
-          <div class="card-ptus">{free} PTUs</div>
-          <div class="card-state">unused quota</div>
+        <div class="qd-seg qd-seg--free" style={`flex-grow:${free};`}>
+          <span class="qd-seg-name">available</span>
+          <span class="qd-seg-ptus">{free} PTU</span>
+          <span class="qd-seg-tag">headroom</span>
         </div>
       )}
     </div>
 
-    <footer class="quota-footer">
-      <div class="quota-legend">
-        <span class="legend-item"><span class="swatch swatch--used"></span>= PTUs in use</span>
-        <span class="legend-item"><span class="swatch swatch--free"></span>= Available quota (not yet deployed)</span>
-      </div>
-      <div class="quota-totals">
-        Total quota = {total} PTUs · Used = {used} · Free = {free}
-      </div>
-    </footer>
+    <div class="qd-axis">
+      <span>0</span>
+      <span>{total} PTU · quota ceiling</span>
+    </div>
   </div>
   <figcaption class="quota-caption">
-    Quota is free — you only pay for PTUs you actually deploy
+    The dashed box is your quota ceiling ({total} PTU). Solid blocks are deployed PTUs ({used}); the empty space is free headroom ({free}) you can deploy anytime — quota itself is free, you only pay for PTUs you deploy.
   </figcaption>
 </figure>
 
 <style>
   .quota-diagram {
-    margin: 1.75rem 0;
-    font-family: inherit;
-  }
-
-  .quota-outer {
-    border: 1px solid #3d6fb4;
-    border-radius: 16px;
-    background: #12161f;
-    padding: 1.5rem 1.5rem 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-  }
-
-  .quota-header {
-    text-align: center;
-    margin-bottom: 1.25rem;
-  }
-
-  .quota-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #e8edf4;
-    line-height: 1.4;
-  }
-
-  .quota-title strong {
-    font-weight: 800;
-    color: #fff;
-  }
-
-  .quota-subtitle {
-    margin-top: 0.35rem;
-    font-size: 0.9rem;
-    color: #8b95a5;
-  }
-
-  .quota-cards {
+    margin: 2rem 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-primary, #222);
+    border-bottom: 1px solid var(--border-primary, #222);
     display: flex;
-    gap: 0.9rem;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .quota-card {
+  .qd-frame {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .qd-head {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .qd-title {
+    font-size: 0.95rem;
+    color: var(--text-primary, #fff);
+    letter-spacing: 0.03em;
+  }
+
+  .qd-title b {
+    font-weight: 700;
+  }
+
+  .qd-sub {
+    margin-top: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--text-muted, #888);
+    letter-spacing: 0.04em;
+  }
+
+  .qd-bar {
+    display: flex;
+    gap: 2px;
+    min-height: 128px;
+    padding: 3px;
+    border: 1px dashed var(--text-muted, #888);
+    border-radius: 3px;
+  }
+
+  .qd-seg {
     flex-basis: 0;
     min-width: 0;
-    min-height: 180px;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
+    padding: 0.75rem 0.5rem;
+    overflow: hidden;
   }
 
-  .quota-card--free {
-    background: #34394480;
-    border: 1px dashed #6b7280;
+  .qd-seg--used {
+    background: var(--text-primary, #fff);
+    color: var(--bg-primary, #000);
+    border-radius: 2px;
   }
 
-  .card-name {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #f1f4f8;
+  .qd-seg--free {
+    color: var(--text-muted, #888);
   }
 
-  .card-ptus {
-    font-size: 1.05rem;
+  .qd-seg-name {
+    font-size: 0.9rem;
     font-weight: 600;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .card-state {
-    font-size: 0.95rem;
-    opacity: 0.95;
+  .qd-seg-ptus {
+    font-size: 0.82rem;
+    opacity: 0.85;
   }
 
-  .quota-card--free .card-ptus,
-  .quota-card--free .card-state {
-    color: #9aa3b0;
+  .qd-seg-tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
   }
 
-  .quota-footer {
-    margin-top: 1.25rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    text-align: center;
-  }
-
-  .quota-legend {
+  .qd-axis {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.75rem;
-    font-size: 0.92rem;
-    color: #c2c9d4;
-  }
-
-  .legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .swatch {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    display: inline-block;
-  }
-
-  .swatch--used {
-    background: #0f7560;
-  }
-
-  .swatch--free {
-    background: #4a4f5a;
-    border: 1px dashed #8b95a5;
-  }
-
-  .quota-totals {
-    margin-top: 0.8rem;
-    font-size: 0.95rem;
-    color: #d4dae2;
+    justify-content: space-between;
+    margin-top: 0.55rem;
+    font-size: 0.74rem;
+    color: var(--text-muted, #888);
+    letter-spacing: 0.03em;
   }
 
   .quota-caption {
-    margin-top: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
     text-align: center;
-    font-size: 0.9rem;
-    color: #7a8493;
+    letter-spacing: 0.02em;
+    max-width: 720px;
+    line-height: 1.5;
   }
 
-  @media (max-width: 640px) {
-    .quota-cards {
+  @media (max-width: 560px) {
+    .qd-bar {
       flex-direction: column;
+      min-height: 0;
     }
-    .quota-card {
-      min-height: 120px;
+    .qd-seg {
+      min-height: 56px;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 0.6rem;
+      padding: 0.6rem 0.9rem;
+    }
+    .qd-seg-tag {
+      display: none;
     }
   }
 </style>
