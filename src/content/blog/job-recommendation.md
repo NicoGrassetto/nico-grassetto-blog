@@ -2,7 +2,7 @@
 title: "A recipe for building a job recommendation system"
 date: "2026-01-05"
 description: "Something"
-draft: false
+draft: true
 ---
 
 INTROCUTION

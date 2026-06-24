@@ -321,7 +321,11 @@ const {
     let gradOffset = 0;
 
     function frame(now: number) {
-      const dt = (now - last) / 1000;
+      // Clamp dt so a stale timestamp (tab backgrounded, bfcache restore on
+      // back/forward, navigation pause) can't produce one huge step that
+      // teleports every particle past the reset point and collapses them
+      // into a single overlapping clump.
+      const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const dx = speed * dt;
 
