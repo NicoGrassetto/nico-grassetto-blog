@@ -315,5 +315,15 @@ So the handling code is still mandatory. Here's what it looks like, built up in 
 
 5. **Observe all of it.** Meter your 429 rate, retry counts, spillover volume, and utilization %. That telemetry is the feedback loop for capacity planning.
 
+# Conclusion
+
+Designing a resilient LLM-based system is a two-part problem: **capacity planning** and **error handling**. Most teams get the second part right — they write retry loops, implement fallback deployments, and return graceful degradation messages when the model is unavailable. Far fewer invest equal energy in the first part.
+
+That imbalance is understandable. Error handling is a software problem, and software engineers are trained to solve software problems. Capacity planning feels more like an infrastructure or finance decision — something to hand off to ops or revisit at the next quarterly review. But when you treat capacity as an afterthought, error handling becomes load-bearing. Your retries, fallbacks, and "please try again later" messages are no longer a safety net; they are the primary mechanism keeping your product from falling over. That is a fragile position to be in.
+
+PTU is the tool that shifts the balance. By reserving a floor of dedicated compute, you eliminate the ambient 429 noise of shared quota and give your error handling code the breathing room it was always supposed to have — something to catch genuine edge cases, not routine traffic. The two layers reinforce each other: solid capacity planning reduces how often error handling fires; solid error handling ensures that when capacity is genuinely exhausted, the experience degrades gracefully rather than catastrophically.
+
+Build both. Plan for capacity first, then plan for what happens when capacity isn't enough.
+
 
 Happy journey ;)
