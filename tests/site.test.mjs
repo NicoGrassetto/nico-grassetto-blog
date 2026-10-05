@@ -51,8 +51,18 @@ test('existing article URLs and RSS identifiers remain unchanged', () => {
   assert.match(feed, /<atom:link href="https:\/\/www\.nicograssetto\.com\/feed"/);
 });
 
+test('the blog preserves the original three-column design and sections', () => {
+  assert.match(blog, /class="container-full"/);
+  assert.match(blog, /class="three-column-grid"/);
+  assert.equal([...blog.matchAll(/class="column"/g)].length, 3);
+  assert.match(blog, /class="profile-image"/);
+  assert.match(blog, /id="ascii-loader"/);
+  const sections = [...blog.matchAll(/<h2 class="section-header"[^>]*>([^<]+)<\/h2>/g)].map(([, title]) => title);
+  assert.deepEqual(sections, ['INTRO', 'LINKS', 'PROJECTS', 'OPEN SOURCE', 'POSTS', 'READING LIST']);
+});
+
 test('the blog index, article routes, and RSS agree on published posts and order', () => {
-  const links = [...blog.matchAll(/href="(\/blog\/[^"#?]+)"/g)].map(([, href]) => href);
+  const links = [...blog.matchAll(/href="(\/blog\/[^"#?]+)" class="blog-post-card"/g)].map(([, href]) => href);
   assert.deepEqual(links, rssItems.map((item) => new URL(item.link).pathname));
   const articleDirectories = readdirSync(path.join(dist, 'blog'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -65,7 +75,7 @@ test('the blog index, article routes, and RSS agree on published posts and order
     assert.match(article, /href="\/blog\/" class="back-link"/);
     assert.doesNotMatch(article, /\/assets\/(?:styles\.css|three\.js|site\.js)/);
   }
-  assert.match(blog, /href="\/"[^>]*>Home<\/a>/);
+  assert.match(blog, /href="\/" aria-label="Nico Grassetto, home"/);
   assert.doesNotMatch(blog, /\/assets\/(?:styles\.css|three\.js|site\.js)/);
 });
 

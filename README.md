@@ -28,7 +28,7 @@ My personal website and blog, built with Astro. The homepage introduces my work,
 ## Pages and Content
 
 - `/` is the personal landing page in [src/pages/index.astro](src/pages/index.astro).
-- `/blog/` lists published articles through [src/pages/blog/index.astro](src/pages/blog/index.astro).
+- `/blog/` preserves the original three-column blog homepage, including the profile, projects, posts, reading list, and styling, in [src/pages/blog/index.astro](src/pages/blog/index.astro). The name in the introduction links back to the personal landing page.
 - `/blog/<slug>` keeps the existing article URLs. Posts remain in [src/content/blog/](src/content/blog/); do not rename existing slugs when reorganizing the site.
 - `/feed` remains the RSS subscription URL, with unchanged article links and GUIDs.
 - `/about` and the existing preview pages remain available.
