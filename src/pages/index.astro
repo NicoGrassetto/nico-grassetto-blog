@@ -1,298 +1,561 @@
 ---
-import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
-import Layout from '../layouts/Layout.astro';
-import ProjectItem from '../components/ProjectItem.astro';
-import RepoItem from '../components/RepoItem.astro';
-import BlogPostCard from '../components/BlogPostCard.astro';
-import profileImage from '../assets/images/sunp0014.jpg';
+import { getPublishedPosts } from '../utils/getPublishedPosts';
 
-// Get all non-draft blog posts, sorted by date (newest first)
-const allBlogPosts = await getCollection('blog');
-const publishedPosts = allBlogPosts.filter((p) => !p.data.draft);
-const sortedPosts = publishedPosts.sort((a, b) => 
-	new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
-
-// Placeholder data - easily editable
-const projects = [
-	{ title: "Veloce", badge: "TOOL" as const, description: "CLI AI assistant experience done right.", href: "https://github.com/NicoGrassetto/veloce" },
-	{ title: "My config", badge: "TOOL" as const, description: "My personal dotfiles and configuration.", href: "https://github.com/NicoGrassetto/my-config" },
-	{ title: "Event Driven Document Processing", badge: "ACCELERATOR" as const, description: "Event-driven document processing accelerator.", href: "https://github.com/NicoGrassetto/Event-driven-document-processing-accelerator" },
-	{ title: "Blog", badge: "APP" as const, description: "My personal blog coded in Astro.js.", href: "https://github.com/NicoGrassetto/nico-grassetto-blog" },
-];
-
-const repos = [
-	{ name: "Discopilot", description: "Your Copilot for Discord: record voice with consent, transcribe and translate in real time, and recap meetings.", href: "https://github.com/NicoGrassetto/Discopilot" },
-	{ name: "Project Helix", description: "Agentic research template: Azure ML compute + MCP workflows for Research IT and researchers.", href: "https://github.com/NicoGrassetto/Project-Helix" },
-];
-
-const links = [
-	{ name: "@nicograssetto", href: "https://x.com/NicoGrassetto", icon: "x" },
-	{ name: "GitHub", href: "https://github.com/NicoGrassetto", icon: "github" },
-	{ name: "LinkedIn", href: "https://www.linkedin.com/in/nicograssetto/", icon: "linkedin" },
-	{ name: "Discord", href: "https://discord.gg/", icon: "discord" },
-];
-
-const books = [
-	{ title: "Distributed Systems", author: "Maarten van Steen" },
-	{ title: "Supercommunicators", author: "Charles Duhigg" },
-	{ title: "The Personal MBA", author: "Josh Kaufman" },
-	{ title: "Thinking in Systems", author: "Donella H. Meadows" },
-	{ title: "Concurrency in Go", author: "Katherine Cox-Buday" },
-	{ title: "The Go Programming Language", author: "Alan Donovan & Brian Kernighan" },
-	{ title: "100 Go Mistakes and How to Avoid Them", author: "Teiva Harsanyi" },
-	{ title: "Mining of Massive Datasets", author: "Leskovec, Rajaraman & Ullman" },
-	{ title: "Machine Learning Engineering", author: "Andriy Burkov" },
-	{ title: "Designing Data-Intensive Applications", author: "Martin Kleppmann" },
-];
+const [latestPost] = await getPublishedPosts();
+const title = 'Nico Grassetto | Ideas into action';
+const description = 'Nico Grassetto. A curious mind, a hands-on approach. Work, ideas, and new possibilities.';
 ---
 
-<Layout title="Nico Grassetto" description="Engineering experiences with technologies." fullWidth={true}>
-	<div class="three-column-grid">
-		<!-- Column 1: Intro + Links -->
-		<div class="column">
-			<!-- ASCII Loading Bar -->
-			<div class="loader-container" id="ascii-loader">
-				<div class="loader-bar" id="loader-bar">[░░░░░░░░░░░░░░░░░░░░]</div>
-				<div class="loader-complete" id="loader-complete">
-					<a href={`${import.meta.env.BASE_URL}blog/${sortedPosts[0]?.slug}`} class="loader-link">LATEST POST</a>
-				</div>
-			</div>
-			<script>
-				(function() {
-					const bar = document.getElementById('loader-bar');
-					const complete = document.getElementById('loader-complete');
-					const totalBlocks = 20;
-					
-					function runLoader() {
-						let filled = 0;
-						bar.style.opacity = '1';
-						complete.style.opacity = '0';
-						bar.textContent = '[' + '░'.repeat(totalBlocks) + ']';
-						
-						const interval = setInterval(() => {
-							filled++;
-							const filledStr = '█'.repeat(filled);
-							const emptyStr = '░'.repeat(totalBlocks - filled);
-							bar.textContent = '[' + filledStr + emptyStr + ']';
-							
-							if (filled >= totalBlocks) {
-								clearInterval(interval);
-								setTimeout(() => {
-									bar.style.opacity = '0';
-									setTimeout(() => {
-										complete.style.opacity = '1';
-										// Show text for 4 seconds, then restart
-										setTimeout(runLoader, 4000);
-									}, 500);
-								}, 300);
-							}
-						}, 400);
-					}
-					
-					runLoader();
-				})();
-			</script>
-			<Image 
-				src={profileImage} 
-				alt="Nico Grassetto" 
-				class="profile-image"
-			/>
-			<div class="column-section">
-				<h2 class="section-header">INTRO</h2>
-				<p class="profile-bio">
-					I'm <strong>Nico Grassetto</strong> and this is my space on the internet.
-				</p>
-				<p class="profile-bio" style="margin-top: 1rem;">
-					I'm into Distributed Systems, all things AI, Cloud Computing, and more generally technology.
-				</p>
-			</div>
-			<div class="column-section">
-				<h2 class="section-header">LINKS</h2>
-				<ul class="links-list">
-					{links.map((link) => (
-						<li class="link-item">
-							<a href={link.href} target="_blank" rel="noopener noreferrer">
-								{link.icon === "x" && (
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-									</svg>
-								)}
-								{link.icon === "github" && (
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-									</svg>
-								)}
-								{link.icon === "linkedin" && (
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-									</svg>
-								)}
-								{link.icon === "discord" && (
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9554 2.4189-2.1568 2.4189z"/>
-									</svg>
-								)}
-								{link.name}
-							</a>
-						</li>
-					))}
-				</ul>
-			</div>
-		</div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content={description}>
+    <meta name="author" content="Nico Grassetto">
+    <meta name="generator" content={Astro.generator}>
+    <meta name="theme-color" content="#000000">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:site_name" content="Nico Grassetto">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content={title}>
+    <meta name="twitter:description" content={description}>
+    <meta name="twitter:creator" content="@ngrassetto">
+    <title>{title}</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="canonical" href={new URL('/', Astro.site)}>
+    <link rel="alternate" type="application/rss+xml" title="Nico Grassetto's Blog" href="/feed">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script is:inline src="/assets/lucide.min.js" defer></script>
+    <script is:inline src="/assets/three.js" defer></script>
+    <script is:inline src="/assets/distributed-system.js" defer></script>
+    <script is:inline src="/assets/pixel-landmarks.js" defer></script>
+    <script is:inline src="/assets/config.js" defer></script>
+    <script is:inline src="/assets/site.js" defer></script>
+  </head>
+  <body style={latestPost ? undefined : '--announcement-height: 0px;'}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {latestPost && (
+      <aside class="announcement-bar" aria-label="Latest blog post">
+        <a class="announcement-link" href={`${import.meta.env.BASE_URL}blog/${latestPost.slug}`} aria-label={`Read ${latestPost.data.title}`}>
+          <span class="announcement-label">New post</span>
+          <span class="announcement-title">{latestPost.data.title}</span>
+          <span class="announcement-action">Read now <i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+        </a>
+      </aside>
+    )}
+    <header class="site-header">
+      <a class="wordmark" href="#home" aria-label="Nico Grassetto, home">nico grassetto<span class="brand-dot" aria-hidden="true">.</span></a>
+      <button class="menu-toggle icon-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav" title="Open menu">
+        <i class="menu-open-icon" data-lucide="menu" aria-hidden="true"></i>
+        <i class="menu-close-icon" data-lucide="x" aria-hidden="true"></i>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="#home" aria-current="location">Home</a>
+        <a href="#case-studies">Case studies</a>
+        <a href="#offers">Services</a>
+        <a href="#contact">Contact</a>
+        <a href={`${import.meta.env.BASE_URL}blog/`}>Blog</a>
+      </nav>
+      <a class="header-cta" href="#contact">Let's talk <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    </header>
 
-		<!-- Column 2: Projects + Open Source -->
-		<div class="column">
-			<div class="column-section">
-				<h2 class="section-header">PROJECTS</h2>
-				{projects.map((project) => (
-					<ProjectItem 
-						title={project.title}
-						badge={project.badge}
-						description={project.description}
-						href={project.href}
-					/>
-				))}
-			</div>
-			<div class="column-section">
-				<h2 class="section-header">OPEN SOURCE</h2>
-				{repos.map((repo) => (
-					<RepoItem
-						name={repo.name}
-						description={repo.description}
-						href={repo.href}
-					/>
-				))}
-			</div>
-		</div>
+    <main id="main">
+      <section class="hero" id="home" aria-labelledby="hero-title">
+        <div class="systems-stage" role="img" aria-label="A branching pixel neural network with traveling impulses and intermittent coordinate tracking">
+          <pre class="systems-fallback" aria-hidden="true">        \ | /                  \ | /
+    .---- o ----.         .---- o ----.
+   /     /|\     \       /     /|\
+  /               \     /         \
+ \|/              \ | /           \|/
+-- o -------------- o ------------- o --
+ /|\              / | \           /|\
+   \              /   \            /
+    \      \ | / /     \ \ | /    /
+     '------ o --'     '-- o -----'
+            /|\           /|\
+           /   \         /   \</pre>
+          <canvas class="systems-canvas" aria-hidden="true"></canvas>
+          <svg class="neural-tracking" aria-hidden="true"></svg>
+        </div>
+        <div class="hero-content">
+          <h1 id="hero-title">Artificial Intelligence Without the Bullsh**.</h1>
+          <p class="hero-intro">Distributed systems, artificial intelligence, and automation done the right way.</p>
+          <p class="hero-intro">My mission is to help companies build reliable and value-driven automation systems or products.</p>
+          <a class="button button-primary" href="#case-studies">Explore work <i data-lucide="arrow-down-right" aria-hidden="true"></i></a>
+        </div>
+      </section>
 
-		<!-- Column 3: Blog Posts + Reading List -->
-		<div class="column">
-			<div class="column-section">
-				<h2 class="section-header">POSTS</h2>
-				<div class="blog-posts-grid">
-					{sortedPosts.map((post) => (
-						<BlogPostCard
-							title={post.data.title}
-							date={post.data.date}
-							slug={post.slug}
-							image={post.data.image}
-						/>
-					))}
-				</div>
-			</div>
-			<div class="column-section">
-				<h2 class="section-header">READING LIST</h2>
-				<ul class="reading-list">
-					{books.map((book) => (
-						<li class="book-item">
-							<span class="book-title">{book.title}</span>
-							<span class="book-author">by {book.author}</span>
-						</li>
-					))}
-				</ul>
-			</div>
-		</div>
-	</div>
-</Layout>
+      <section class="stats-strip section-shell" aria-label="In numbers">
+        <dl class="stats-grid">
+          <div class="stat">
+            <dt>People booked time with me this year</dt>
+            <dd>40+</dd>
+          </div>
+          <div class="stat">
+            <dt>Organisations I've worked with</dt>
+            <dd>30+</dd>
+          </div>
+          <div class="stat">
+            <dt>AI projects I've contributed to</dt>
+            <dd>20+</dd>
+          </div>
+          <div class="stat">
+            <dt>In revenue supported</dt>
+            <dd>20M+</dd>
+          </div>
+        </dl>
+      </section>
 
-<style>
-	.loader-container {
-		width: 100%;
-		margin: 1.5rem auto 1rem auto;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.875rem;
-		letter-spacing: 1px;
-		position: relative;
-		height: 1.5em;
-		text-align: center;
-	}
+      <section class="client-strip section-shell" aria-labelledby="clients-title">
+        <p id="clients-title">I've worked with</p>
+        <ul class="client-logos">
+          <li>
+            <a class="client-logo" href="https://www.esma.europa.eu/" target="_blank" rel="noopener noreferrer" aria-label="Visit ESMA's website (opens in a new tab)" title="European Securities and Markets Authority">
+              <img src="assets/esma-logo.png" alt="ESMA - European Securities and Markets Authority" width="228" height="60" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.amla.europa.eu/index_en" target="_blank" rel="noopener noreferrer" aria-label="Visit AMLA's website (opens in a new tab)" title="Authority for Anti-Money Laundering and Countering the Financing of Terrorism">
+              <img src="assets/amla-logo.svg" alt="AMLA" width="208" height="90" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.eba.europa.eu/homepage" target="_blank" rel="noopener noreferrer" aria-label="Visit EBA's website (opens in a new tab)" title="European Banking Authority">
+              <img src="assets/eba-logo.svg" alt="EBA - European Banking Authority" width="312" height="108" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://commission.europa.eu/index_en" target="_blank" rel="noopener noreferrer" aria-label="Visit the European Commission's website (opens in a new tab)" title="European Commission">
+              <img src="assets/european-commission-logo.svg" alt="European Commission" width="291" height="72" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.ecb.europa.eu/home/html/index.en.html" target="_blank" rel="noopener noreferrer" aria-label="Visit the European Central Bank's website (opens in a new tab)" title="European Central Bank">
+              <img src="assets/ecb-emblem.svg" alt="ECB - European Central Bank" width="98" height="85" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://european-union.europa.eu/index_en" target="_blank" rel="noopener noreferrer" aria-label="Visit the European Union's website (opens in a new tab)" title="European Union">
+              <img src="assets/european-union-logo.svg" alt="European Union" width="172" height="48" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.europarl.europa.eu/portal/en" target="_blank" rel="noopener noreferrer" aria-label="Visit the European Parliament's website (opens in a new tab)" title="European Parliament">
+              <img src="assets/european-parliament-logo.svg" alt="European Parliament" width="80" height="44" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.bees.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit BEES's website (opens in a new tab)" title="BEES">
+              <img src="assets/bees-logo.svg" alt="BEES" width="106" height="32" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo client-logo--inverse" href="https://www.ab-inbev.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit AB InBev's website (opens in a new tab)" title="AB InBev">
+              <img src="assets/ab-inbev-logo.svg" alt="AB InBev" width="138" height="26" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://corporate.dewatergroep.be/en/" target="_blank" rel="noopener noreferrer" aria-label="Visit De Watergroep's website (opens in a new tab)" title="De Watergroep">
+              <img src="assets/de-watergroep-logo.svg" alt="De Watergroep" width="577" height="507" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.portofantwerpbruges.com/en" target="_blank" rel="noopener noreferrer" aria-label="Visit Port of Antwerp-Bruges' website (opens in a new tab)" title="Port of Antwerp-Bruges">
+              <img src="assets/port-of-antwerp-bruges-logo.png" alt="Port of Antwerp-Bruges" width="1280" height="512" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.imec-int.com/en" target="_blank" rel="noopener noreferrer" aria-label="Visit imec's website (opens in a new tab)" title="imec">
+              <img src="assets/imec-logo.svg" alt="imec" width="373" height="112" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.nato.int/en" target="_blank" rel="noopener noreferrer" aria-label="Visit NATO's website (opens in a new tab)" title="North Atlantic Treaty Organization">
+              <img src="assets/nato-logo.png" alt="NATO - North Atlantic Treaty Organization" width="317" height="159" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.ncia.nato.int/default" target="_blank" rel="noopener noreferrer" aria-label="Visit NCIA's website (opens in a new tab)" title="NATO Communications and Information Agency">
+              <img src="assets/ncia-logo.svg" alt="NCIA - NATO Communications and Information Agency" width="138" height="97" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.wallonie.be/fr" target="_blank" rel="noopener noreferrer" aria-label="Visit the Walloon Region's website (opens in a new tab)" title="Walloon Region - Wallonie">
+              <img src="assets/wallonia-logo.png" alt="Wallonie - Walloon Region" width="241" height="44" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.leforem.be/" target="_blank" rel="noopener noreferrer" aria-label="Visit Le Forem's website (opens in a new tab)" title="Le Forem">
+              <img src="assets/le-forem-logo.svg" alt="Le Forem" width="186" height="54" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.belgiantrain.be/en" target="_blank" rel="noopener noreferrer" aria-label="Visit NMBS/SNCB's website (opens in a new tab)" title="NMBS / SNCB - Belgian Railways">
+              <img src="assets/sncb-logo.png" alt="NMBS / SNCB" width="2560" height="1671" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.delijn.be/en/" target="_blank" rel="noopener noreferrer" aria-label="Visit De Lijn's website (opens in a new tab)" title="De Lijn">
+              <img src="assets/de-lijn-logo.png" alt="De Lijn" width="192" height="192" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.letec.be/" target="_blank" rel="noopener noreferrer" aria-label="Visit TEC's website (opens in a new tab)" title="TEC - Public transport in Wallonia">
+              <img src="assets/tec-logo.svg" alt="TEC" width="749" height="261" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.stib-mivb.be/" target="_blank" rel="noopener noreferrer" aria-label="Visit STIB/MIVB's website (opens in a new tab)" title="STIB / MIVB - Brussels public transport">
+              <img src="assets/stib-logo.svg" alt="STIB / MIVB" width="243" height="104" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://gouvernement.lu/en.html" target="_blank" rel="noopener noreferrer" aria-label="Visit the Luxembourg government's website (opens in a new tab)" title="Government of the Grand Duchy of Luxembourg">
+              <img src="assets/luxembourg-government-logo.svg" alt="Government of the Grand Duchy of Luxembourg" width="205" height="40" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.bil.com/en/individuals/Pages/index.aspx" target="_blank" rel="noopener noreferrer" aria-label="Visit BIL's website (opens in a new tab)" title="Banque Internationale a Luxembourg">
+              <img src="assets/bil-logo.svg" alt="BIL - Banque Internationale a Luxembourg" width="6805" height="1133" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.ses.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit SES's website (opens in a new tab)" title="SES - Satellite communications">
+              <img src="assets/ses-logo.svg" alt="SES" width="607" height="194" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.spuerkeess.lu/en/private-customers/" target="_blank" rel="noopener noreferrer" aria-label="Visit Spuerkeess's website (opens in a new tab)" title="Spuerkeess - Banque et Caisse d'Epargne de l'Etat (BCEE)">
+              <img src="assets/spuerkeess-logo.svg" alt="Spuerkeess - BCEE" width="214" height="40" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.ugent.be/en" target="_blank" rel="noopener noreferrer" aria-label="Visit Ghent University's website (opens in a new tab)" title="UGent - Ghent University">
+              <img src="assets/ugent-logo.svg" alt="UGent - Ghent University" width="56" height="48" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.helan.be/en/" target="_blank" rel="noopener noreferrer" aria-label="Visit Helan's website (opens in a new tab)" title="Helan">
+              <img src="assets/helan-logo.svg" alt="Helan" width="162" height="52" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.cm.be/en" target="_blank" rel="noopener noreferrer" aria-label="Visit CM's website (opens in a new tab)" title="CM - Christelijke Mutualiteit">
+              <img src="assets/cm-logo.png" alt="CM - Christelijke Mutualiteit" width="220" height="220" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.mloz.be/fr" target="_blank" rel="noopener noreferrer" aria-label="Visit MLOZ's website (opens in a new tab)" title="MLOZ - Mutualites Libres">
+              <img src="assets/mloz-logo.png" alt="MLOZ - Mutualites Libres" width="267" height="37" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://chirec.be/en" target="_blank" rel="noopener noreferrer" aria-label="Visit CHIREC's website (opens in a new tab)" title="CHIREC">
+              <img src="assets/chirec-logo.svg" alt="CHIREC" width="103" height="76" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.zorgi.be/" target="_blank" rel="noopener noreferrer" aria-label="Visit ZORGI's website (opens in a new tab)" title="ZORGI">
+              <img src="assets/zorgi-logo.svg" alt="ZORGI" width="697" height="208" decoding="async">
+            </a>
+          </li>
+          <li>
+            <a class="client-logo" href="https://www.partenamut.be/fr" target="_blank" rel="noopener noreferrer" aria-label="Visit Partenamut's website (opens in a new tab)" title="Partenamut">
+              <img src="assets/partenamut-logo.svg" alt="Partenamut" width="155" height="44" decoding="async">
+            </a>
+          </li>
+        </ul>
+      </section>
 
-	.loader-bar {
-		color: var(--text-primary);
-		font-weight: 700;
-		transition: opacity 0.5s ease;
-	}
+      <section class="technologies section-shell" aria-labelledby="technologies-title">
+        <p class="technologies-title" id="technologies-title">Technologies I work with.</p>
+        <ul class="technology-cloud">
+          <li class="technology"><img src="assets/technologies/linux.svg" alt="" width="24" height="24">Linux</li>
+          <li class="technology"><img src="assets/technologies/go.svg" alt="" width="24" height="24">Go</li>
+          <li class="technology"><img src="assets/technologies/python.svg" alt="" width="24" height="24">Python</li>
+          <li class="technology"><img src="assets/technologies/javascript.svg" alt="" width="24" height="24">JavaScript</li>
+          <li class="technology"><img src="assets/technologies/html5.svg" alt="" width="24" height="24">HTML</li>
+          <li class="technology"><img src="assets/technologies/css.svg" alt="" width="24" height="24">CSS</li>
+          <li class="technology"><img src="assets/technologies/github.svg" alt="" width="24" height="24">GitHub</li>
+          <li class="technology"><img src="assets/technologies/terraform.svg" alt="" width="24" height="24">Terraform</li>
+          <li class="technology"><img src="assets/technologies/microsoftazure.svg" alt="" width="24" height="24">Azure</li>
+          <li class="technology"><img src="assets/technologies/googlecloud.svg" alt="" width="24" height="24">GCP</li>
+          <li class="technology"><img src="assets/technologies/amazonwebservices.svg" alt="" width="24" height="24">AWS</li>
+          <li class="technology"><img src="assets/technologies/htmx.svg" alt="" width="24" height="24">HTMX</li>
+          <li class="technology"><img src="assets/technologies/postgresql.svg" alt="" width="24" height="24">PostgreSQL</li>
+          <li class="technology"><img src="assets/technologies/dapr.svg" alt="" width="24" height="24">Dapr</li>
+          <li class="technology"><img src="assets/technologies/opencode.svg" alt="" width="24" height="24">OpenCode</li>
+          <li class="technology"><img src="assets/technologies/githubcopilot.svg" alt="" width="24" height="24">GitHub Copilot</li>
+          <li class="technology"><img src="assets/technologies/kubernetes.svg" alt="" width="24" height="24">Kubernetes</li>
+          <li class="technology"><img src="assets/technologies/pytorch.svg" alt="" width="24" height="24">PyTorch</li>
+          <li class="technology"><img src="assets/technologies/opensearch.svg" alt="" width="24" height="24">OpenSearch</li>
+          <li class="technology"><img src="assets/technologies/prometheus.svg" alt="" width="24" height="24">Prometheus</li>
+        </ul>
+      </section>
 
-	.loader-complete {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		color: var(--text-primary);
-		font-weight: 700;
-		font-style: italic;
-		text-transform: uppercase;
-		opacity: 0;
-		transition: opacity 0.5s ease;
-		white-space: nowrap;
-		text-align: center;
-	}
+      <section class="work section-shell" id="case-studies" aria-labelledby="work-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow section-label">02 / CASE STUDIES</p>
+            <h2 id="work-title">Thinking <em>in practice.</em></h2>
+          </div>
+          <a class="text-link work-github-link" href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer">
+            <span>More work on GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i>
+          </a>
+        </div>
+        <div class="project-grid">
+          <a class="project-card" href="#case-knowledge-integrity-details" data-detail>
+            <div class="case-preview-header">
+              <span>01 / KNOWLEDGE INTEGRITY</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="arrow-left-right"></i></span>
+            </div>
+            <div class="project-meta"><span>ENTERPRISE KNOWLEDGE / AI</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Finding conflicting claims before they propagate throughout the business.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Surfacing contradictions across complex document estates so teams can establish what is current, accurate, and safe to act on.</p>
+          </a>
+          <!--
+          <article class="project-card project-card--forthcoming">
+            <div class="case-preview-header">
+              <span>02 / INTEROPERABILITY</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="network"></i></span>
+            </div>
+            <div class="project-meta"><span>DEFENSE / MIDDLEWARE</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Bridging legacy applications with modern communication standards.</h3></div>
+            <p>Building middleware for a defense agency to connect legacy applications with mandated communication standards.</p>
+          </article>
+          -->
+          <!--
+          <article class="project-card project-card--forthcoming">
+            <div class="case-preview-header">
+              <span>03 / PASSENGER EXPERIENCE</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="train-front"></i></span>
+            </div>
+            <div class="project-meta"><span>RAIL / CONVERSATIONAL AI</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Putting timely rail information in every passenger's hands.</h3></div>
+            <p>Creating a passenger-facing chatbot for a national railway operator.</p>
+          </article>
+          -->
+          <a class="project-card" href="#case-employment-details" data-detail>
+            <div class="case-preview-header">
+              <span>04 / EMPLOYMENT SERVICES</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="briefcase-business"></i></span>
+            </div>
+            <div class="project-meta"><span>PUBLIC EMPLOYMENT / SEARCH</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Rebuilding a job search engine for the AI age.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Developing a job search and matching engine for a regional employment service.</p>
+          </a>
+          <a class="project-card" href="#case-documents-details" data-detail>
+            <div class="case-preview-header">
+              <span>05 / DOCUMENT INTELLIGENCE</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="files"></i></span>
+            </div>
+            <div class="project-meta"><span>HEALTH INSURANCE / DOCUMENT AI</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Turning 200,000 scanned pages a day into structured information.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Automating document classification and information extraction for a healthcare insurer, with AI running on confidential computing.</p>
+          </a>
+          <!--
+          <a class="project-card" id="case-port" href="case-studies/port-digital-colleague.html">
+            <div class="case-preview-header">
+              <span>06 / AGENTIC ARCHITECTURE</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="ship"></i></span>
+            </div>
+            <div class="project-meta"><span>PORT AUTHORITY / AGENTIC AI</span><span class="tag">Case study</span></div>
+            <div class="project-title"><h3>Preparing a port's digital colleague for scale.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Helping a port authority simplify its assistant architecture, strengthen governance, and prepare for growth.</p>
+          </a>
+          -->
+          <!--
+          <article class="project-card project-card--forthcoming">
+            <div class="case-preview-header">
+              <span>07 / PARLIAMENTARY QUESTIONS</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="landmark"></i></span>
+            </div>
+            <div class="project-meta"><span>PARLIAMENT / QUESTION ASSISTANT</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Supporting the work behind parliamentary questions.</h3></div>
+            <p>Developing a parliamentary question assistant for a regional parliament.</p>
+          </article>
+          -->
+          <!--
+          <a class="project-card" id="case-permits" href="case-studies/environmental-permits.html">
+            <div class="case-preview-header">
+              <span>08 / ENVIRONMENTAL PERMITS</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="leaf"></i></span>
+            </div>
+            <div class="project-meta"><span>PUBLIC SECTOR / ENVIRONMENT</span><span class="tag">Case study</span></div>
+            <div class="project-title"><h3>Turning environmental permit research into answers.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Exploring document-grounded answers to support environmental permit review, with evidence kept close to every response.</p>
+          </a>
+          -->
+          <a class="project-card" href="#case-compliance-details" data-detail>
+            <div class="case-preview-header">
+              <span>09 / REGULATORY COMPLIANCE</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="shield-check"></i></span>
+            </div>
+            <div class="project-meta"><span>EU REGULATION / COMPLIANCE</span><span class="tag tag--forthcoming">Forthcoming</span></div>
+            <div class="project-title"><h3>Turning EU regulatory requirements into compliance checks.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Automating checks to assess whether institutions comply with applicable EU regulations.</p>
+          </a>
+          <!--
+          <a class="project-card" id="case-translation" href="case-studies/speech-translation.html">
+            <div class="case-preview-header">
+              <span>10 / SPEECH TRANSLATION</span>
+              <span class="case-preview-icon" aria-hidden="true"><i data-lucide="languages"></i></span>
+            </div>
+            <div class="project-meta"><span>PARLIAMENT / LIVE TRANSLATION</span><span class="tag">Case study</span></div>
+            <div class="project-title"><h3>Bringing real-time speech translation to parliament.</h3><i data-lucide="arrow-up-right" aria-hidden="true"></i></div>
+            <p>Exploring live transcription and text translation for multilingual debate, with attention to language coverage and deployment control.</p>
+          </a>
+          -->
+        </div>
+      </section>
 
-	.loader-link {
-		background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
-		background-size: 200% auto;
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		text-decoration: none;
-		animation: rainbow 3s linear infinite;
-		display: inline-block;
-	}
+      <section class="offers section-shell" id="offers" aria-labelledby="offers-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow section-label">03 / SERVICES</p>
+            <h2 id="offers-title">Ways to <em>work together.</em></h2>
+          </div>
+          <p class="section-aside">From one useful hour<br>to a hands-on pilot.</p>
+        </div>
+        <div class="offer-grid">
+          <a class="offer-card" href="#contact" data-interest="focus-hour">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="message-circle"></i></span>
+            <span class="offer-content"><span class="offer-title">Focus Hour <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">One focused hour to unpack a challenge and find the next move.</span><span class="offer-price">&euro;100</span></span>
+          </a>
+          <a class="offer-card" href="#contact" data-interest="poc-sprint">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="flask-conical"></i></span>
+            <span class="offer-content"><span class="offer-title">Proof-of-Concept <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">A tightly scoped build to test the idea before going bigger.</span><span class="offer-price">&euro;3,000</span></span>
+          </a>
+          <a class="offer-card" href="#contact" data-interest="workshop">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="presentation"></i></span>
+            <span class="offer-content"><span class="offer-title">Workshop <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">A practical half-day or full-day working session designed around your team and goals.</span><span class="offer-price">&euro;1,500&ndash;&euro;2,500</span></span>
+          </a>
+          <a class="offer-card" href="#contact" data-interest="fractional-caio">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="brain-circuit"></i></span>
+            <span class="offer-content"><span class="offer-title">Fractional CAIO <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">Part-time Chief AI Officer support for strategy, governance, and delivery.</span><span class="offer-price">Price upon request</span></span>
+          </a>
+          <a class="offer-card" href="#contact" data-interest="pilot">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="route"></i></span>
+            <span class="offer-content"><span class="offer-title">Pilot <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">Test an AI use case with real users, clear metrics, and a path to scale.</span><span class="offer-price">Price upon request</span></span>
+          </a>
+          <a class="offer-card" href="#contact" data-interest="hire-me">
+            <span class="offer-icon" aria-hidden="true"><i data-lucide="briefcase-business"></i></span>
+            <span class="offer-content"><span class="offer-title">Full-time Hire <i data-lucide="arrow-up-right" aria-hidden="true"></i></span><span class="offer-description">Solution Engineer, Solution Architect, Forward Deployed Engineer, or Consultant.</span><span class="offer-price">Total compensation upon request</span></span>
+          </a>
+        </div>
+      </section>
 
-	.loader-link:hover {
-		animation: rainbow 3s linear infinite, jump 0.3s ease;
-	}
+      <section class="contact section-shell" id="contact" aria-labelledby="contact-title">
+        <div class="contact-copy">
+          <div class="contact-landmarks" role="img" aria-label="Animated pixel art of landmarks in Rome, Paris, Brussels, London, Berlin, Dubai, and Tokyo">
+            <canvas class="landmarks-fallback" aria-hidden="true"></canvas>
+            <canvas class="landmarks-canvas" aria-hidden="true"></canvas>
+          </div>
+          <p class="eyebrow">04 / CONTACT</p>
+          <h2 id="contact-title">Something<br>on your <em>mind?</em></h2>
+          <p class="contact-intro">A half-formed idea is a perfectly good place to start.</p>
+          <a class="text-link contact-direct" hidden><span></span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          <nav class="social-links" aria-label="Social media">
+            <a href="https://x.com/NicoGrassetto" target="_blank" rel="noopener noreferrer" aria-label="Nico Grassetto on X"><span>X</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            <a href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer" aria-label="Nico Grassetto on GitHub"><span>GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            <a href="https://www.linkedin.com/in/nicograssetto/" target="_blank" rel="noopener noreferrer" aria-label="Nico Grassetto on LinkedIn"><span>LinkedIn</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" aria-label="Nico Grassetto on Discord"><span>Discord</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </nav>
+          <p class="contact-availability" id="contact-availability">Direct email details coming soon.</p>
+        </div>
+        <form class="contact-form">
+          <div class="form-row">
+            <div class="form-field"><label for="contact-name">Your name</label><input id="contact-name" name="name" type="text" placeholder="Alex Taylor" autocomplete="name" maxlength="120" required></div>
+            <div class="form-field"><label for="contact-email">Your email</label><input id="contact-email" name="email" type="email" placeholder="alex@company.com" autocomplete="email" maxlength="254" required></div>
+          </div>
+          <div class="form-field"><label for="contact-interest">What brings you here?</label><select id="contact-interest" name="interest"><option value="hello">Just saying hello</option><option value="focus-hour">Focus Hour</option><option value="poc-sprint">Proof-of-Concept</option><option value="workshop">Workshop</option><option value="fractional-caio">Fractional CAIO</option><option value="pilot">Pilot</option><option value="hire-me">Full-time Hire</option><option value="other">Something else</option></select></div>
+          <div class="form-field"><label for="contact-message">What's on your mind?</label><textarea id="contact-message" name="message" rows="4" placeholder="I've been thinking about..." minlength="10" maxlength="5000" required></textarea></div>
+          <div class="message-fallback" hidden><label for="prepared-message">Your prepared message</label><textarea id="prepared-message" rows="7" readonly></textarea></div>
+          <div class="form-bottom"><span class="form-note">Good conversations start somewhere.</span><button class="button button-primary" type="submit"><span id="contact-submit-label">Copy message</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></button></div>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
 
-	@keyframes rainbow {
-		0% { background-position: 0% center; }
-		100% { background-position: 200% center; }
-	}
+    <dialog class="detail-dialog" aria-labelledby="detail-title">
+      <div class="dialog-toolbar"><span class="eyebrow">NICO GRASSETTO / PROJECT NOTES</span><button class="icon-button" type="button" data-close aria-label="Close article" title="Close"><i data-lucide="x" aria-hidden="true"></i></button></div>
+      <div class="dialog-body"></div>
+    </dialog>
 
-	@keyframes jump {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-5px); }
-	}
+    <template id="case-knowledge-integrity-details">
+      <p class="eyebrow detail-kicker">CASE STUDY / ENTERPRISE KNOWLEDGE / AI</p>
+      <h2 class="detail-title">Finding conflicting claims before they propagate throughout the business.</h2>
+      <p class="detail-lead">Surfacing contradictions across complex document estates so teams can establish what is current, accurate, and safe to act on.</p>
+      <p>The full case study will cover how claims were identified and compared across a large knowledge estate, how potential contradictions were prioritised for review, and how the supporting evidence was kept close to every flag.</p>
+      <p class="draft-notice">The supporting code and full case-study content will be made available at a later date. Client and project details need to be anonymised carefully before publication.</p>
+      <a class="text-link" href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer"><span>View GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    </template>
+    <template id="case-employment-details">
+      <p class="eyebrow detail-kicker">CASE STUDY / PUBLIC EMPLOYMENT / SEARCH</p>
+      <h2 class="detail-title">Rebuilding a job search engine for the AI age.</h2>
+      <p class="detail-lead">Developing a job search and matching engine for a regional employment service.</p>
+      <p>The full case study will explore the search and matching approach, how relevance was evaluated, and how the experience was designed around the needs of jobseekers.</p>
+      <p class="draft-notice">The supporting code and full case-study content will be made available at a later date. Client and project details need to be anonymised carefully before publication.</p>
+      <a class="text-link" href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer"><span>View GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    </template>
+    <template id="case-documents-details">
+      <p class="eyebrow detail-kicker">CASE STUDY / HEALTH INSURANCE / DOCUMENT AI</p>
+      <h2 class="detail-title">Turning 200,000 scanned pages a day into structured information.</h2>
+      <p class="detail-lead">Automating document classification and information extraction with AI running on confidential computing.</p>
+      <p>The full case study will describe the document pipeline, the classification and extraction challenges, and the safeguards required to process sensitive information at scale.</p>
+      <p class="draft-notice">The supporting code and full case-study content will be made available at a later date. Client and project details need to be anonymised carefully before publication.</p>
+      <a class="text-link" href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer"><span>View GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    </template>
+    <template id="case-compliance-details">
+      <p class="eyebrow detail-kicker">CASE STUDY / EU REGULATION / COMPLIANCE</p>
+      <h2 class="detail-title">Turning EU regulatory requirements into compliance checks.</h2>
+      <p class="detail-lead">Automating checks to assess whether institutions comply with applicable EU regulations.</p>
+      <p>The full case study will cover how regulatory requirements were translated into verifiable checks, how evidence was handled, and where human review remained essential.</p>
+      <p class="draft-notice">The supporting code and full case-study content will be made available at a later date. Client and project details need to be anonymised carefully before publication.</p>
+      <a class="text-link" href="https://github.com/NicoGrassetto" target="_blank" rel="noopener noreferrer"><span>View GitHub</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    </template>
 
-	/* Reading List Styles */
-	.reading-list-intro {
-		color: var(--text-secondary);
-		font-size: 0.9rem;
-		margin-bottom: 1rem;
-	}
+    <template id="note-question">
+      <p class="eyebrow detail-kicker">THINKING / DRAFT NOTE</p>
+      <h2 class="detail-title">Start with the question.</h2>
+      <p class="detail-lead">The most useful work often happens before the first answer.</p>
+      <p>A request usually arrives wearing the clothes of a solution. Build a dashboard. Add a feature. Automate a process. It sounds specific, which makes it tempting to start immediately. But specificity is not the same as clarity.</p><p>Before making anything, it helps to ask what should become different. Who is struggling? What decision cannot be made? What would a better day look like for the person doing the work?</p>
+      <h3>Describe the change, not the deliverable</h3><p>"We need a report" describes an object. "We need to notice a problem before it affects a customer" describes an outcome. A report might be the right response, but so might an alert, a better conversation, or removing a broken step.</p><p>This distinction creates options. It also gives the work a way to be evaluated that does not depend on how polished the deliverable looks.</p>
+      <h3>Make room for a little uncertainty</h3><p>A useful question should be specific enough to act on and open enough to be wrong about. If the answer is already embedded in the wording, the team is not really exploring. It is executing a decision that has not been named.</p><p>Write down the assumptions. Pick the one that would change your direction if it proved false. Find a small way to learn about it before the project becomes expensive to change.</p>
+      <h3>A practical starting point</h3><p>Try completing this sentence: "We want to help this person do this thing, because today this obstacle gets in the way." If the sentence is difficult to write, that difficulty is useful information.</p><p>A better question will not remove all the uncertainty. It will make the uncertainty worth working on.</p>
+    </template>
+    <template id="note-small">
+      <p class="eyebrow detail-kicker">MAKING / DRAFT NOTE</p>
+      <h2 class="detail-title">Make something small.</h2>
+      <p class="detail-lead">A real experiment beats a perfect plan that never leaves the page.</p>
+      <p>An idea can feel remarkably complete while it lives in a conversation. Everyone fills the gaps with their own expectations. Agreement is easy because each person may be agreeing to something slightly different.</p><p>Making a small version brings those differences into the open. It can be a sketch, a sample report, a clickable screen, or a manual version of a proposed service. The point is not to look finished. The point is to become discussable.</p>
+      <h3>Choose what you need to learn</h3><p>A prototype without a question can turn into a miniature production project. Before building, name the uncertainty. Do people understand the idea? Is the output useful? Does the proposed workflow fit the way the work actually happens?</p><p>Choose a form that exposes that uncertainty as directly as possible. If a conversation with a sample document can answer the question, a working application may be unnecessary.</p>
+      <h3>Keep the edges honest</h3><p>Be clear about what is real and what is simulated. A person testing an idea should not have to guess which parts work. Honest boundaries make feedback easier to interpret and prevent a convincing surface from creating false confidence.</p><p>Look for moments of hesitation, workarounds, and questions that repeat. Those signals are often more useful than a general statement that the idea looks good.</p>
+      <h3>Decide what happens next</h3><p>An experiment needs a decision at the end. Continue, change direction, learn more, or stop. Agree in advance on the evidence that would support each choice.</p><p>Small is not a compromise on ambition. It is a way to earn the next investment with something more reliable than enthusiasm.</p>
+    </template>
+    <template id="note-ai">
+      <p class="eyebrow detail-kicker">TECHNOLOGY / DRAFT NOTE</p>
+      <h2 class="detail-title">AI is a tool. Judgment is the work.</h2>
+      <p class="detail-lead">Better tools still need a good reason to be used.</p>
+      <p>When a new tool makes something dramatically easier, it is natural to look for places to use it. That curiosity is valuable. It becomes more useful when it is paired with a clear understanding of the work itself.</p><p>Start with the task, not the technology. What takes time? What requires interpretation? What happens if the result is wrong? Who is responsible for noticing?</p>
+      <h3>Separate assistance from authority</h3><p>Drafting a first version is different from approving a final one. Finding potentially relevant material is different from deciding that it is reliable. Summarizing a source is different from establishing that the source is true.</p><p>Those distinctions should be visible in the workflow. A useful system makes it clear where a suggestion came from and where a person needs to exercise judgment.</p>
+      <h3>Make verification part of the design</h3><p>Review should not be an afterthought. Keep source material close to the output. Make uncertainty legible. Give people a straightforward way to correct a result and continue without fighting the tool.</p><p>The cost of reviewing an answer matters just as much as the speed of generating it. A fast draft that is difficult to verify may simply move the work somewhere less obvious.</p>
+      <h3>Measure the whole task</h3><p>Compare complete workflows, including preparation, review, correction, and recovery. Test with ordinary examples and difficult ones. Decide what level of error is acceptable for the particular use, rather than treating all mistakes as equivalent.</p><p>The goal is not to use the most technology. It is to make a piece of work genuinely better while keeping responsibility clear.</p>
+    </template>
 
-	.reading-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.book-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		padding: 0.5rem 0;
-		border-bottom: 1px solid var(--border-color);
-	}
-
-	.book-item:last-child {
-		border-bottom: none;
-	}
-
-	.book-title {
-		color: var(--text-primary);
-		font-weight: 500;
-		font-size: 0.95rem;
-	}
-
-	.book-author {
-		color: var(--text-secondary);
-		font-size: 0.8rem;
-	}
-</style>
-
-
+    <footer class="site-footer section-shell">
+      <div class="footer-walk" aria-hidden="true">
+        <div class="footer-walk-path"><div class="footer-malinois"></div></div>
+      </div>
+      <a class="wordmark" href="#home">nico grassetto<span class="brand-dot" aria-hidden="true">.</span></a>
+      <a class="text-link" href="#home">Back to top <i data-lucide="arrow-up" aria-hidden="true"></i></a>
+    </footer>
+    <script is:inline src="/assets/footer-dog.js" defer></script>
+  </body>
+</html>

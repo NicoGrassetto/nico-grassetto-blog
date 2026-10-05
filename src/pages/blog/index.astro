@@ -1,0 +1,60 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BlogPostCard from '../../components/BlogPostCard.astro';
+import { getPublishedPosts } from '../../utils/getPublishedPosts';
+
+const posts = await getPublishedPosts();
+---
+
+<Layout title="Nico Grassetto's Blog" description="Notes on distributed systems, artificial intelligence, and cloud computing.">
+  <nav class="blog-nav" aria-label="Blog navigation">
+    <a href={import.meta.env.BASE_URL}>Home</a>
+    <a href={`${import.meta.env.BASE_URL}feed`}>RSS feed</a>
+  </nav>
+  <header class="blog-header">
+    <h1>Blog</h1>
+    <p>Notes on distributed systems, artificial intelligence, and cloud computing.</p>
+  </header>
+  <section aria-label="Published articles">
+    {posts.map((post) => (
+      <BlogPostCard
+        title={post.data.title}
+        date={post.data.date}
+        slug={post.slug}
+        image={post.data.image}
+      />
+    ))}
+    {posts.length === 0 && <p>No posts have been published yet.</p>}
+  </section>
+</Layout>
+
+<style>
+  .blog-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .blog-nav a {
+    color: var(--link-color);
+    text-decoration: underline;
+  }
+
+  .blog-nav a:hover {
+    color: var(--link-hover);
+  }
+
+  .blog-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .blog-header h1 {
+    margin-bottom: 0.75rem;
+    font-size: 2rem;
+  }
+
+  .blog-header p {
+    color: var(--text-secondary);
+  }
+</style>

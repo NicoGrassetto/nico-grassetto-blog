@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An anonymised case study on live transcription and text translation for multilingual debate, language coverage, and deployment control.">
+    <meta name="theme-color" content="#000000">
+    <title>Bringing real-time speech translation to parliament | Nico Grassetto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/lucide.min.js" defer onload="lucide.createIcons()"></script>
+    <script src="../assets/case-art.js" defer></script>
+  </head>
+  <body class="case-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="../index.html" aria-label="Nico Grassetto, home">nico grassetto<span class="brand-dot" aria-hidden="true">.</span></a>
+      <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>Case studies</span></a>
+    </header>
+
+    <main id="main">
+      <article class="case-article" aria-labelledby="case-title">
+        <header class="case-article-header">
+          <div class="case-article-meta">
+            <p class="eyebrow">CASE STUDY / PARLIAMENT / LIVE TRANSLATION</p>
+            <canvas class="case-pixel-art" data-case-art="translation" width="24" height="24" role="img" aria-label="Pixel art of translation speech bubbles with Latin and Chinese characters."></canvas>
+          </div>
+          <h1 id="case-title">Bringing real-time speech translation to parliament.</h1>
+          <p class="case-article-lead">Exploring how live transcription and translation can follow multilingual debate while keeping language coverage, responsiveness, and control over processing central.</p>
+        </header>
+
+        <section class="case-section" aria-labelledby="opportunity-title">
+          <h2 id="opportunity-title">The Opportunity</h2>
+          <p>Live debate does not arrive as a neatly labelled recording. Speakers change, terminology is specialised, and a contribution may move from one language to another. A transcription and translation service has to keep pace with those changes while preserving enough context to produce useful text. A short delay is noticeable; choosing the wrong language can undermine everything that follows.</p>
+          <p>The project explored near-real-time transcription and translated text for a multilingual parliamentary setting. Its central requirement was broad language coverage without relying on a small, preselected set of languages for the session. That made language identification part of the live workflow, rather than a setting chosen before the microphones were switched on.</p>
+          <p>Accuracy, continuity, and delay needed to be considered together. Text that arrives quickly is not useful if it misses a language switch or changes the meaning of a technical expression. Broad coverage also needed to mean more than listing supported languages: the service had to be evaluated for how well it handled each one in practice.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="solution-title">
+          <h2 id="solution-title">The Solution</h2>
+          <p>The recognition service could consider only a limited set of candidate languages within a session. Simply narrowing that set would exclude part of the required coverage. The prototype instead introduced an orchestration layer around recognition, allowing a broader set of language candidates to be evaluated before selecting the output to use.</p>
+          <p>The selection logic compared competing language candidates and waited for the result to stabilise before committing to a recognition path. That introduced a trade-off: a longer observation period could improve confidence, but also delayed the first usable output. Transcript continuity mattered too. Changing the selected path should not discard speech that had already been processed.</p>
+          <p>Transcription and translation were part of the same processing flow. Their outputs needed separate scrutiny: incorrect source-language selection could lead to an inaccurate transcript, while a plausible translation could conceal the original error. Testing needed to follow the audio through to the translated text, including the moments when a speaker changed language.</p>
+          <p>A useful demonstration was only part of the question. The architecture discussion also considered where audio would be processed and how much control the operator would retain. Cloud-hosted, locally hosted, and disconnected deployment were examined as options, with the sensitivity of a session helping to inform that choice.</p>
+          <p>Containerised speech components offered a possible route to local execution, while a portable application layer was intended to reduce dependence on a particular hosting environment. But packaging software in a container does not make every deployment equivalent. Connectivity requirements, model availability, and operational responsibilities still have to be checked for the chosen mode.</p>
+          <p>A key open question was whether specialised recognition models and the required language features would remain available in a disconnected environment. The ambition was to preserve the application across deployment options, not a verified guarantee of identical behaviour. Feature compatibility needed to be established before making promises about offline operation or moving workloads without changes.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="impact-title">
+          <h2 id="impact-title">The Impact</h2>
+          <p>The project team reported encouraging prototype results, providing a basis for further architecture work. Those reports did not establish production readiness or equivalent accuracy across every required language. A wider evaluation would need to examine language switching, specialised vocabulary, and the time between speech and usable translated text, rather than relying on an overall impression of quality.</p>
+          <p>Cost also needed to be assessed across the full service. Recognition, translation, hosting, and support all contribute to the operating model, while local deployment brings its own capacity requirements. The comparison needed to include realistic usage and licensing assumptions, rather than treating cloud consumption or infrastructure alone as the complete price.</p>
+          <p>The next step was to make those choices concrete: which capabilities were supported in each environment, how quality would be measured, and who would maintain the service. The broader lesson is that live translation is not just a model-selection problem. Language coverage, responsiveness, and control over processing have to work together before a promising demonstration becomes a dependable service.</p>
+        </section>
+
+        <nav class="case-article-nav" aria-label="Case study navigation">
+          <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>All case studies</span></a>
+          <a class="text-link" href="../index.html#contact"><span>Let's talk</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+        </nav>
+      </article>
+    </main>
+  </body>
+</html>

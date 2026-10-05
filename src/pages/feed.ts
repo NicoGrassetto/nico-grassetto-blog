@@ -1,7 +1,6 @@
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '../utils/getPublishedPosts';
 
-const posts = (await getCollection('blog')).filter((p) => !p.data.draft);
-const sortedPosts = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+const sortedPosts = await getPublishedPosts();
 
 const siteUrl = import.meta.env.SITE || 'https://www.nicograssetto.com';
 
@@ -10,7 +9,7 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Nico Grassetto's Blog</title>
-    <link>${siteUrl}</link>
+    <link>${siteUrl}/blog/</link>
     <description>Engineering thoughtful web experiences with modern technologies.</description>
     <language>en-us</language>
     <atom:link href="${siteUrl}/feed" rel="self" type="application/rss+xml" />

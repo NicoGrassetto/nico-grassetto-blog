@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An anonymised case study on document-grounded AI answers that help permit officers find evidence and prepare their assessments.">
+    <meta name="theme-color" content="#000000">
+    <title>Turning environmental permit research into answers | Nico Grassetto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/lucide.min.js" defer onload="lucide.createIcons()"></script>
+    <script src="../assets/case-art.js" defer></script>
+  </head>
+  <body class="case-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="../index.html" aria-label="Nico Grassetto, home">nico grassetto<span class="brand-dot" aria-hidden="true">.</span></a>
+      <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>Case studies</span></a>
+    </header>
+
+    <main id="main">
+      <article class="case-article" aria-labelledby="case-title">
+        <header class="case-article-header">
+          <div class="case-article-meta">
+            <p class="eyebrow">CASE STUDY / PUBLIC SECTOR / ENVIRONMENT</p>
+            <canvas class="case-pixel-art" data-case-art="plant" width="24" height="24" role="img" aria-label="Pixel art of a green sprout."></canvas>
+          </div>
+          <h1 id="case-title">Turning environmental permit research into answers.</h1>
+          <p class="case-article-lead">Exploring how a document-grounded AI assistant can help permit officers find information, verify sources, and prepare their assessments.</p>
+        </header>
+
+        <section class="case-section" aria-labelledby="opportunity-title">
+          <h2 id="opportunity-title">The Opportunity</h2>
+          <p>An environmental permit application is rarely a single document. It can bring together forms, technical reports, environmental studies, and plans. To prepare an opinion, an officer has to locate relevant facts, compare statements across attachments, and explain what supports the assessment. Much of that work begins with finding information rather than interpreting it.</p>
+          <p>For a public-sector team exploring AI-assisted review, the question was practical: could officers spend less time searching an application without losing the evidence behind an answer? Processing deadlines made that question important, but speed alone was not enough. The project aimed to support preliminary analysis while leaving the assessment and the decision with the people responsible for them.</p>
+          <p>The starting point was the work officers already needed to do. What activity is being proposed? Which study addresses a particular environmental concern? Do different documents describe the same proposal consistently? These questions gave the prototype a concrete purpose: make the contents of an application easier to examine, not produce a general answer about environmental regulation.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="solution-title">
+          <h2 id="solution-title">The Solution</h2>
+          <p>The proof of concept turned selected application documents into a searchable body of evidence. A processing pipeline extracted text, tables, and document structure, divided the material into smaller passages, and stored those passages in a search index. The conversational assistant could then retrieve relevant material before composing a response.</p>
+          <p>The search combined keyword matching with meaning-based retrieval. This matters when an officer's question uses different words from the report that contains the answer, or when a technical term needs to be found precisely. Retrieval narrows the material the assistant works from; it does not establish that a statement is correct or that the entire application has been checked.</p>
+          <p>The assistant was instructed to answer only from the indexed documents, without searching the web. Its response pattern was deliberately direct: a short answer first, supporting detail where needed, and references to the source document and page. When the available material did not contain the answer, it was instructed to say so rather than fill the gap.</p>
+          <p>The prototype also highlighted a less visible dependency: extraction quality. If a document cannot be read correctly, relevant information never reaches the search index. A fluent answer does not prove that the underlying file was fully processed. Reliable ingestion therefore matters as much as the conversational interface, and missing material needs to be distinguishable from information that is genuinely absent.</p>
+          <p>References give officers a way back to the evidence, but they are not a substitute for review. A passage may need to be read alongside a table, a qualification elsewhere in the report, or a conflicting statement in another attachment. The assistant can help locate material for that comparison; responsibility for interpreting it remains with the officer.</p>
+          <p>Moving beyond a limited document set also requires firm boundaries. Retrieval must be restricted to the application being reviewed so that facts from another file cannot enter the answer. Document permissions and retention rules need to be defined and enforced before operational use. These were requirements for the next stage, not controls to assume were already complete.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="impact-title">
+          <h2 id="impact-title">The Impact</h2>
+          <p>The proof of concept demonstrated a route from selected documents to conversational answers. It did not establish complete coverage of every application or prove production-level time savings. Faster analysis and better-supported opinions were the intended benefits, still to be validated through use by permit officers.</p>
+          <p>Further work included broader document coverage, more reliable extraction, connection to the document repository, and refinement of retrieval and response precision. Plans and maps remained a separate area for development and evaluation. Indexing a file that contains visual material does not, by itself, mean the assistant can interpret that material.</p>
+          <p>The next useful measure is the whole review task: time spent finding evidence, checking answers, resolving inconsistencies, and preparing an opinion. An assistant earns its place when it reduces that effort without making uncertainty harder to see. For document-heavy public services, the opportunity is not to automate judgment. It is to give people a clearer, more traceable starting point for exercising it.</p>
+        </section>
+
+        <nav class="case-article-nav" aria-label="Case study navigation">
+          <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>All case studies</span></a>
+          <a class="text-link" href="../index.html#contact"><span>Let's talk</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+        </nav>
+      </article>
+    </main>
+  </body>
+</html>

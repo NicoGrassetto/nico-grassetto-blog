@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An anonymised case study on simplifying an AI assistant's architecture, strengthening governance, and preparing for growth.">
+    <meta name="theme-color" content="#000000">
+    <title>Preparing a port's digital colleague for scale | Nico Grassetto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/lucide.min.js" defer onload="lucide.createIcons()"></script>
+    <script src="../assets/case-art.js" defer></script>
+  </head>
+  <body class="case-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="../index.html" aria-label="Nico Grassetto, home">nico grassetto<span class="brand-dot" aria-hidden="true">.</span></a>
+      <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>Case studies</span></a>
+    </header>
+
+    <main id="main">
+      <article class="case-article" aria-labelledby="case-title">
+        <header class="case-article-header">
+          <div class="case-article-meta">
+            <p class="eyebrow">CASE STUDY / PORT AUTHORITY / AGENTIC AI</p>
+            <canvas class="case-pixel-art" data-case-art="harbour" width="24" height="24" role="img" aria-label="Pixel art of a white-and-red ship."></canvas>
+          </div>
+          <h1 id="case-title">Preparing a port's digital colleague for scale.</h1>
+          <p class="case-article-lead">Redesigning an AI assistant to bring operational expertise into a single conversation.</p>
+        </header>
+
+        <section class="case-section" aria-labelledby="opportunity-title">
+          <h2 id="opportunity-title">The Opportunity</h2>
+          <p>Running a port requires coordinated decisions across nautical operations, infrastructure, and support services. Employees need answers quickly, but the information behind those decisions often sits across different systems and teams. For a port authority exploring conversational AI, the opportunity was to make that knowledge easier to use: a digital colleague that could connect people with the right expertise through a familiar workplace interface.</p>
+          <p>The assistant already brings together capabilities for operational data, IT support, and HR. Employees can ask a question in everyday language, retrieve information from a data warehouse, or get help with a service request. A shared data catalogue gives business terms a consistent meaning. With employees already using the service, the challenge is shifting from proving usefulness to preparing for growth.</p>
+          <p>The original architecture assigned each expert its own routing layer. As questions moved between agents, those layers added latency, fragmented conversation history, and introduced more opportunities for error. The system could aggregate answers, but it could not make sequential tool calls or stream responses. Adding more agents risked amplifying these limitations rather than extending the assistant's value.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="solution-title">
+          <h2 id="solution-title">The Solution</h2>
+          <p>The data science team worked with technology specialists through architecture workshops and a code-level demonstration. Their focus was a simpler foundation that could support an expanding set of capabilities without making the experience harder to use or the platform harder to manage.</p>
+          <p>The target design replaces chained routers with one orchestrator running an agentic loop: it can choose a tool, inspect the result, and determine the next step. Conversation history, behavioural rules, and the assistant's persona are managed centrally. Domain expertise remains available, but capabilities that primarily retrieve documents or query data become tools rather than separate agents with their own routing logic.</p>
+          <p>Wrapping an entire agent as a tool can preserve unnecessary complexity and delay. The team is therefore working toward a compact toolset and a consolidated codebase, with a standardised interface between the assistant and its front end. This is intended to make future changes to models and frameworks less disruptive while giving employees a more coherent conversation.</p>
+          <p>Governance is part of the same design. A shared AI gateway is intended to control model access, enforce team quotas, and apply policies consistently. Tracing would expose the steps behind an answer, including tool calls, generated queries, and token consumption. Combined with usage dashboards, this gives platform owners a way to understand where costs arise and how the service behaves.</p>
+          <p>The new architecture must preserve the existing safety model. Access follows the person asking the question: information outside that person's permissions is not queried, sensitive data is restricted, and destructive actions are not delegated to agents. Input and output guardrails, reference checks, and tests for policy violations help translate governance requirements into engineering practices.</p>
+        </section>
+
+        <section class="case-section" aria-labelledby="impact-title">
+          <h2 id="impact-title">The Impact</h2>
+          <p>The architecture work established a direction for simplifying the assistant and extending its capabilities. The redesign is still being developed and platform options remain under evaluation. Its intended benefits are a more coherent experience, clearer cost ownership, and a foundation that can evolve; these are goals for the redesign, not measured production improvements.</p>
+          <p>For employees, the aim is practical. Less time navigating systems and assembling information creates more room to interpret answers and decide what to do next. The assistant supports that work; it does not transfer responsibility for consequential decisions away from people.</p>
+          <p>The longer-term ambition is a conversational entry point to a wider set of operational capabilities, including planning, navigation, and insights from cameras. These capabilities remain on the roadmap. Further work also needs to address which processes must continue during connectivity or cloud outages, how recovery should work, and where AI should run locally.</p>
+          <p>For organisations moving beyond isolated AI pilots, the larger task is not simply to deploy more agents. It is to build a system that people can use, govern, and trust. The value of the redesign will depend on demonstrating those qualities as the service grows.</p>
+        </section>
+
+        <nav class="case-article-nav" aria-label="Case study navigation">
+          <a class="text-link" href="../index.html#case-studies"><i data-lucide="arrow-left" aria-hidden="true"></i><span>All case studies</span></a>
+          <a class="text-link" href="../index.html#contact"><span>Let's talk</span><i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+        </nav>
+      </article>
+    </main>
+  </body>
+</html>
