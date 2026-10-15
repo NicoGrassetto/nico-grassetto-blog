@@ -33,7 +33,7 @@ const rssItems = [...feed.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(([, item]) 
 }));
 
 test('the landing page links to the blog, RSS, and latest published article', () => {
-  assert.match(homepage, /<h1 id="hero-title">Artificial Intelligence Without the Bullsh\*\*\.<\/h1>/);
+  assert.match(homepage, /<h1 id="hero-title">Pragmatic Artificial Intelligence<\/h1>/);
   assert.match(homepage, /href="\/blog\/">Blog<\/a>/);
   assert.match(homepage, /type="application\/rss\+xml"[^>]*href="\/feed"/);
   assert.match(homepage, /rel="canonical" href="https:\/\/www\.nicograssetto\.com\/"/);
