@@ -12,6 +12,7 @@ import TollBooths from '../../components/TollBooths.astro';
 import ServedBars from '../../components/ServedBars.astro';
 import ptuOperateView from './ptu-operate-view.png';
 import ptuProvisionedThroughputTab from './ptu-provisioned-throughput-tab.png';
+import ptuQuotaDeployments from './ptu-quota-deployments.png';
 import ptuCalculatorWorkloads from './ptu-calculator-workloads.png';
 import ptuCalculatorMainWorkload from './ptu-calculator-main-workload.png';
 
@@ -181,6 +182,10 @@ To estimate the PTU you need, open the **Provisioned Throughput** tab.
 
 <div style="text-align: center; margin: 1rem 0 1.25rem;">
   <img src={ptuProvisionedThroughputTab.src} alt="Provisioned Throughput tab in Foundry" style="max-width: 100%; height: auto; border-radius: 8px;" />
+</div>
+
+<div style="text-align: center; margin: 1rem 0 1.25rem;">
+  <img src={ptuQuotaDeployments.src} alt="Foundry quota page showing provisioned throughput deployments and the capacity calculator" style="max-width: 100%; height: auto; border-radius: 8px;" />
 </div>
 
 Then open the **calculator**. It starts with pre-defined workloads. Depending on your architecture, you may have multiple models in play, but in many cases this can be simplified to a single primary workload.
