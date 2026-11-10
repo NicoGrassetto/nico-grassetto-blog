@@ -5,10 +5,10 @@ description: "To be written"
 draft: true
 ---
 
-import Cite from '../../components/Cite.astro';
-import Citation from '../../components/Citation.astro';
-import References from '../../components/References.astro';
-import GrpcTimeline from '../../components/GrpcTimeline.astro';
+import Cite from "../../components/Cite.astro";
+import Citation from "../../components/Citation.astro";
+import References from "../../components/References.astro";
+import GrpcTimeline from "../../components/GrpcTimeline.astro";
 
 ## Service-to-service calls with gRPC
 
@@ -125,22 +125,22 @@ It's basically an alternative to REST or GraphQL.
 
 Begs the questionwhen to use it. It's typicallyt used as a servioce to service commmiunication, you are unlikely to use gRPC to talk to your front-end. it's very efficient for back-end services talking to each other.
 
-| Use case | Typical choice | Why |
-| --- | --- | --- |
-| Public / partner / third-party APIs | REST (JSON over HTTP) | Universal client support, easy debugging (curl, browser tools, Postman), HTTP caching/CDNs, no generated stubs required |
-| Browser / frontend → backend | REST (or GraphQL) | Browsers can’t speak native gRPC (needs gRPC-Web + proxy or alternatives like Connect) |
-| Internal service-to-service (microservices) | gRPC (often) | Smaller payloads (Protobuf), lower latency, strong typed contracts, polyglot code generation, built-in streaming |
-| High-throughput / real-time / streaming | gRPC preferred | Performance and streaming advantages compound at scale |
+| Use case                                    | Typical choice        | Why                                                                                                                     |
+| ------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Public / partner / third-party APIs         | REST (JSON over HTTP) | Universal client support, easy debugging (curl, browser tools, Postman), HTTP caching/CDNs, no generated stubs required |
+| Browser / frontend → backend                | REST (or GraphQL)     | Browsers can’t speak native gRPC (needs gRPC-Web + proxy or alternatives like Connect)                                  |
+| Internal service-to-service (microservices) | gRPC (often)          | Smaller payloads (Protobuf), lower latency, strong typed contracts, polyglot code generation, built-in streaming        |
+| High-throughput / real-time / streaming     | gRPC preferred        | Performance and streaming advantages compound at scale                                                                  |
 
-| Technology | Approach | Typical data format | Common uses |
-| --- | --- | --- | --- |
-| **gRPC** | Remote procedure calls (RPC), usually over HTTP/2 | Protocol Buffers by default | Typed service-to-service calls, streaming |
-| **REST over HTTP** | Resources accessed through HTTP methods such as GET and POST | Usually JSON | Public APIs, web and mobile applications |
-| **GraphQL** | Clients request specific fields through a typed query language | Usually JSON | Flexible data fetching for frontends |
-| **JSON-RPC** | Named remote method calls | JSON | Simple RPC APIs, developer tools |
-| **Apache Thrift** | RPC framework with generated client/server code | Multiple encodings, commonly binary | Cross-language backend services |
-| **SOAP** | Structured messages with formal service contracts | XML | Enterprise and legacy integrations |
-| **Connect RPC** | Typed RPC over HTTP, compatible with gRPC | Protocol Buffers or JSON | Browser-friendly RPC and backend services |
+| Technology         | Approach                                                       | Typical data format                 | Common uses                               |
+| ------------------ | -------------------------------------------------------------- | ----------------------------------- | ----------------------------------------- |
+| **gRPC**           | Remote procedure calls (RPC), usually over HTTP/2              | Protocol Buffers by default         | Typed service-to-service calls, streaming |
+| **REST over HTTP** | Resources accessed through HTTP methods such as GET and POST   | Usually JSON                        | Public APIs, web and mobile applications  |
+| **GraphQL**        | Clients request specific fields through a typed query language | Usually JSON                        | Flexible data fetching for frontends      |
+| **JSON-RPC**       | Named remote method calls                                      | JSON                                | Simple RPC APIs, developer tools          |
+| **Apache Thrift**  | RPC framework with generated client/server code                | Multiple encodings, commonly binary | Cross-language backend services           |
+| **SOAP**           | Structured messages with formal service contracts              | XML                                 | Enterprise and legacy integrations        |
+| **Connect RPC**    | Typed RPC over HTTP, compatible with gRPC                      | Protocol Buffers or JSON            | Browser-friendly RPC and backend services |
 
 ### RPC and gRPC timeline
 
@@ -454,10 +454,31 @@ message HelloReply {
 
 <div data-code-examples>
 
-<div data-code-switcher role="group" aria-label="Hello World example language" hidden>
-  <button type="button" value="go" aria-controls="hello-go" aria-pressed="true">Go</button>
-  <button type="button" value="python" aria-controls="hello-python" aria-pressed="false">Python</button>
-  <button type="button" value="java" aria-controls="hello-java" aria-pressed="false">Java</button>
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Hello World example language"
+  hidden
+>
+  <button type="button" value="go" aria-controls="hello-go" aria-pressed="true">
+    Go
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="hello-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="hello-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
 </div>
 
 <div id="hello-go" data-code-example="go">
@@ -744,9 +765,23 @@ Provide a TLS certificate and private key for the Inventory service as `TLS_CERT
 
 <div data-code-examples>
 
-<div data-code-switcher role="group" aria-label="Inventory example language" hidden>
-  <button type="button" value="python" aria-controls="grpc-python" aria-pressed="true">Python</button>
-  <button type="button" value="go" aria-controls="grpc-go" aria-pressed="false">Go</button>
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Inventory example language"
+  hidden
+>
+  <button
+    type="button"
+    value="python"
+    aria-controls="grpc-python"
+    aria-pressed="true"
+  >
+    Python
+  </button>
+  <button type="button" value="go" aria-controls="grpc-go" aria-pressed="false">
+    Go
+  </button>
 </div>
 
 <div id="grpc-python" data-code-example="python">
@@ -979,16 +1014,15 @@ flowchart TD
 
 Source: recreated from the supplied video screenshot <Cite id="coding-gopher-grpc" author="The Coding Gopher" year="n.d." />.
 
-| Probe shown | What it checks | Limitation or requirement |
-| --- | --- | --- |
-| `httpGet` | An HTTP health endpoint | The application needs to serve HTTP/1.1 as well as gRPC. |
-| `tcpSocket` | Whether a TCP connection can be opened | An open port alone does not establish that the gRPC service is healthy. |
-| `exec` | A gRPC call made by a test client inside the container | Include a client program in the container; kubelet executes it, and it calls the RPC you implement. |
+| Probe shown | What it checks                                         | Limitation or requirement                                                                           |
+| ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `httpGet`   | An HTTP health endpoint                                | The application needs to serve HTTP/1.1 as well as gRPC.                                            |
+| `tcpSocket` | Whether a TCP connection can be opened                 | An open port alone does not establish that the gRPC service is healthy.                             |
+| `exec`      | A gRPC call made by a test client inside the container | Include a client program in the container; kubelet executes it, and it calls the RPC you implement. |
 
 These are the three approaches shown in the screenshot, not an exhaustive list. Kubernetes also supports native gRPC probes when the application implements the standard gRPC Health Checking Protocol <Cite id="kubernetes-probes" author="Kubernetes" year="n.d." />.
 
-
-btw gRPC stands for Google RPC (Remote Procedure Call). RPC is a classic that's existed for years (think about your distributedf system class) 
+btw gRPC stands for Google RPC (Remote Procedure Call). RPC is a classic that's existed for years (think about your distributedf system class)
 
 This one is just a different take on it: others exist like webRPC
 
