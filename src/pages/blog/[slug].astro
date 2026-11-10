@@ -60,6 +60,30 @@ const bannerImage = entry.data.image;
   </article>
 </Layout>
 
+<script>
+  document.querySelectorAll<HTMLElement>('[data-code-examples]').forEach((group) => {
+    const buttons = group.querySelectorAll<HTMLButtonElement>('[data-code-switcher] button');
+    const examples = group.querySelectorAll<HTMLElement>('[data-code-example]');
+
+    function selectLanguage(language: string) {
+      buttons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.value === language));
+      });
+      examples.forEach((example) => {
+        example.hidden = example.dataset.codeExample !== language;
+      });
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => selectLanguage(button.value));
+    });
+    selectLanguage(buttons[0].value);
+    group.querySelectorAll<HTMLElement>('[data-code-switcher]').forEach((switcher) => {
+      switcher.hidden = false;
+    });
+  });
+</script>
+
 <style>
   .blog-post {
     max-width: 800px;
@@ -213,6 +237,40 @@ const bannerImage = entry.data.image;
     background: transparent;
     color: inherit;
     padding: 0;
+  }
+
+  .post-content :global([data-code-switcher]:not([hidden])) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0 1rem;
+  }
+
+  .post-content :global([data-code-switcher] button) {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-secondary);
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .post-content :global([data-code-switcher] button:hover) {
+    border-color: var(--text-primary);
+  }
+
+  .post-content :global([data-code-switcher] button[aria-pressed="true"]) {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border-color: var(--text-primary);
+  }
+
+  .post-content :global([data-code-switcher] button:focus-visible) {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 3px;
   }
 
   .post-content :global(blockquote) {

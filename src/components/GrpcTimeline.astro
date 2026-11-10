@@ -1,0 +1,110 @@
+<div class="grpc-timeline">
+  <ol role="list" aria-label="RPC and gRPC milestones, as shown in the source video">
+    <li>
+      <time datetime="1960">1960</time>
+      <span>Early concepts of distributed computing emerge</span>
+    </li>
+    <li>
+      <time datetime="1980">1980</time>
+      <span>Remote Procedure Calls (RPC) gain formalization</span>
+    </li>
+    <li>
+      <time datetime="2006">2006</time>
+      <span>Google develops internal RPC frameworks</span>
+    </li>
+    <li>
+      <time datetime="2015">2015</time>
+      <span>gRPC introduced as Google's successor to Stubby</span>
+    </li>
+    <li>
+      <time datetime="2016">2016</time>
+      <span>Open sourced by Google for wider adoption</span>
+    </li>
+    <li>
+      <time datetime="2018">2018</time>
+      <span>Adopts HTTP/2 for multiplexing and efficiency</span>
+    </li>
+  </ol>
+</div>
+
+<style>
+  .grpc-timeline {
+    --year-width: 4.5rem;
+    --milestone-gap: 2.5rem;
+    --track-position: 5.75rem;
+    margin: 2rem 0;
+  }
+
+  .grpc-timeline ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grpc-timeline li {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--year-width) minmax(0, 1fr);
+    column-gap: var(--milestone-gap);
+    margin: 0;
+    padding: 0 0 2rem;
+    line-height: 1.6;
+  }
+
+  .grpc-timeline li::before {
+    content: "";
+    position: absolute;
+    top: 0.8rem;
+    bottom: -0.8rem;
+    left: var(--track-position);
+    width: 1px;
+    background: var(--border-secondary);
+  }
+
+  .grpc-timeline li::after {
+    content: "";
+    position: absolute;
+    top: 0.8rem;
+    left: var(--track-position);
+    width: 0.625rem;
+    height: 0.625rem;
+    border: 2px solid var(--text-primary);
+    border-radius: 50%;
+    background: var(--bg-primary);
+    transform: translate(-50%, -50%);
+  }
+
+  .grpc-timeline li:last-child {
+    padding-bottom: 0;
+  }
+
+  .grpc-timeline li:last-child::before {
+    display: none;
+  }
+
+  .grpc-timeline time {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.28;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .grpc-timeline span {
+    max-width: 48ch;
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 480px) {
+    .grpc-timeline {
+      --year-width: 3rem;
+      --milestone-gap: 2rem;
+      --track-position: 4rem;
+    }
+
+    .grpc-timeline time {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+  }
+</style>

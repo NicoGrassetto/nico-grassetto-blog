@@ -51,6 +51,13 @@ test('existing article URLs and RSS identifiers remain unchanged', () => {
   assert.match(feed, /<atom:link href="https:\/\/www\.nicograssetto\.com\/feed"/);
 });
 
+test('reference URLs render as clickable links', () => {
+  const article = readOutput('blog/agi-as-a-multi-dimensional-spectrum/index.html');
+  const reference = article.match(/id="ref-radford2018"[^>]*>([\s\S]*?)<\/div>/);
+  assert.ok(reference, 'Missing reference entry');
+  assert.match(reference[1], /<a href="https:\/\/cdn\.openai\.com\/research-covers\/language-unsupervised\/language_understanding_paper\.pdf"/);
+});
+
 test('the blog preserves the original three-column design and sections', () => {
   assert.match(blog, /class="container-full"/);
   assert.match(blog, /class="three-column-grid"/);

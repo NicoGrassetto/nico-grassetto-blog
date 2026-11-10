@@ -38,6 +38,8 @@ const {
   type = 'article' 
 } = Astro.props;
 
+const referenceUrl = doi ? `https://doi.org/${doi}` : url;
+
 // Format the citation based on type
 function formatCitation() {
   let citation = `${author} (${year}). `;
@@ -81,18 +83,13 @@ function formatCitation() {
       break;
   }
   
-  if (doi) {
-    citation += `https://doi.org/${doi}`;
-  } else if (url) {
-    citation += url;
-  }
-  
   return citation;
 }
 ---
 
 <div class="citation" id={`ref-${id}`}>
   <Fragment set:html={formatCitation()} />
+  {referenceUrl && <a href={referenceUrl}>{referenceUrl}</a>}
 </div>
 
 <style>
