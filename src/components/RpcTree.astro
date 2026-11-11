@@ -1,0 +1,165 @@
+<div class="rpc-tree">
+  <ul class="rpc-tree-root" role="list" aria-label="RPC frameworks and protocols">
+    <li>
+      <div class="rpc-tree-node rpc-tree-node--root">
+        <span class="rpc-tree-title">RPC</span>
+        <span class="rpc-tree-subtitle">Remote procedure calls</span>
+      </div>
+      <ul class="rpc-tree-branches" role="list">
+        <li><span class="rpc-tree-node rpc-tree-node--featured">gRPC</span></li>
+        <li><span class="rpc-tree-node">JSON-RPC</span></li>
+        <li><span class="rpc-tree-node">Connect RPC</span></li>
+        <li><span class="rpc-tree-node">Others</span></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<style>
+  .rpc-tree {
+    margin: 2rem 0;
+  }
+
+  .rpc-tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rpc-tree li {
+    margin: 0;
+  }
+
+  .rpc-tree-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.5rem;
+    padding: 0.75rem 0.5rem;
+    border: 1px solid var(--border-secondary);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .rpc-tree-node--root {
+    flex-direction: column;
+    gap: 0.25rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0.875rem 1.5rem;
+    border-color: var(--text-primary);
+    background: var(--text-primary);
+    color: var(--bg-primary);
+  }
+
+  .rpc-tree-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  .rpc-tree-title::before {
+    content: "";
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--accent-hover);
+  }
+
+  .rpc-tree-subtitle {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
+  .rpc-tree-node--featured {
+    border-color: var(--accent-hover);
+    box-shadow: inset 0 2px 0 var(--accent-hover);
+  }
+
+  .rpc-tree .rpc-tree-branches {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding-top: 2.5rem;
+  }
+
+  .rpc-tree-branches::before,
+  .rpc-tree-branches > li::before,
+  .rpc-tree-branches > li::after {
+    content: "";
+    position: absolute;
+    background: var(--border-secondary);
+  }
+
+  .rpc-tree-branches::before {
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 1.25rem;
+  }
+
+  .rpc-tree-branches > li {
+    position: relative;
+  }
+
+  .rpc-tree-branches > li::before {
+    top: -1.25rem;
+    left: 50%;
+    width: 1px;
+    height: 1.25rem;
+  }
+
+  .rpc-tree-branches > li::after {
+    top: -1.25rem;
+    right: -0.375rem;
+    left: -0.375rem;
+    height: 1px;
+  }
+
+  .rpc-tree-branches > li:first-child::after {
+    left: 50%;
+  }
+
+  .rpc-tree-branches > li:last-child::after {
+    right: 50%;
+  }
+
+  @media (max-width: 600px) {
+    .rpc-tree-node--root {
+      margin-left: 0;
+    }
+
+    .rpc-tree .rpc-tree-branches {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 1.5rem 0 0 1.5rem;
+    }
+
+    .rpc-tree-branches::before {
+      bottom: 1.75rem;
+      left: 0.75rem;
+      height: auto;
+    }
+
+    .rpc-tree-branches > li::before {
+      top: 50%;
+      left: -0.75rem;
+      width: 0.75rem;
+      height: 1px;
+    }
+
+    .rpc-tree-branches > li::after {
+      display: none;
+    }
+  }
+</style>

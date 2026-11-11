@@ -4,11 +4,10 @@ import { formatDate } from '../utils/formatDate';
 export interface Props {
   title: string;
   date: string;
-  description: string;
   slug: string;
 }
 
-const { title, date, description, slug } = Astro.props;
+const { title, date, slug } = Astro.props;
 ---
 
 <li class="blog-item">

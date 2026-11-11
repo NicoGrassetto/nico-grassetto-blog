@@ -30,7 +30,7 @@ const { Content } = await entry.render();
 const bannerImage = entry.data.image;
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>  <article class="blog-post">
+<Layout title={entry.data.title} description={null}>  <article class="blog-post">
     <!-- Scientific Paper Style Header -->
     <header class="paper-header">
       <h1 class="paper-title">{entry.data.title}</h1>
@@ -42,12 +42,6 @@ const bannerImage = entry.data.image;
       <div class="paper-date">
         <time datetime={entry.data.date}>{formatDate(entry.data.date)}</time>
       </div>
-      {entry.data.description && (
-        <div class="paper-abstract">
-          <h2 class="abstract-title">Abstract</h2>
-          <p>{entry.data.description}</p>
-        </div>
-      )}
     </header>
 
     <div class="post-content">
@@ -137,30 +131,6 @@ const bannerImage = entry.data.image;
     margin-top: 1rem;
   }
 
-  .paper-abstract {
-    text-align: left;
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: var(--bg-secondary);
-    border-radius: 4px;
-  }
-
-  .abstract-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin: 0 0 0.75rem 0;
-  }
-
-  .paper-abstract p {
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
-  }
-
   .post-content {
     font-size: 1rem;
     line-height: 1.8;
@@ -210,6 +180,41 @@ const bannerImage = entry.data.image;
 
   .post-content :global(li) {
     margin: 0.35rem 0;
+  }
+
+  .post-content :global(.table-scroll) {
+    --table-border-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+    max-width: 100%;
+    margin: 1.75rem 0;
+    padding: 0.75rem 0;
+    overflow-x: auto;
+  }
+
+  .post-content :global(.table-scroll:focus-visible) {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 3px;
+  }
+
+  .post-content :global(.table-scroll table) {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .post-content :global(.table-scroll th),
+  .post-content :global(.table-scroll td) {
+    min-width: 7.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--table-border-color);
+    overflow-wrap: break-word;
+    text-align: start;
+    vertical-align: top;
+  }
+
+  .post-content :global(.table-scroll th) {
+    font-weight: 600;
   }
 
   .post-content :global(pre) {
@@ -317,10 +322,6 @@ const bannerImage = entry.data.image;
       font-size: 1rem;
     }
 
-    .paper-abstract {
-      padding: 1rem;
-    }
-    
     .post-content {
       font-size: 0.95rem;
     }

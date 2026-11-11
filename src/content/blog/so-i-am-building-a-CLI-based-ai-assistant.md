@@ -1,7 +1,6 @@
 ---
 title: "So I'm building a CLI-first general purpose AI assistant"
 date: "2026-01-05"
-description: "TL;DR I'm building Veloce - A lightweight, model agnostic, and fully customisable AI assistant."
 draft: true
 ---
 

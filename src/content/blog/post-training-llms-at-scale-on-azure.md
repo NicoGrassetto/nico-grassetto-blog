@@ -1,7 +1,6 @@
 ---
 title: "Post-training LLMs at scale on Azure"
 date: "2026-01-05"
-description: "Something"
 draft: true
 ---
 Talk about all post training methods. How they can accomodated.

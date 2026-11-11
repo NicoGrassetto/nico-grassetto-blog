@@ -5,11 +5,10 @@ export interface Props {
   title: string;
   date: string;
   image: string;
-  description: string;
   slug: string;
 }
 
-const { title, date, image, description, slug } = Astro.props;
+const { title, date, image, slug } = Astro.props;
 ---
 
 <article class="blog-card">
@@ -20,7 +19,6 @@ const { title, date, image, description, slug } = Astro.props;
     <div class="card-content">
       <h2>{title}</h2>
       <time datetime={date} class="date">{formatDate(date)}</time>
-      <p class="description">{description}</p>
     </div>
   </a>
 </article>
@@ -81,15 +79,7 @@ const { title, date, image, description, slug } = Astro.props;
   .date {
     color: var(--text-muted);
     font-size: 0.875rem;
-    margin-bottom: 0.75rem;
     display: block;
-  }
-
-  .description {
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin: 0;
-    flex-grow: 1;
   }
 
   @media (max-width: 768px) {

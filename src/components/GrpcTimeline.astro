@@ -1,28 +1,50 @@
+---
+import Cite from './Cite.astro';
+---
+
 <div class="grpc-timeline">
-  <ol role="list" aria-label="RPC and gRPC milestones, as shown in the source video">
+  <ol role="list" aria-label="Selected RPC and gRPC milestones">
     <li>
-      <time datetime="1960">1960</time>
-      <span>Early concepts of distributed computing emerge</span>
+      <time datetime="1976-01-14">1976</time>
+      <span>
+        RFC 707 describes a procedure-call model for invoking operations on remote hosts.
+        <Cite id="rpc-rfc707" author="White, J. E." year="1976" />
+      </span>
     </li>
     <li>
-      <time datetime="1980">1980</time>
-      <span>Remote Procedure Calls (RPC) gain formalization</span>
+      <time datetime="1984-02">1984</time>
+      <span>
+        Birrell and Nelson publish <em>Implementing Remote Procedure Calls</em>.
+        <Cite id="rpc-birrell-nelson" author="Birrell, A. & Nelson, B. J." year="1984" />
+      </span>
     </li>
     <li>
-      <time datetime="2006">2006</time>
-      <span>Google develops internal RPC frameworks</span>
+      <time datetime="2015-02-26">2015</time>
+      <span>
+        Google open-sources gRPC with HTTP/2 transport.
+        <Cite id="grpc-introduction" author="Marculescu, M." year="2015" />
+      </span>
     </li>
     <li>
-      <time datetime="2015">2015</time>
-      <span>gRPC introduced as Google's successor to Stubby</span>
+      <time datetime="2016-08-23">2016</time>
+      <span>
+        gRPC 1.0 is released with a stable core protocol and APIs for production use.
+        <Cite id="grpc-1-0" author="Talwar, V." year="2016" />
+      </span>
     </li>
     <li>
-      <time datetime="2016">2016</time>
-      <span>Open sourced by Google for wider adoption</span>
+      <time datetime="2017">2017</time>
+      <span>
+        gRPC joins the Cloud Native Computing Foundation (CNCF).
+        <Cite id="grpc-cncf" author="Woods, N." year="2017" />
+      </span>
     </li>
     <li>
-      <time datetime="2018">2018</time>
-      <span>Adopts HTTP/2 for multiplexing and efficiency</span>
+      <time datetime="2018-10-23">2018</time>
+      <span>
+        gRPC-Web becomes generally available for browser clients.
+        <Cite id="grpc-web-ga" author="Perkins et al." year="2018" />
+      </span>
     </li>
   </ol>
 </div>

@@ -1,7 +1,6 @@
 ---
 title: "Spare thoughts on enterprise AI"
 date: "2026-01-04"
-description: "TL;DR Every enterprise AI system is production-ready, but not every production-ready AI system is enterprise AI."
 draft: true
 ---
 

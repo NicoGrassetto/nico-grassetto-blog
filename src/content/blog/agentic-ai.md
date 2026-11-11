@@ -1,7 +1,6 @@
 ---
 title: "Agentic AI: From Workflows to Multi-Agent Systems"
 date: "2026-03-24"
-description: "A practical guide to choosing between deterministic workflows, single-agent systems, and multi-agent architectures — and knowing when to graduate from one to the next."
 draft: true
 ---
 

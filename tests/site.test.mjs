@@ -58,6 +58,21 @@ test('reference URLs render as clickable links', () => {
   assert.match(reference[1], /<a href="https:\/\/cdn\.openai\.com\/research-covers\/language-unsupervised\/language_understanding_paper\.pdf"/);
 });
 
+test('blog posts omit descriptions without removing site or RSS channel descriptions', () => {
+  for (const { link } of rssItems) {
+    const article = readOutput(path.join(new URL(link).pathname, 'index.html'));
+    assert.doesNotMatch(article, /class="(?:paper-abstract|abstract-title)"/);
+    assert.doesNotMatch(article, /<meta\b[^>]*(?:name|property)="(?:description|og:description|twitter:description)"/);
+  }
+  for (const [, item] of feed.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    assert.doesNotMatch(item, /<description\b/);
+  }
+  assert.match(feed, /<description>[^<]+<\/description>/);
+  for (const page of [homepage, blog, readOutput('about/index.html')]) {
+    assert.match(page, /<meta\b[^>]*name="description"[^>]*content="[^"]+"/);
+  }
+});
+
 test('the blog preserves the original three-column design and sections', () => {
   assert.match(blog, /class="container-full"/);
   assert.match(blog, /class="three-column-grid"/);

@@ -1,7 +1,6 @@
 ---
-title: "Understanding gRPC"
+title: "Service-to service communication with gRPC"
 date: "2026-11-10"
-description: "To be written"
 draft: true
 ---
 
@@ -9,6 +8,39 @@ import Cite from "../../components/Cite.astro";
 import Citation from "../../components/Citation.astro";
 import References from "../../components/References.astro";
 import GrpcTimeline from "../../components/GrpcTimeline.astro";
+import RpcTree from "../../components/RpcTree.astro";
+
+## API styles
+
+<div class="table-scroll" role="region" aria-label="Service interaction approaches and use cases" tabIndex={0}>
+
+|                    | Approach                                                       | Typical data format         | Typical use cases                                                          | Strengths and considerations                                                                                                          |
+| ------------------ | -------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **gRPC**           | Remote procedure calls (RPC), usually over HTTP/2              | Protocol Buffers by default | Internal microservices; high-throughput, real-time, and streaming services | Compact payloads, typed contracts, cross-language code generation, and streaming; browsers need gRPC-Web or another compatible layer. |
+| **REST over HTTP** | Resources accessed through HTTP methods such as GET and POST   | Usually JSON                | Public, partner, and third-party APIs; web and mobile applications         | Broad client support, easy debugging with curl or Postman, HTTP caching/CDNs, and no generated stubs required.                        |
+| **GraphQL**        | Clients request specific fields through a typed query language | Usually JSON                | Browser/frontend-to-backend APIs; flexible, client-driven data fetching    | Clients select the fields they need, reducing over-fetching; the server provides a schema and resolves queries.                       |
+| **SOAP**           | Structured messages with formal service contracts              | XML                         | Enterprise and legacy integrations                                         | Formal contracts and structured XML messaging, often used with enterprise web-service standards.                                      |
+
+</div>
+
+## Remote Procedure Call (RPC)
+
+<RpcTree />
+
+## Protocol Buffer
+
+## Google Remote Procedure Call (gRPC)
+
+### RPC and gRPC timeline
+
+<GrpcTimeline />
+
+## Case studies
+
+Your order service calls your inventory service, which calls your pricing service, which calls your tax service. Every hop serializes JSON, parses it, and validates it again. Multiply that by a few thousand requests per second and a surprising amount of your latency budget goes to translating data, not doing work.
+gRPC was built to fix exactly this.
+
+You can think of gRPC as a RPC-inspired protocol. and it's strongly inspired by Remote Procedure Call.
 
 ## Service-to-service calls with gRPC
 
@@ -124,33 +156,6 @@ The screenshot's **Raw Response Request** label refers to the client's raw reque
 It's basically an alternative to REST or GraphQL.
 
 Begs the questionwhen to use it. It's typicallyt used as a servioce to service commmiunication, you are unlikely to use gRPC to talk to your front-end. it's very efficient for back-end services talking to each other.
-
-| Use case                                    | Typical choice        | Why                                                                                                                     |
-| ------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Public / partner / third-party APIs         | REST (JSON over HTTP) | Universal client support, easy debugging (curl, browser tools, Postman), HTTP caching/CDNs, no generated stubs required |
-| Browser / frontend → backend                | REST (or GraphQL)     | Browsers can’t speak native gRPC (needs gRPC-Web + proxy or alternatives like Connect)                                  |
-| Internal service-to-service (microservices) | gRPC (often)          | Smaller payloads (Protobuf), lower latency, strong typed contracts, polyglot code generation, built-in streaming        |
-| High-throughput / real-time / streaming     | gRPC preferred        | Performance and streaming advantages compound at scale                                                                  |
-
-| Technology         | Approach                                                       | Typical data format                 | Common uses                               |
-| ------------------ | -------------------------------------------------------------- | ----------------------------------- | ----------------------------------------- |
-| **gRPC**           | Remote procedure calls (RPC), usually over HTTP/2              | Protocol Buffers by default         | Typed service-to-service calls, streaming |
-| **REST over HTTP** | Resources accessed through HTTP methods such as GET and POST   | Usually JSON                        | Public APIs, web and mobile applications  |
-| **GraphQL**        | Clients request specific fields through a typed query language | Usually JSON                        | Flexible data fetching for frontends      |
-| **JSON-RPC**       | Named remote method calls                                      | JSON                                | Simple RPC APIs, developer tools          |
-| **Apache Thrift**  | RPC framework with generated client/server code                | Multiple encodings, commonly binary | Cross-language backend services           |
-| **SOAP**           | Structured messages with formal service contracts              | XML                                 | Enterprise and legacy integrations        |
-| **Connect RPC**    | Typed RPC over HTTP, compatible with gRPC                      | Protocol Buffers or JSON            | Browser-friendly RPC and backend services |
-
-### RPC and gRPC timeline
-
-The milestones below are transcribed from the video's timeline, with its dates reproduced as shown.
-
-<GrpcTimeline />
-
-Source: recreated from the supplied video screenshot <Cite id="coding-gopher-grpc" author="The Coding Gopher" year="n.d." />.
-
-**Historical clarification:** the screenshot's dates are not all accurate. gRPC was already open source in 2015 <Cite id="grpc-about" author="gRPC" year="n.d." />; 2016 marks its 1.0 release <Cite id="grpc-1-0" author="Talwar, V." year="2016" />. HTTP/2 was part of its original design <Cite id="grpc-principles" author="gRPC" year="n.d." />, not a 2018 addition.
 
 ### From .proto to application code
 
@@ -737,15 +742,217 @@ Hello, world!
 
 ## Implementation
 
-Both examples use generated gRPC code, TLS and a deadline. The Order code shows only its outbound call; a real service should also propagate incoming cancellation and deadlines. The stock data is illustrative: production systems should authenticate callers (for example, with mTLS), use a persistent store and reserve stock atomically.
+The **Order service** acts as a gRPC client of the **Inventory service**, which implements `CheckStock`. These examples cover Go, Java, JavaScript (Node.js), and Python using the official gRPC libraries. All four use the same contract, TLS, and a one-second RPC deadline, so you can mix client and server languages.
 
-First, save this shared contract as `inventory.proto`:
+The Order code shows only its outbound call; a real service should also propagate incoming cancellation and deadlines. The stock data is illustrative: production systems should authenticate callers (for example, with mTLS), use a persistent store and reserve stock atomically.
+
+### Order/Inventory imports
+
+These are the gRPC library imports. The complete snippets below also import standard-library helpers and generated bindings where needed.
+
+<div data-code-examples="shop-imports">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Order and Inventory imports language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="shop-imports-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="shop-imports-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="shop-imports-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="shop-imports-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="shop-imports-go" data-code-example="go">
+
+```go
+import (
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/credentials"
+    "google.golang.org/grpc/status"
+)
+```
+
+</div>
+
+<div id="shop-imports-java" data-code-example="java">
+
+```java
+import io.grpc.Grpc;
+import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.TlsChannelCredentials;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.stub.StreamObserver;
+```
+
+</div>
+
+<div id="shop-imports-node" data-code-example="node">
+
+```javascript
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+```
+
+</div>
+
+<div id="shop-imports-python" data-code-example="python">
+
+```python
+import grpc
+```
+
+</div>
+
+</div>
+
+### Order/Inventory project structure
+
+Generated bindings and installed dependencies are omitted.
+
+<div data-code-examples="shop-structure">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Order and Inventory project structure language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="shop-structure-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="shop-structure-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="shop-structure-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="shop-structure-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="shop-structure-go" data-code-example="go">
+
+```text
+order-inventory-go/
+|-- go.mod
+|-- inventory.proto
+`-- cmd/
+    |-- inventory/
+    |   `-- main.go
+    `-- order/
+        `-- main.go
+```
+
+The generated Go package goes in `inventorypb`, matching `example.com/shop/inventorypb` in the imports.
+
+</div>
+
+<div id="shop-structure-java" data-code-example="java">
+
+```text
+order-inventory-java/
+|-- build.gradle
+`-- src/
+    `-- main/
+        |-- proto/
+        |   `-- inventory.proto
+        `-- java/
+            |-- InventoryServer.java
+            `-- OrderClient.java
+```
+
+</div>
+
+<div id="shop-structure-node" data-code-example="node">
+
+```text
+order-inventory-node/
+|-- package.json
+|-- inventory.proto
+|-- inventory.mjs
+`-- order.mjs
+```
+
+</div>
+
+<div id="shop-structure-python" data-code-example="python">
+
+```text
+order-inventory-python/
+|-- inventory.proto
+|-- inventory.py
+`-- order.py
+```
+
+</div>
+
+</div>
+
+### inventory.proto
+
+Use this same contract in all four languages. The Go and Java options only control the generated code's package layout.
 
 ```proto
 syntax = "proto3";
 
 package shop.inventory.v1;
+
 option go_package = "example.com/shop/inventorypb";
+option java_package = "shop.inventory.v1";
+option java_multiple_files = true;
 
 service Inventory {
   rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
@@ -761,41 +968,212 @@ message CheckStockResponse {
 }
 ```
 
-Provide a TLS certificate and private key for the Inventory service as `TLS_CERT_FILE` and `TLS_KEY_FILE`. Set `CA_CERT_FILE` and `INVENTORY_ADDRESS` for the Order service; the address hostname must match the certificate.
+### Inventory service (server)
 
-<div data-code-examples>
+The sample inventory contains ten units of `book`. Unknown SKUs have no stock; an empty SKU or non-positive quantity returns `INVALID_ARGUMENT`. Run only one Inventory server at a time on port `50051`.
+
+<div data-code-examples="shop-inventory">
 
 <div
   data-code-switcher
   role="group"
-  aria-label="Inventory example language"
+  aria-label="Inventory server language"
   hidden
 >
   <button
     type="button"
-    value="python"
-    aria-controls="grpc-python"
+    value="go"
+    aria-controls="shop-inventory-go"
     aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="shop-inventory-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="shop-inventory-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="shop-inventory-python"
+    aria-pressed="false"
   >
     Python
   </button>
-  <button type="button" value="go" aria-controls="grpc-go" aria-pressed="false">
-    Go
-  </button>
 </div>
 
-<div id="grpc-python" data-code-example="python">
+<div id="shop-inventory-go" data-code-example="go">
 
-### Python
+#### Go (`cmd/inventory/main.go`)
 
-Install the tools and generate the client and server code:
+```go
+package main
 
-```sh
-python -m pip install grpcio grpcio-tools
-python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. inventory.proto
+import (
+    "context"
+    "log"
+    "net"
+    "os"
+
+    pb "example.com/shop/inventorypb"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/credentials"
+    "google.golang.org/grpc/status"
+)
+
+type inventoryServer struct {
+    pb.UnimplementedInventoryServer
+}
+
+func (s *inventoryServer) CheckStock(ctx context.Context, req *pb.CheckStockRequest) (*pb.CheckStockResponse, error) {
+    if req.GetSku() == "" || req.GetQuantity() <= 0 {
+        return nil, status.Error(codes.InvalidArgument, "SKU and positive quantity required")
+    }
+
+    stock := map[string]int32{"book": 10}
+    return &pb.CheckStockResponse{InStock: stock[req.GetSku()] >= req.GetQuantity()}, nil
+}
+
+func main() {
+    creds, err := credentials.NewServerTLSFromFile(os.Getenv("TLS_CERT_FILE"), os.Getenv("TLS_KEY_FILE"))
+    if err != nil {
+        log.Fatal(err)
+    }
+    listener, err := net.Listen("tcp", "127.0.0.1:50051")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    server := grpc.NewServer(grpc.Creds(creds))
+    pb.RegisterInventoryServer(server, &inventoryServer{})
+    log.Println("Inventory service listening on 127.0.0.1:50051")
+    if err := server.Serve(listener); err != nil {
+        log.Fatal(err)
+    }
+}
 ```
 
-**Inventory service** (`inventory.py`):
+</div>
+
+<div id="shop-inventory-java" data-code-example="java">
+
+#### Java (`src/main/java/InventoryServer.java`)
+
+```java
+import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.stub.StreamObserver;
+import java.io.File;
+import java.net.InetSocketAddress;
+import shop.inventory.v1.CheckStockRequest;
+import shop.inventory.v1.CheckStockResponse;
+import shop.inventory.v1.InventoryGrpc;
+
+public class InventoryServer {
+    public static void main(String[] args) throws Exception {
+        var server = NettyServerBuilder
+            .forAddress(new InetSocketAddress("127.0.0.1", 50051))
+            .useTransportSecurity(
+                new File(System.getenv("TLS_CERT_FILE")),
+                new File(System.getenv("TLS_KEY_FILE")))
+            .addService(new InventoryGrpc.InventoryImplBase() {
+                @Override
+                public void checkStock(CheckStockRequest request,
+                        StreamObserver<CheckStockResponse> response) {
+                    if (request.getSku().isEmpty() || request.getQuantity() <= 0) {
+                        response.onError(Status.INVALID_ARGUMENT
+                            .withDescription("SKU and positive quantity required")
+                            .asRuntimeException());
+                        return;
+                    }
+
+                    int available = request.getSku().equals("book") ? 10 : 0;
+                    response.onNext(CheckStockResponse.newBuilder()
+                        .setInStock(available >= request.getQuantity())
+                        .build());
+                    response.onCompleted();
+                }
+            })
+            .build()
+            .start();
+
+        System.out.println("Inventory service listening on 127.0.0.1:50051");
+        server.awaitTermination();
+    }
+}
+```
+
+</div>
+
+<div id="shop-inventory-node" data-code-example="node">
+
+#### JavaScript (Node.js) (`inventory.mjs`)
+
+```javascript
+import { readFileSync } from "node:fs";
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+
+const definition = protoLoader.loadSync("inventory.proto", {
+  keepCase: true,
+  defaults: true,
+});
+const { shop } = grpc.loadPackageDefinition(definition);
+const inventory = shop.inventory.v1;
+
+const server = new grpc.Server();
+server.addService(inventory.Inventory.service, {
+  checkStock(call, callback) {
+    if (!call.request.sku || call.request.quantity <= 0) {
+      callback({
+        code: grpc.status.INVALID_ARGUMENT,
+        details: "SKU and positive quantity required",
+      });
+      return;
+    }
+
+    const stock = new Map([["book", 10]]);
+    const available = stock.get(call.request.sku) ?? 0;
+    callback(null, { in_stock: available >= call.request.quantity });
+  },
+});
+
+const credentials = grpc.ServerCredentials.createSsl(null, [
+  {
+    private_key: readFileSync(process.env.TLS_KEY_FILE),
+    cert_chain: readFileSync(process.env.TLS_CERT_FILE),
+  },
+]);
+
+server.bindAsync("127.0.0.1:50051", credentials, (error) => {
+  if (error) {
+    console.error(error);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log("Inventory service listening on 127.0.0.1:50051");
+});
+```
+
+</div>
+
+<div id="shop-inventory-python" data-code-example="python">
+
+#### Python (`inventory.py`)
 
 ```python
 from concurrent import futures
@@ -812,7 +1190,7 @@ class Inventory(inventory_pb2_grpc.InventoryServicer):
         if not request.sku or request.quantity <= 0:
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, "SKU and positive quantity required")
 
-        available = {"book": 10}.get(request.sku, 0)  # Example data only.
+        available = {"book": 10}.get(request.sku, 0)
         return inventory_pb2.CheckStockResponse(in_stock=available >= request.quantity)
 
 
@@ -820,12 +1198,182 @@ server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 inventory_pb2_grpc.add_InventoryServicer_to_server(Inventory(), server)
 key = Path(os.environ["TLS_KEY_FILE"]).read_bytes()
 cert = Path(os.environ["TLS_CERT_FILE"]).read_bytes()
-server.add_secure_port("[::]:50051", grpc.ssl_server_credentials(((key, cert),)))
+server.add_secure_port("127.0.0.1:50051", grpc.ssl_server_credentials(((key, cert),)))
 server.start()
+print("Inventory service listening on 127.0.0.1:50051", flush=True)
 server.wait_for_termination()
 ```
 
-**Order service** (`order.py`):
+</div>
+
+</div>
+
+### Order service (client)
+
+The Order service asks whether one `book` is available. The channel and client stub should be created once and reused for subsequent requests.
+
+<div data-code-examples="shop-order">
+
+<div data-code-switcher role="group" aria-label="Order client language" hidden>
+  <button
+    type="button"
+    value="go"
+    aria-controls="shop-order-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="shop-order-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="shop-order-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="shop-order-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="shop-order-go" data-code-example="go">
+
+#### Go (`cmd/order/main.go`)
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    "os"
+    "time"
+
+    pb "example.com/shop/inventorypb"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials"
+)
+
+func main() {
+    creds, err := credentials.NewClientTLSFromFile(os.Getenv("CA_CERT_FILE"), "")
+    if err != nil {
+        log.Fatal(err)
+    }
+    conn, err := grpc.NewClient(os.Getenv("INVENTORY_ADDRESS"), grpc.WithTransportCredentials(creds))
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer conn.Close()
+
+    client := pb.NewInventoryClient(conn)
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    result, err := client.CheckStock(ctx, &pb.CheckStockRequest{Sku: "book", Quantity: 1})
+    if err != nil {
+        log.Fatalf("Inventory RPC failed: %v", err)
+    }
+    log.Printf("In stock: %t", result.GetInStock())
+}
+```
+
+</div>
+
+<div id="shop-order-java" data-code-example="java">
+
+#### Java (`src/main/java/OrderClient.java`)
+
+```java
+import io.grpc.Grpc;
+import io.grpc.ManagedChannel;
+import io.grpc.TlsChannelCredentials;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+import shop.inventory.v1.CheckStockRequest;
+import shop.inventory.v1.InventoryGrpc;
+
+public class OrderClient {
+    public static void main(String[] args) throws Exception {
+        var credentials = TlsChannelCredentials.newBuilder()
+            .trustManager(new File(System.getenv("CA_CERT_FILE")))
+            .build();
+        ManagedChannel channel = Grpc.newChannelBuilder(
+            System.getenv("INVENTORY_ADDRESS"), credentials
+        ).build();
+
+        try {
+            var client = InventoryGrpc.newBlockingStub(channel);
+            var result = client.withDeadlineAfter(1, TimeUnit.SECONDS)
+                .checkStock(CheckStockRequest.newBuilder()
+                    .setSku("book")
+                    .setQuantity(1)
+                    .build());
+            System.out.println("In stock: " + result.getInStock());
+        } finally {
+            channel.shutdownNow();
+        }
+    }
+}
+```
+
+</div>
+
+<div id="shop-order-node" data-code-example="node">
+
+#### JavaScript (Node.js) (`order.mjs`)
+
+```javascript
+import { readFileSync } from "node:fs";
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+
+const definition = protoLoader.loadSync("inventory.proto", {
+  keepCase: true,
+  defaults: true,
+});
+const { shop } = grpc.loadPackageDefinition(definition);
+const credentials = grpc.credentials.createSsl(
+  readFileSync(process.env.CA_CERT_FILE),
+);
+const client = new shop.inventory.v1.Inventory(
+  process.env.INVENTORY_ADDRESS,
+  credentials,
+);
+
+client.checkStock(
+  { sku: "book", quantity: 1 },
+  { deadline: new Date(Date.now() + 1000) },
+  (error, result) => {
+    client.close();
+
+    if (error) {
+      console.error(error);
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log("In stock:", result.in_stock);
+  },
+);
+```
+
+</div>
+
+<div id="shop-order-python" data-code-example="python">
+
+#### Python (`order.py`)
 
 ```python
 import os
@@ -858,128 +1406,188 @@ class OrderService:
 
 
 if __name__ == "__main__":
-    service = OrderService()  # Create once and reuse for requests.
+    service = OrderService()
     try:
         print("In stock:", service.check_stock("book", 1))
     finally:
         service.close()
 ```
 
-Run `python inventory.py`, then `python order.py` in another terminal.
+</div>
 
 </div>
 
-<div id="grpc-go" data-code-example="go">
+### Generate and run the Order/Inventory example
 
-### Go
+Provide a TLS certificate and private key for the Inventory service. The Order service's CA file must trust that certificate, and the address hostname must match its subject alternative name. Set these environment variables in **both terminals**, using absolute file paths:
 
-Install `protoc` and its Go plugins, then generate the client and server code:
+```sh
+export TLS_CERT_FILE="/absolute/path/inventory.crt"
+export TLS_KEY_FILE="/absolute/path/inventory.key"
+export CA_CERT_FILE="/absolute/path/ca.crt"
+export INVENTORY_ADDRESS="localhost:50051"
+```
+
+For a local self-signed certificate, `CA_CERT_FILE` can point to the server's certificate. Do not commit private keys. The examples below assume the server certificate covers `localhost`.
+
+<div data-code-examples="shop-run">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Order and Inventory run instructions language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="shop-run-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="shop-run-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="shop-run-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="shop-run-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="shop-run-go" data-code-example="go">
+
+With Go and `protoc` installed, run from `order-inventory-go`:
 
 ```sh
 go mod init example.com/shop
 go get google.golang.org/grpc google.golang.org/protobuf
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+export PATH="$PATH:$(go env GOPATH)/bin"
+protoc -I . --go_out=. --go_opt=module=example.com/shop --go-grpc_out=. --go-grpc_opt=module=example.com/shop inventory.proto
+go run ./cmd/inventory
 ```
 
-Add the Go binaries directory to your `PATH`, then run:
+In another terminal, enter the same folder and run:
 
 ```sh
-protoc -I . --go_out=. --go_opt=module=example.com/shop --go-grpc_out=. --go-grpc_opt=module=example.com/shop inventory.proto
+go run ./cmd/order
 ```
 
-**Inventory service** (`cmd/inventory/main.go`):
+</div>
 
-```go
-package main
+<div id="shop-run-java" data-code-example="java">
 
-import (
-    "context"
-    "log"
-    "net"
-    "os"
+With JDK 17 and Gradle installed, save this as `build.gradle` in `order-inventory-java`. It uses the same build setup as the Java Hello World example above.
 
-    pb "example.com/shop/inventorypb"
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/credentials"
-    "google.golang.org/grpc/status"
-)
-
-type inventoryServer struct {
-    pb.UnimplementedInventoryServer
+```groovy
+plugins {
+    id 'application'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
-func (s *inventoryServer) CheckStock(ctx context.Context, req *pb.CheckStockRequest) (*pb.CheckStockResponse, error) {
-    if req.GetSku() == "" || req.GetQuantity() <= 0 {
-        return nil, status.Error(codes.InvalidArgument, "SKU and positive quantity required")
-    }
-
-    stock := map[string]int32{"book": 10} // Example data only.
-    return &pb.CheckStockResponse{InStock: stock[req.GetSku()] >= req.GetQuantity()}, nil
+repositories {
+    mavenCentral()
 }
 
-func main() {
-    creds, err := credentials.NewServerTLSFromFile(os.Getenv("TLS_CERT_FILE"), os.Getenv("TLS_KEY_FILE"))
-    if err != nil {
-        log.Fatal(err)
-    }
-    listener, err := net.Listen("tcp", ":50051")
-    if err != nil {
-        log.Fatal(err)
-    }
+def grpcVersion = '1.68.1'
 
-    server := grpc.NewServer(grpc.Creds(creds))
-    pb.RegisterInventoryServer(server, &inventoryServer{})
-    if err := server.Serve(listener); err != nil {
-        log.Fatal(err)
+dependencies {
+    implementation "io.grpc:grpc-netty-shaded:$grpcVersion"
+    implementation "io.grpc:grpc-protobuf:$grpcVersion"
+    implementation "io.grpc:grpc-stub:$grpcVersion"
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+}
+
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.25.5' }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion" }
     }
+    generateProtoTasks {
+        all().each { task -> task.plugins { grpc {} } }
+    }
+}
+
+application {
+    mainClass = project.findProperty('mainClass') ?: 'InventoryServer'
 }
 ```
 
-**Order service** (`cmd/order/main.go`):
+Gradle generates the Java bindings automatically. Start the server:
 
-```go
-package main
-
-import (
-    "context"
-    "log"
-    "os"
-    "time"
-
-    pb "example.com/shop/inventorypb"
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials"
-)
-
-func main() {
-    creds, err := credentials.NewClientTLSFromFile(os.Getenv("CA_CERT_FILE"), "")
-    if err != nil {
-        log.Fatal(err)
-    }
-    conn, err := grpc.NewClient(os.Getenv("INVENTORY_ADDRESS"), grpc.WithTransportCredentials(creds))
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer conn.Close()
-
-    client := pb.NewInventoryClient(conn) // Create once and reuse for requests.
-    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-    defer cancel()
-    result, err := client.CheckStock(ctx, &pb.CheckStockRequest{Sku: "book", Quantity: 1})
-    if err != nil {
-        log.Fatalf("Inventory RPC failed: %v", err)
-    }
-    log.Printf("In stock: %t", result.GetInStock())
-}
+```sh
+gradle run
 ```
 
-Run `go run ./cmd/inventory`, then `go run ./cmd/order` in another terminal.
+In another terminal, enter the same folder and run:
+
+```sh
+gradle run -PmainClass=OrderClient
+```
+
+</div>
+
+<div id="shop-run-node" data-code-example="node">
+
+From `order-inventory-node`, install the official libraries and start the server:
+
+```sh
+npm init -y
+npm install @grpc/grpc-js @grpc/proto-loader
+node inventory.mjs
+```
+
+Node.js loads `inventory.proto` at runtime, so no separate code-generation step is needed. In another terminal, enter the same folder and run:
+
+```sh
+node order.mjs
+```
+
+</div>
+
+<div id="shop-run-python" data-code-example="python">
+
+From `order-inventory-python`, create an environment, install the tools, generate the bindings, and start the server:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install grpcio grpcio-tools
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. inventory.proto
+python inventory.py
+```
+
+In another terminal, enter the same folder, activate the environment, and run:
+
+```sh
+source .venv/bin/activate
+python order.py
+```
 
 </div>
 
 </div>
+
+The Order client prints `In stock: true` (`True` in Python). Requesting more than ten books or an unknown SKU returns `false`; invalid requests produce a gRPC error instead.
 
 ## Health checks for a gRPC server
 
@@ -1014,17 +1622,676 @@ flowchart TD
 
 Source: recreated from the supplied video screenshot <Cite id="coding-gopher-grpc" author="The Coding Gopher" year="n.d." />.
 
-| Probe shown | What it checks                                         | Limitation or requirement                                                                           |
-| ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `httpGet`   | An HTTP health endpoint                                | The application needs to serve HTTP/1.1 as well as gRPC.                                            |
-| `tcpSocket` | Whether a TCP connection can be opened                 | An open port alone does not establish that the gRPC service is healthy.                             |
-| `exec`      | A gRPC call made by a test client inside the container | Include a client program in the container; kubelet executes it, and it calls the RPC you implement. |
-
 These are the three approaches shown in the screenshot, not an exhaustive list. Kubernetes also supports native gRPC probes when the application implements the standard gRPC Health Checking Protocol <Cite id="kubernetes-probes" author="Kubernetes" year="n.d." />.
 
 btw gRPC stands for Google RPC (Remote Procedure Call). RPC is a classic that's existed for years (think about your distributedf system class)
 
 This one is just a different take on it: others exist like webRPC
+
+## gRPC library imports
+
+<div data-code-examples="library-imports">
+
+<div data-code-switcher role="group" aria-label="gRPC library language" hidden>
+  <button
+    type="button"
+    value="go"
+    aria-controls="imports-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="imports-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="imports-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="imports-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+</div>
+
+<div id="imports-go" data-code-example="go">
+
+```go
+import "google.golang.org/grpc"
+```
+
+</div>
+
+<div id="imports-java" data-code-example="java">
+
+```java
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.ServerBuilder;
+import io.grpc.stub.StreamObserver;
+```
+
+</div>
+
+<div id="imports-python" data-code-example="python">
+
+```python
+import grpc
+```
+
+</div>
+
+<div id="imports-node" data-code-example="node">
+
+```javascript
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+```
+
+</div>
+
+</div>
+
+## Project structure
+
+Each project has a server, a client, and the same `user.proto` contract. Generated bindings and installed dependencies are omitted from these source layouts.
+
+<div data-code-examples="project-structure">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="Project structure language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="structure-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="structure-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="structure-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="structure-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="structure-go" data-code-example="go">
+
+```text
+grpc-go/
+|-- go.mod
+|-- user.proto
+`-- cmd/
+    |-- server/
+    |   `-- main.go
+    `-- client/
+        `-- main.go
+```
+
+Save the Go server and client snippets in their respective `main.go` files. The generated `pb` package belongs in `gen/users`.
+
+</div>
+
+<div id="structure-java" data-code-example="java">
+
+```text
+grpc-java/
+|-- build.gradle
+`-- src/
+    `-- main/
+        |-- proto/
+        |   `-- user.proto
+        `-- java/
+            |-- Server.java
+            `-- Client.java
+```
+
+</div>
+
+<div id="structure-node" data-code-example="node">
+
+```text
+grpc-node/
+|-- package.json
+|-- server.mjs
+|-- client.mjs
+`-- user.proto
+```
+
+</div>
+
+<div id="structure-python" data-code-example="python">
+
+```text
+grpc-python/
+|-- server.py
+|-- client.py
+`-- user.proto
+```
+
+</div>
+
+</div>
+
+### user.proto
+
+The client sends a user ID, and the server returns the matching user.
+
+```proto
+syntax = "proto3";
+
+package users;
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+}
+```
+
+### Server
+
+Each server implements the same `UserService.GetUser` contract and returns user `1`. Unknown IDs return `NOT_FOUND`. Run only one server at a time on `127.0.0.1:50051`; clients can call it regardless of the server's language.
+
+<div data-code-examples="user-servers">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="User service server language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="user-server-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="user-server-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="user-server-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="user-server-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="user-server-go" data-code-example="go">
+
+#### Go (`server.go`)
+
+Generate the Go bindings first. Replace the `pb` import path with your generated package's location.
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    "net"
+
+    pb "example.com/grpc-demo/gen/users"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
+)
+
+type userService struct {
+    pb.UnimplementedUserServiceServer
+}
+
+func (s *userService) GetUser(ctx context.Context, request *pb.GetUserRequest) (*pb.User, error) {
+    if request.GetId() != 1 {
+        return nil, status.Error(codes.NotFound, "User not found")
+    }
+
+    return &pb.User{
+        Id:    1,
+        Name:  "Ada Lovelace",
+        Email: "ada@example.com",
+    }, nil
+}
+
+func main() {
+    listener, err := net.Listen("tcp", "127.0.0.1:50051")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    server := grpc.NewServer()
+    pb.RegisterUserServiceServer(server, &userService{})
+    log.Println("User service listening on 127.0.0.1:50051")
+    if err := server.Serve(listener); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+</div>
+
+<div id="user-server-java" data-code-example="java">
+
+#### Java (`Server.java`)
+
+Generate the Java bindings first. This example uses the `grpc-netty-shaded` transport to bind specifically to localhost.
+
+```java
+import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.stub.StreamObserver;
+import java.net.InetSocketAddress;
+import users.UserOuterClass.GetUserRequest;
+import users.UserOuterClass.User;
+import users.UserServiceGrpc;
+
+public class Server {
+    public static void main(String[] args) throws Exception {
+        var server = NettyServerBuilder
+            .forAddress(new InetSocketAddress("127.0.0.1", 50051))
+            .addService(new UserServiceGrpc.UserServiceImplBase() {
+                @Override
+                public void getUser(GetUserRequest request,
+                        StreamObserver<User> response) {
+                    if (request.getId() != 1) {
+                        response.onError(Status.NOT_FOUND
+                            .withDescription("User not found")
+                            .asRuntimeException());
+                        return;
+                    }
+
+                    response.onNext(User.newBuilder()
+                        .setId(1)
+                        .setName("Ada Lovelace")
+                        .setEmail("ada@example.com")
+                        .build());
+                    response.onCompleted();
+                }
+            })
+            .build()
+            .start();
+
+        System.out.println("User service listening on 127.0.0.1:50051");
+        server.awaitTermination();
+    }
+}
+```
+
+</div>
+
+<div id="user-server-node" data-code-example="node">
+
+#### JavaScript (Node.js) (`server.mjs`)
+
+This server loads `user.proto` at runtime. Run it from the folder containing that file.
+
+```javascript
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+
+const definition = protoLoader.loadSync("user.proto");
+const { users } = grpc.loadPackageDefinition(definition);
+
+const server = new grpc.Server();
+server.addService(users.UserService.service, {
+  getUser(call, callback) {
+    if (call.request.id !== 1) {
+      callback({
+        code: grpc.status.NOT_FOUND,
+        details: "User not found",
+      });
+      return;
+    }
+
+    callback(null, {
+      id: 1,
+      name: "Ada Lovelace",
+      email: "ada@example.com",
+    });
+  },
+});
+
+server.bindAsync(
+  "127.0.0.1:50051",
+  grpc.ServerCredentials.createInsecure(),
+  (error) => {
+    if (error) {
+      console.error(error);
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log("User service listening on 127.0.0.1:50051");
+  },
+);
+```
+
+</div>
+
+<div id="user-server-python" data-code-example="python">
+
+#### Python (`server.py`)
+
+Generate `user_pb2.py` and `user_pb2_grpc.py` first.
+
+```python
+from concurrent import futures
+
+import grpc
+import user_pb2 as pb
+import user_pb2_grpc as rpc
+
+
+class UserService(rpc.UserServiceServicer):
+    def GetUser(self, request, context):
+        users = {
+            1: pb.User(
+                id=1,
+                name="Ada Lovelace",
+                email="ada@example.com",
+            ),
+        }
+        user = users.get(request.id)
+        if user is None:
+            context.abort(grpc.StatusCode.NOT_FOUND, "User not found")
+        return user
+
+
+server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+rpc.add_UserServiceServicer_to_server(UserService(), server)
+server.add_insecure_port("127.0.0.1:50051")
+server.start()
+print("User service listening on 127.0.0.1:50051", flush=True)
+server.wait_for_termination()
+```
+
+</div>
+
+</div>
+
+### Client
+
+Each client calls `UserService.GetUser` from the same `user.proto`, requesting user `1` from `127.0.0.1:50051`.
+
+<div data-code-examples="user-clients">
+
+<div
+  data-code-switcher
+  role="group"
+  aria-label="User service client language"
+  hidden
+>
+  <button
+    type="button"
+    value="go"
+    aria-controls="user-client-go"
+    aria-pressed="true"
+  >
+    Go
+  </button>
+  <button
+    type="button"
+    value="java"
+    aria-controls="user-client-java"
+    aria-pressed="false"
+  >
+    Java
+  </button>
+  <button
+    type="button"
+    value="node"
+    aria-controls="user-client-node"
+    aria-pressed="false"
+  >
+    JavaScript (Node.js)
+  </button>
+  <button
+    type="button"
+    value="python"
+    aria-controls="user-client-python"
+    aria-pressed="false"
+  >
+    Python
+  </button>
+</div>
+
+<div id="user-client-go" data-code-example="go">
+
+#### Go (`client.go`)
+
+Generate the Go bindings first. Replace the `pb` import path with your generated package's location.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    pb "example.com/grpc-demo/gen/users"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials/insecure"
+)
+
+func main() {
+    conn, err := grpc.NewClient(
+        "127.0.0.1:50051",
+        grpc.WithTransportCredentials(insecure.NewCredentials()),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer conn.Close()
+
+    client := pb.NewUserServiceClient(conn)
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    user, err := client.GetUser(ctx, &pb.GetUserRequest{Id: 1})
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("%d: %s (%s)\n", user.GetId(), user.GetName(), user.GetEmail())
+}
+```
+
+</div>
+
+<div id="user-client-java" data-code-example="java">
+
+#### Java (`Client.java`)
+
+Generate the Java bindings first. With the `user.proto` above, default Java generation places messages inside `users.UserOuterClass`.
+
+```java
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import java.util.concurrent.TimeUnit;
+import users.UserOuterClass.GetUserRequest;
+import users.UserOuterClass.User;
+import users.UserServiceGrpc;
+
+public class Client {
+    public static void main(String[] args) {
+        ManagedChannel channel = ManagedChannelBuilder
+            .forAddress("127.0.0.1", 50051)
+            .usePlaintext()
+            .build();
+
+        try {
+            UserServiceGrpc.UserServiceBlockingStub client =
+                UserServiceGrpc.newBlockingStub(channel)
+                    .withDeadlineAfter(5, TimeUnit.SECONDS);
+
+            User user = client.getUser(
+                GetUserRequest.newBuilder().setId(1).build()
+            );
+
+            System.out.printf("%d: %s (%s)%n",
+                user.getId(), user.getName(), user.getEmail());
+        } finally {
+            channel.shutdownNow();
+        }
+    }
+}
+```
+
+</div>
+
+<div id="user-client-node" data-code-example="node">
+
+#### JavaScript (Node.js) (`client.mjs`)
+
+This client loads `user.proto` at runtime instead of generating bindings beforehand. Run it from the folder containing that file.
+
+```javascript
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+
+const definition = protoLoader.loadSync("user.proto");
+const { users } = grpc.loadPackageDefinition(definition);
+
+const client = new users.UserService(
+  "127.0.0.1:50051",
+  grpc.credentials.createInsecure(),
+);
+
+client.getUser(
+  { id: 1 },
+  { deadline: new Date(Date.now() + 5000) },
+  (error, user) => {
+    client.close();
+
+    if (error) {
+      console.error(error);
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log(`${user.id}: ${user.name} (${user.email})`);
+  },
+);
+```
+
+</div>
+
+<div id="user-client-python" data-code-example="python">
+
+#### Python (`client.py`)
+
+Generate `user_pb2.py` and `user_pb2_grpc.py` first.
+
+```python
+import grpc
+import user_pb2 as pb
+import user_pb2_grpc as rpc
+
+
+with grpc.insecure_channel("127.0.0.1:50051") as channel:
+    user = rpc.UserServiceStub(channel).GetUser(
+        pb.GetUserRequest(id=1),
+        timeout=5,
+    )
+    print(f"{user.id}: {user.name} ({user.email})")
+```
+
+</div>
+
+</div>
+
+### Generate the stubs and run
+
+From the folder containing `grpc-python`, run:
+
+```sh
+cd grpc-python
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install grpcio grpcio-tools
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. user.proto
+python server.py
+```
+
+The compiler creates `user_pb2.py` (message classes) and `user_pb2_grpc.py` (client stubs and server interfaces). Both are imported by the client and server; you do not write them by hand.
+
+In another terminal, enter the same `grpc-python` folder, activate the environment, and run the client:
+
+```sh
+source .venv/bin/activate
+python client.py
+```
+
+Expected output:
+
+```text
+1: Ada Lovelace (ada@example.com)
+```
+
+This local example uses an insecure localhost connection. Use TLS for production connections.
 
 <References>
   <Citation
@@ -1062,6 +2329,34 @@ This one is just a different take on it: others exist like webRPC
     url="https://grpc.io/about/"
   />
   <Citation
+    id="rpc-rfc707"
+    author="White, J. E."
+    year="1976"
+    title="RFC 707: A High-Level Framework for Network-Based Resource Sharing"
+    type="report"
+    publisher="RFC Editor"
+    url="https://www.rfc-editor.org/rfc/rfc707.html"
+  />
+  <Citation
+    id="rpc-birrell-nelson"
+    author="Birrell, A. & Nelson, B. J."
+    year="1984"
+    title="Implementing Remote Procedure Calls"
+    journal="ACM Transactions on Computer Systems"
+    volume="2"
+    pages="39-59"
+    url="https://www.microsoft.com/en-us/research/publication/implementing-remote-procedure-calls/"
+  />
+  <Citation
+    id="grpc-introduction"
+    author="Marculescu, M."
+    year="2015"
+    title="Introducing gRPC, a new open source HTTP/2 RPC Framework"
+    type="website"
+    publisher="Google Developers Blog"
+    url="https://developers.googleblog.com/en/introducing-grpc-a-new-open-source-http2-rpc-framework/"
+  />
+  <Citation
     id="grpc-1-0"
     author="Talwar, V."
     year="2016"
@@ -1069,6 +2364,24 @@ This one is just a different take on it: others exist like webRPC
     type="website"
     publisher="gRPC"
     url="https://grpc.io/blog/ga-announcement/"
+  />
+  <Citation
+    id="grpc-cncf"
+    author="Woods, N."
+    year="2017"
+    title="Cloud Native Computing Foundation to host gRPC from Google"
+    type="website"
+    publisher="Cloud Native Computing Foundation"
+    url="https://www.cncf.io/blog/2017/03/01/cloud-native-computing-foundation-host-grpc-google/"
+  />
+  <Citation
+    id="grpc-web-ga"
+    author="Perkins, L., Cheung, S., & Sethuraman, K."
+    year="2018"
+    title="gRPC-Web is Generally Available"
+    type="website"
+    publisher="gRPC"
+    url="https://grpc.io/blog/grpc-web-ga/"
   />
   <Citation
     id="grpc-principles"
