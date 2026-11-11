@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import ProjectItem from '../../components/ProjectItem.astro';
 import RepoItem from '../../components/RepoItem.astro';
 import BlogPostCard from '../../components/BlogPostCard.astro';
-import profileImage from '../../assets/images/sunp0014.jpg';
+import artworkImage from '../../assets/images/eboy-pixorama-wallpaper-venice-v2@1x.png';
 import { getPublishedPosts } from '../../utils/getPublishedPosts';
 
 const sortedPosts = await getPublishedPosts();
@@ -12,14 +12,17 @@ const sortedPosts = await getPublishedPosts();
 // Placeholder data - easily editable
 const projects = [
 	{ title: "Veloce", badge: "TOOL" as const, description: "CLI AI assistant experience done right.", href: "https://github.com/NicoGrassetto/veloce" },
+	{ title: "Venture", badge: "TOOL" as const, description: "An entrepreneurship harness for turning ideas into evidence-backed business plans.", href: "https://github.com/NicoGrassetto/Venture" },
 	{ title: "My config", badge: "TOOL" as const, description: "My personal dotfiles and configuration.", href: "https://github.com/NicoGrassetto/my-config" },
-	{ title: "Event Driven Document Processing", badge: "ACCELERATOR" as const, description: "Event-driven document processing accelerator.", href: "https://github.com/NicoGrassetto/Event-driven-document-processing-accelerator" },
+	// { title: "Event Driven Document Processing", badge: "ACCELERATOR" as const, description: "Event-driven document processing accelerator.", href: "https://github.com/NicoGrassetto/Event-driven-document-processing-accelerator" },
 	{ title: "Blog", badge: "APP" as const, description: "My personal blog coded in Astro.js.", href: "https://github.com/NicoGrassetto/nico-grassetto-blog" },
 ];
 
 const repos = [
-	{ name: "Discopilot", description: "Your Copilot for Discord: record voice with consent, transcribe and translate in real time, and recap meetings.", href: "https://github.com/NicoGrassetto/Discopilot" },
-	{ name: "Project Helix", description: "Agentic research template: Azure ML compute + MCP workflows for Research IT and researchers.", href: "https://github.com/NicoGrassetto/Project-Helix" },
+	// { name: "Discopilot", description: "Your Copilot for Discord: record voice with consent, transcribe and translate in real time, and recap meetings.", href: "https://github.com/NicoGrassetto/Discopilot" },
+	// { name: "Project Helix", description: "Agentic research template: Azure ML compute + MCP workflows for Research IT and researchers.", href: "https://github.com/NicoGrassetto/Project-Helix" },
+	{ name: "Content-Based Filtering Recommendation Solution Accelerator", description: "Content-based filtering recommendation solution accelerator.", href: "https://github.com/NicoGrassetto/content-based-filtering-recommendation-solution-accelerator" },
+	{ name: "Claim Extraction & Verification Solution Accelerator", description: "Information Consistency Engine (ICE) for flagging contradicting claims in unstructured data.", href: "https://github.com/NicoGrassetto/claim-extraction-and-verification-solution-accelerator" },
 ];
 
 const links = [
@@ -47,51 +50,10 @@ const books = [
 	<div class="three-column-grid">
 		<!-- Column 1: Intro + Links -->
 		<div class="column">
-			<!-- ASCII Loading Bar -->
-			<div class="loader-container" id="ascii-loader">
-				<div class="loader-bar" id="loader-bar">[░░░░░░░░░░░░░░░░░░░░]</div>
-				<div class="loader-complete" id="loader-complete">
-					<a href={`${import.meta.env.BASE_URL}blog/${sortedPosts[0]?.slug}`} class="loader-link">LATEST POST</a>
-				</div>
-			</div>
-			<script>
-				(function() {
-					const bar = document.getElementById('loader-bar');
-					const complete = document.getElementById('loader-complete');
-					const totalBlocks = 20;
-
-					function runLoader() {
-						let filled = 0;
-						bar.style.opacity = '1';
-						complete.style.opacity = '0';
-						bar.textContent = '[' + '░'.repeat(totalBlocks) + ']';
-
-						const interval = setInterval(() => {
-							filled++;
-							const filledStr = '█'.repeat(filled);
-							const emptyStr = '░'.repeat(totalBlocks - filled);
-							bar.textContent = '[' + filledStr + emptyStr + ']';
-
-							if (filled >= totalBlocks) {
-								clearInterval(interval);
-								setTimeout(() => {
-									bar.style.opacity = '0';
-									setTimeout(() => {
-										complete.style.opacity = '1';
-										// Show text for 4 seconds, then restart
-										setTimeout(runLoader, 4000);
-									}, 500);
-								}, 300);
-							}
-						}, 400);
-					}
-
-					runLoader();
-				})();
-			</script>
 			<Image
-				src={profileImage}
-				alt="Nico Grassetto"
+				src={artworkImage}
+				alt="Venice Pixorama by eBoy"
+				title="One of my favourite digital artists https://www.eboy.com/"
 				class="profile-image"
 			/>
 			<div class="column-section">
@@ -193,63 +155,6 @@ const books = [
 </Layout>
 
 <style>
-	.loader-container {
-		width: 100%;
-		margin: 1.5rem auto 1rem auto;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.875rem;
-		letter-spacing: 1px;
-		position: relative;
-		height: 1.5em;
-		text-align: center;
-	}
-
-	.loader-bar {
-		color: var(--text-primary);
-		font-weight: 700;
-		transition: opacity 0.5s ease;
-	}
-
-	.loader-complete {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		color: var(--text-primary);
-		font-weight: 700;
-		font-style: italic;
-		text-transform: uppercase;
-		opacity: 0;
-		transition: opacity 0.5s ease;
-		white-space: nowrap;
-		text-align: center;
-	}
-
-	.loader-link {
-		background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
-		background-size: 200% auto;
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		text-decoration: none;
-		animation: rainbow 3s linear infinite;
-		display: inline-block;
-	}
-
-	.loader-link:hover {
-		animation: rainbow 3s linear infinite, jump 0.3s ease;
-	}
-
-	@keyframes rainbow {
-		0% { background-position: 0% center; }
-		100% { background-position: 200% center; }
-	}
-
-	@keyframes jump {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-5px); }
-	}
-
 	/* Reading List Styles */
 	.reading-list-intro {
 		color: var(--text-secondary);

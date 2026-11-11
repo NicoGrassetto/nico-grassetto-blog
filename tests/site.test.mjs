@@ -93,9 +93,37 @@ test('the blog preserves the original three-column design and sections', () => {
   assert.match(blog, /class="three-column-grid"/);
   assert.equal([...blog.matchAll(/class="column"/g)].length, 3);
   assert.match(blog, /class="profile-image"/);
-  assert.match(blog, /id="ascii-loader"/);
+  assert.doesNotMatch(blog, /ascii-loader|loader-bar|loader-complete|loader-link|LATEST POST/);
   const sections = [...blog.matchAll(/<h2 class="section-header"[^>]*>([^<]+)<\/h2>/g)].map(([, title]) => title);
   assert.deepEqual(sections, ['INTRO', 'LINKS', 'PROJECTS', 'OPEN SOURCE', 'POSTS', 'READING LIST']);
+  assert.doesNotMatch(blog, /Discopilot|Project Helix|Event Driven Document Processing/);
+});
+
+test('the blog lists Venture under projects and both accelerators under open source', () => {
+  const projects = blog.match(/<h2 class="section-header"[^>]*>PROJECTS<\/h2>([\s\S]*?)<h2 class="section-header"[^>]*>OPEN SOURCE<\/h2>/);
+  assert.ok(projects);
+  assert.match(projects[1], /href="https:\/\/github\.com\/NicoGrassetto\/Venture"/);
+  assert.match(projects[1], /class="project-title"[^>]*>Venture<\/span>/);
+  const section = blog.match(/<h2 class="section-header"[^>]*>OPEN SOURCE<\/h2>([\s\S]*?)<!-- Column 3/);
+  assert.ok(section);
+  const names = [...section[1].matchAll(/class="repo-name"[^>]*>([^<]+)<\/span>/g)].map(([, name]) => name.replaceAll('&amp;', '&'));
+  assert.deepEqual(names, [
+    'Content-Based Filtering Recommendation Solution Accelerator',
+    'Claim Extraction & Verification Solution Accelerator',
+  ]);
+  const links = [...section[1].matchAll(/href="([^"]+)"/g)].map(([, href]) => href);
+  assert.deepEqual(links, [
+    'https://github.com/NicoGrassetto/content-based-filtering-recommendation-solution-accelerator',
+    'https://github.com/NicoGrassetto/claim-extraction-and-verification-solution-accelerator',
+  ]);
+});
+
+test('the blog displays the eBoy artwork with the artist credit on hover', () => {
+  const image = blog.match(/<img\b[^>]*class="profile-image"[^>]*>/);
+  assert.ok(image);
+  assert.match(image[0], /src="[^"]*eboy-pixorama-wallpaper-venice-v2/);
+  assert.match(image[0], /alt="Venice Pixorama by eBoy"/);
+  assert.match(image[0], /title="One of my favourite digital artists https:\/\/www\.eboy\.com\/"/);
 });
 
 test('the blog index, article routes, and RSS agree on published posts and order', () => {
