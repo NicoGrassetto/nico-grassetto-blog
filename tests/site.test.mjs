@@ -73,6 +73,17 @@ test('blog posts omit descriptions without removing site or RSS channel descript
   }
 });
 
+test('article headers retain titles and dates without author bylines', () => {
+  for (const { link } of rssItems) {
+    const article = readOutput(path.join(new URL(link).pathname, 'index.html'));
+    const header = article.match(/<header class="paper-header"[^>]*>([\s\S]*?)<\/header>/);
+    assert.ok(header);
+    assert.match(header[1], /<h1 class="paper-title"[^>]*>[^<]+<\/h1>/);
+    assert.match(header[1], /<time datetime="[^"]+"[^>]*>[^<]+<\/time>/);
+    assert.doesNotMatch(header[1], /class="paper-(?:meta|author|affiliation|contact)"/);
+  }
+});
+
 test('the blog preserves the original three-column design and sections', () => {
   assert.match(blog, /class="container-full"/);
   assert.match(blog, /class="three-column-grid"/);

@@ -34,11 +34,6 @@ const bannerImage = entry.data.image;
     <!-- Scientific Paper Style Header -->
     <header class="paper-header">
       <h1 class="paper-title">{entry.data.title}</h1>
-      <div class="paper-meta">
-        <div class="paper-author">Nico Grassetto</div>
-        <div class="paper-affiliation">AI Apps Solutions Engineer</div>
-        <div class="paper-contact">ngrassetto@microsoft.com</div>
-      </div>
       <div class="paper-date">
         <time datetime={entry.data.date}>{formatDate(entry.data.date)}</time>
       </div>
@@ -100,29 +95,6 @@ const bannerImage = entry.data.image;
     color: var(--text-primary);
     text-transform: none;
     letter-spacing: normal;
-  }
-
-  .paper-meta {
-    margin-bottom: 1rem;
-  }
-
-  .paper-author {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-  }
-
-  .paper-affiliation {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    margin-bottom: 0.25rem;
-  }
-
-  .paper-contact {
-    font-size: 0.85rem;
-    color: var(--link-color);
   }
 
   .paper-date {
@@ -316,10 +288,6 @@ const bannerImage = entry.data.image;
   @media (max-width: 768px) {
     .paper-title {
       font-size: 1.4rem;
-    }
-
-    .paper-author {
-      font-size: 1rem;
     }
 
     .post-content {
