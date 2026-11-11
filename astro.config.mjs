@@ -10,6 +10,12 @@ export default defineConfig({
   base: '/',
   integrations: [mdx()],
   markdown: {
+    shikiConfig: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+    },
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   },

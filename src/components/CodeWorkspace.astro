@@ -1,0 +1,20 @@
+---
+interface Props {
+  id: string;
+  label: string;
+}
+
+const { id, label } = Astro.props;
+---
+
+<div class="code-workspace" data-code-workspace id={id} role="group" aria-label={label}>
+  <div class="code-panel-toolbar" data-code-toolbar hidden>
+    <div data-code-languages role="group" aria-label={`${label} language`}></div>
+    <button class="code-copy" type="button" data-code-copy>
+      Copy
+    </button>
+  </div>
+  <div class="code-file-tabs" data-code-tabs role="tablist" aria-label={`${label} files`} hidden></div>
+  <span class="code-copy-status" data-code-status role="status" aria-live="polite"></span>
+  <slot />
+</div>

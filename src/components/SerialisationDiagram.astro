@@ -1,0 +1,202 @@
+---
+const fields = [
+  { name: "id", value: "42", type: "integer" },
+  { name: "item", value: '"book"', type: "string" },
+  { name: "quantity", value: "2", type: "integer" },
+];
+const json = '{\n  "id": 42,\n  "item": "book",\n  "quantity": 2\n}';
+---
+
+<figure class="serialisation-diagram" aria-labelledby="order-round-trip-caption">
+  <figcaption id="order-round-trip-caption">
+    An order sent from a client to a server
+  </figcaption>
+  <div class="round-trip">
+    <div class="value-card">
+      <strong class="card-title">Client</strong>
+      <span class="card-description">Value in memory</span>
+      <dl class="order-fields">
+        {fields.map((field) => (
+          <div class="order-field">
+            <dt>{field.name}</dt>
+            <dd>{field.value}<span class="value-type">{field.type}</span></dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <div class="conversion">
+      <span>Serialise</span>
+      <svg viewBox="0 0 48 16" aria-hidden="true">
+        <path d="M1 8h44m-7-6 7 6-7 6" />
+      </svg>
+    </div>
+
+    <div class="value-card value-card--encoded">
+      <strong class="card-title">JSON text</strong>
+      <span class="card-description">Request body (UTF-8)</span>
+      <pre class="json-text"><code>{json}</code></pre>
+    </div>
+
+    <div class="conversion">
+      <span>Deserialise</span>
+      <svg viewBox="0 0 48 16" aria-hidden="true">
+        <path d="M1 8h44m-7-6 7 6-7 6" />
+      </svg>
+    </div>
+
+    <div class="value-card">
+      <strong class="card-title">Server</strong>
+      <span class="card-description">New value in memory</span>
+      <dl class="order-fields">
+        {fields.map((field) => (
+          <div class="order-field">
+            <dt>{field.name}</dt>
+            <dd>{field.value}<span class="value-type">{field.type}</span></dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+  <span class="diagram-note">
+    The server reconstructs the same field values, not the client's original object.
+    The in-memory layouts shown here are schematic, not raw memory.
+  </span>
+</figure>
+
+<style>
+  .serialisation-diagram {
+    margin: 2rem 0;
+  }
+
+  .serialisation-diagram figcaption {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .round-trip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem minmax(0, 1.15fr) 5.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .value-card {
+    min-width: 0;
+    padding: 1rem 0.75rem;
+    border: 1px solid var(--border-secondary);
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .value-card--encoded {
+    border-color: var(--accent-hover);
+  }
+
+  .card-title,
+  .card-description {
+    display: block;
+  }
+
+  .card-title {
+    font-weight: 500;
+  }
+
+  .card-description {
+    margin-top: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+  }
+
+  .order-fields {
+    margin: 1rem 0 0;
+  }
+
+  .order-field {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .order-field dt,
+  .order-field dd {
+    margin: 0;
+  }
+
+  .order-field dd {
+    text-align: right;
+  }
+
+  .value-type {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.625rem;
+  }
+
+  :global(.post-content) .serialisation-diagram .json-text {
+    margin: 1rem 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.post-content) .serialisation-diagram .json-text code {
+    padding: 0;
+    background: transparent;
+    font-size: inherit;
+  }
+
+  .conversion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+  }
+
+  .conversion svg {
+    width: 3rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
+  .diagram-note {
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 800px) {
+    .round-trip {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .conversion {
+      flex-direction: row;
+      gap: 0.75rem;
+      min-height: 3rem;
+    }
+
+    .conversion svg {
+      width: 2rem;
+      transform: rotate(90deg);
+    }
+  }
+</style>

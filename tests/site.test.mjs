@@ -73,13 +73,17 @@ test('blog posts omit descriptions without removing site or RSS channel descript
   }
 });
 
-test('article headers retain titles and dates without author bylines', () => {
+test('article headers place dates above titles and provide sharing without author bylines', () => {
   for (const { link } of rssItems) {
     const article = readOutput(path.join(new URL(link).pathname, 'index.html'));
     const header = article.match(/<header class="paper-header"[^>]*>([\s\S]*?)<\/header>/);
     assert.ok(header);
     assert.match(header[1], /<h1 class="paper-title"[^>]*>[^<]+<\/h1>/);
     assert.match(header[1], /<time datetime="[^"]+"[^>]*>[^<]+<\/time>/);
+    assert.ok(header[1].indexOf('<time ') < header[1].indexOf('<h1 '));
+    assert.match(header[1], /class="post-actions"/);
+    assert.match(header[1], /<button\b[^>]*data-share\b/);
+    assert.ok(header[1].includes(`data-share-url="${link}"`));
     assert.doesNotMatch(header[1], /class="paper-(?:meta|author|affiliation|contact)"/);
   }
 });

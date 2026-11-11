@@ -1,0 +1,341 @@
+<script>
+  interface FilePanel extends HTMLElement {
+    dataset: DOMStringMap & { codeFile: string; codeLabel: string };
+  }
+
+  interface LanguageExample extends HTMLElement {
+    dataset: DOMStringMap & { codeExample: string; codeFilename?: string };
+  }
+
+  function enableCopy(
+    button: HTMLButtonElement,
+    status: HTMLElement,
+    getSource: () => { text: string; label: string },
+  ) {
+    button.addEventListener('click', async () => {
+      const { text, label } = getSource();
+      button.disabled = true;
+      status.textContent = '';
+      delete status.dataset.error;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied';
+        status.textContent = `Copied ${label}.`;
+      } catch {
+        button.textContent = 'Copy failed';
+        status.dataset.error = 'true';
+        status.textContent = 'Copy failed. Select the code and copy it manually.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-code-workspace]').forEach((workspace) => {
+    const toolbar = workspace.querySelector<HTMLElement>('[data-code-toolbar]')!;
+    const languageControls = workspace.querySelector<HTMLElement>('[data-code-languages]')!;
+    const tabs = workspace.querySelector<HTMLElement>('[data-code-tabs]')!;
+    const copyButton = workspace.querySelector<HTMLButtonElement>('[data-code-copy]')!;
+    const status = workspace.querySelector<HTMLElement>('[data-code-status]')!;
+    const panels = Array.from(workspace.querySelectorAll<FilePanel>('[data-code-file]'));
+    const examples = workspace.querySelectorAll<LanguageExample>('[data-code-example]');
+    const languages = new Map<string, string>();
+    workspace.querySelectorAll<HTMLButtonElement>('[data-code-switcher] button').forEach((button) => {
+      languages.set(button.value, button.textContent!.trim().replace(/\s+/g, ' ').replace(' (Node.js)', ''));
+    });
+    const languageButtons = new Map<string, HTMLButtonElement>();
+    let activeFile: FilePanel;
+    let activeKey = panels[0].dataset.codeFile;
+
+    panels.forEach((panel, index) => {
+      panel.id = `${workspace.id}-file-${index}`;
+      panel.setAttribute('role', 'tabpanel');
+      panel.tabIndex = 0;
+    });
+
+    function fileLabel(panel: FilePanel, language: string) {
+      return panel.querySelector<LanguageExample>(`[data-code-example="${language}"]`)
+        ?.dataset.codeFilename ?? panel.dataset.codeLabel;
+    }
+
+    function selectFile(panel: FilePanel) {
+      activeFile = panel;
+      activeKey = panel.dataset.codeFile;
+      panels.forEach((file) => { file.hidden = file !== panel; });
+      tabs.querySelectorAll<HTMLButtonElement>('button').forEach((tab) => {
+        const selected = tab.getAttribute('aria-controls') === panel.id;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      copyButton.textContent = 'Copy';
+      copyButton.setAttribute('aria-label', `Copy ${fileLabel(panel, workspace.dataset.codeLanguage!)}`);
+      status.textContent = '';
+      delete status.dataset.error;
+    }
+
+    function selectLanguage(language: string) {
+      workspace.dataset.codeLanguage = language;
+      languageButtons.forEach((button, value) => {
+        button.setAttribute('aria-pressed', String(value === language));
+      });
+      examples.forEach((example) => { example.hidden = example.dataset.codeExample !== language; });
+      const available = panels.filter((panel) => {
+        const example = panel.closest<LanguageExample>('[data-code-example]');
+        return !example || example.dataset.codeExample === language;
+      });
+      tabs.replaceChildren();
+      available.forEach((panel, index) => {
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.id = `${workspace.id}-tab-${index}`;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', panel.id);
+        tab.textContent = fileLabel(panel, language);
+        panel.setAttribute('aria-labelledby', tab.id);
+        tab.addEventListener('click', () => selectFile(panel));
+        tab.addEventListener('keydown', (event) => {
+          let next: number;
+          switch (event.key) {
+            case 'ArrowRight': next = (index + 1) % available.length; break;
+            case 'ArrowLeft': next = (index + available.length - 1) % available.length; break;
+            case 'Home': next = 0; break;
+            case 'End': next = available.length - 1; break;
+            default: return;
+          }
+          event.preventDefault();
+          selectFile(available[next]);
+          tabs.querySelectorAll<HTMLButtonElement>('button')[next].focus();
+        });
+        tabs.append(tab);
+      });
+      selectFile(available.find((panel) => panel.dataset.codeFile === activeKey) ?? available[0]);
+    }
+
+    languages.forEach((label, language) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.value = language;
+      button.textContent = label;
+      button.addEventListener('click', () => selectLanguage(language));
+      languageButtons.set(language, button);
+      languageControls.append(button);
+    });
+    selectLanguage(languageButtons.keys().next().value!);
+    enableCopy(copyButton, status, () => ({
+      text: Array.from(activeFile.querySelectorAll<HTMLElement>('pre > code'))
+        .filter((code) => !code.closest('[hidden]'))
+        .map((code) => code.textContent!)
+        .join('\n\n'),
+      label: fileLabel(activeFile, workspace.dataset.codeLanguage!),
+    }));
+    workspace.dataset.enhanced = 'true';
+    toolbar.hidden = false;
+    tabs.hidden = false;
+  });
+
+  const languageLabels: Record<string, string> = {
+    sh: 'Shell', bash: 'Shell', text: 'Text', proto: 'Protocol Buffers',
+    go: 'Go', java: 'Java', javascript: 'JavaScript', python: 'Python',
+    typescript: 'TypeScript', json: 'JSON', http: 'HTTP', groovy: 'Gradle',
+  };
+  document.querySelectorAll<HTMLPreElement>('.post-content pre[data-language]:not([data-language="mermaid"])')
+    .forEach((pre) => {
+      if (pre.closest('[data-code-workspace]')) return;
+      const panel = document.createElement('div');
+      panel.className = 'code-snippet';
+      const toolbar = document.createElement('div');
+      toolbar.className = 'code-panel-toolbar';
+      const label = document.createElement('span');
+      label.className = 'code-language-label';
+      label.textContent = languageLabels[pre.dataset.language!] ?? pre.dataset.language!;
+      const button = document.createElement('button');
+      button.className = 'code-copy';
+      button.type = 'button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', `Copy ${label.textContent} code`);
+      const status = document.createElement('span');
+      status.className = 'code-copy-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      toolbar.append(label, button);
+      pre.before(panel);
+      panel.append(toolbar, status, pre);
+      enableCopy(button, status, () => ({
+        text: pre.querySelector('code')!.textContent!,
+        label: `${label.textContent} code`,
+      }));
+    });
+</script>
+
+<style is:global>
+  .post-content .code-workspace[data-enhanced],
+  .post-content .code-snippet {
+    min-width: 0;
+    margin: 1.5rem 0;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+  }
+
+  .code-workspace [hidden] {
+    display: none !important;
+  }
+
+  .code-panel-toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  [data-code-languages] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .code-panel-toolbar button,
+  .code-file-tabs button {
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  [data-code-languages] button,
+  .code-copy {
+    min-height: 36px;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  [data-code-languages] button[aria-pressed="true"] {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+  }
+
+  .code-panel-toolbar .code-copy {
+    flex-shrink: 0;
+    border-color: var(--border-secondary);
+    color: var(--text-primary);
+  }
+
+  .code-copy:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .code-panel-toolbar button:hover,
+  .code-file-tabs button:hover {
+    border-color: var(--text-muted);
+  }
+
+  .code-panel-toolbar button:focus-visible,
+  .code-file-tabs button:focus-visible,
+  .code-workspace [role="tabpanel"]:focus-visible {
+    outline: 2px solid var(--accent-hover);
+    outline-offset: -3px;
+  }
+
+  .code-file-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .code-file-tabs button {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0.625rem 0.875rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .code-file-tabs button[aria-selected="true"] {
+    border-bottom-color: var(--accent-hover);
+    color: var(--text-primary);
+  }
+
+  .code-language-label {
+    align-self: center;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+  }
+
+  .post-content .code-workspace[data-enhanced] pre,
+  .post-content .code-snippet pre {
+    max-height: 32rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: auto;
+  }
+
+  .post-content .code-workspace[data-enhanced] p {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+  }
+
+  .code-workspace[data-enhanced] [data-code-example] > h3,
+  .code-workspace[data-enhanced] [data-code-example] > h4,
+  .code-workspace[data-enhanced] [data-code-file] > h3 {
+    display: none;
+  }
+
+  .code-copy-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .code-copy-status[data-error] {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1rem;
+    clip-path: none;
+    color: var(--accent-hover);
+    font-size: 0.8125rem;
+    white-space: normal;
+  }
+
+  html:not([data-theme="light"]) .post-content .astro-code,
+  html:not([data-theme="light"]) .post-content .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  @media print {
+    .code-workspace [data-code-toolbar],
+    .code-workspace [data-code-tabs],
+    .code-snippet .code-panel-toolbar {
+      display: none;
+    }
+
+    .code-workspace [data-code-file][hidden],
+    .code-workspace [data-code-example]:not([hidden]) {
+      display: block !important;
+    }
+
+    .post-content .code-workspace[data-enhanced] pre,
+    .post-content .code-snippet pre {
+      max-height: none;
+    }
+  }
+</style>

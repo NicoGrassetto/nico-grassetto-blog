@@ -1,6 +1,7 @@
 ---
 title: "Service-to service communication with gRPC"
 date: "2026-11-10"
+tags: ["Engineering"]
 draft: true
 ---
 
@@ -9,8 +10,11 @@ import Citation from "../../components/Citation.astro";
 import References from "../../components/References.astro";
 import GrpcTimeline from "../../components/GrpcTimeline.astro";
 import RpcTree from "../../components/RpcTree.astro";
+import CodeWorkspace from "../../components/CodeWorkspace.astro";
 
-## API styles
+Modern applications are built from services that need to work together. Splitting an application this way lets teams develop its parts independently, but makes communication between those parts increasingly important. gRPC is a framework developed by Google to help services exchange information efficiently, even when they are written in different programming languages. It uses compact messages and efficient network connections to reduce communication overhead, supports continuous, two-way streams of information, and automatically generates much of the code needed to connect services.
+
+## The brief history of gRPC
 
 <div class="table-scroll" role="region" aria-label="Service interaction approaches and use cases" tabIndex={0}>
 
@@ -26,32 +30,6 @@ import RpcTree from "../../components/RpcTree.astro";
 ## Remote Procedure Call (RPC)
 
 <RpcTree />
-
-## Protocol Buffer
-
-## Google Remote Procedure Call (gRPC)
-
-### RPC and gRPC timeline
-
-<GrpcTimeline />
-
-## Case studies
-
-Your order service calls your inventory service, which calls your pricing service, which calls your tax service. Every hop serializes JSON, parses it, and validates it again. Multiply that by a few thousand requests per second and a surprising amount of your latency budget goes to translating data, not doing work.
-gRPC was built to fix exactly this.
-
-You can think of gRPC as a RPC-inspired protocol. and it's strongly inspired by Remote Procedure Call.
-
-## Service-to-service calls with gRPC
-
-Services call each other to request data or delegate work. **gRPC** uses typed contracts, typically Protocol Buffers and HTTP/2, for efficient communication across languages.
-
-For example, an online shop's **Order service** asks its **Inventory service** if an item is in stock.
-
-```mermaid
-flowchart LR
-  Order["Order service"] -->|"Is it in stock? (gRPC)"| Inventory["Inventory service"]
-```
 
 ### Local procedure call vs. Remote procedure call
 
@@ -74,9 +52,36 @@ flowchart TB
     end
 ```
 
+{/*
+
 Source: recreated from the supplied video screenshot <Cite id="coding-gopher-grpc" author="The Coding Gopher" year="n.d." />.
 
 A **local call** runs within the application's process. A **remote call** crosses a process boundary and, in this example, a network connection between two servers. gRPC makes that call look like a method invocation, but serialization, network latency, and connection failures still apply.
+
+## Protocol Buffer
+
+*/}
+
+## Google Remote Procedure Call (gRPC)
+
+### RPC and gRPC timeline
+
+<GrpcTimeline />
+
+## Case studies
+
+{/*
+
+## Service-to-service calls with gRPC
+
+Services call each other to request data or delegate work. **gRPC** uses typed contracts, typically Protocol Buffers and HTTP/2, for efficient communication across languages.
+
+For example, an online shop's **Order service** asks its **Inventory service** if an item is in stock.
+
+```mermaid
+flowchart LR
+  Order["Order service"] -->|"Is it in stock? (gRPC)"| Inventory["Inventory service"]
+```
 
 ### Order and payment: local call vs. RPC
 
@@ -402,6 +407,8 @@ Source: recreated from the supplied video screenshot <Cite id="coding-gopher-grp
 
 An API gateway provides the external HTTP entry point, while internal services communicate through gRPC across language boundaries. The connections illustrate one possible architecture, not a requirement that every service call every other service.
 
+*/}
+
 ## Code snippets: Hello World
 
 The classic gRPC Hello World is a **Greeter** service: a client sends a name to `SayHello`, and the server replies with a greeting. These examples share one contract, so a client in any of the three languages can call a server in another.
@@ -432,6 +439,10 @@ sequenceDiagram
 
 In the snippets, the stub is `NewGreeterClient` in **Go**, `GreeterStub` in **Python**, or `newBlockingStub` in **Java**. The server handler is `SayHello` in Go/Python and `sayHello` in Java. The `.proto` file is the shared agreement, not a separate service running between them.
 
+<CodeWorkspace id="hello-code" label="Hello World example">
+
+<div data-code-file="contract" data-code-label="hello.proto">
+
 ### Shared contract
 
 Save as `hello.proto`:
@@ -456,6 +467,8 @@ message HelloReply {
   string message = 1;
 }
 ```
+
+</div>
 
 <div data-code-examples>
 
@@ -490,6 +503,8 @@ message HelloReply {
 
 ### Go
 
+<div data-code-file="setup" data-code-label="Setup">
+
 With Go and `protoc` installed, generate the code from `hello.proto`:
 
 ```sh
@@ -501,6 +516,10 @@ export PATH="$(go env GOPATH)/bin:$PATH"
 protoc --go_out=. --go_opt=module=example.com/hello \
   --go-grpc_out=. --go-grpc_opt=module=example.com/hello hello.proto
 ```
+
+</div>
+
+<div data-code-file="server" data-code-label="cmd/server/main.go">
 
 **Server** (`cmd/server/main.go`):
 
@@ -534,6 +553,10 @@ func main() {
     log.Fatal(server.Serve(listener))
 }
 ```
+
+</div>
+
+<div data-code-file="client" data-code-label="cmd/client/main.go">
 
 **Client** (`cmd/client/main.go`):
 
@@ -569,6 +592,8 @@ func main() {
 }
 ```
 
+</div>
+
 Run `go run ./cmd/server`, then `go run ./cmd/client`.
 
 </div>
@@ -576,6 +601,8 @@ Run `go run ./cmd/server`, then `go run ./cmd/client`.
 <div id="hello-python" data-code-example="python">
 
 ### Python
+
+<div data-code-file="setup" data-code-label="Setup">
 
 With Python installed, generate the code beside `hello.proto`:
 
@@ -589,6 +616,10 @@ Activate the environment (`source .venv/bin/activate` on macOS/Linux, `.venv\Scr
 python -m pip install grpcio grpcio-tools
 python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. hello.proto
 ```
+
+</div>
+
+<div data-code-file="server" data-code-label="server.py">
 
 **Server** (`server.py`):
 
@@ -612,6 +643,10 @@ server.start()
 server.wait_for_termination()
 ```
 
+</div>
+
+<div data-code-file="client" data-code-label="client.py">
+
 **Client** (`client.py`):
 
 ```python
@@ -626,6 +661,8 @@ with grpc.insecure_channel("localhost:50051") as channel:
     print(reply.message)
 ```
 
+</div>
+
 Run `python server.py`, then `python client.py` with the environment activated in both terminals. RPC errors propagate as exceptions.
 
 </div>
@@ -633,6 +670,8 @@ Run `python server.py`, then `python client.py` with the environment activated i
 <div id="hello-java" data-code-example="java">
 
 ### Java
+
+<div data-code-file="setup" data-code-label="build.gradle">
 
 With JDK 17 and Gradle installed, put `hello.proto` in `src/main/proto/`. Gradle downloads the compiler and generates the Java code.
 
@@ -672,6 +711,10 @@ application {
 }
 ```
 
+</div>
+
+<div data-code-file="server" data-code-label="src/main/java/HelloServer.java">
+
 **Server** (`src/main/java/HelloServer.java`):
 
 ```java
@@ -703,6 +746,10 @@ public class HelloServer {
 }
 ```
 
+</div>
+
+<div data-code-file="client" data-code-label="src/main/java/HelloClient.java">
+
 **Client** (`src/main/java/HelloClient.java`):
 
 ```java
@@ -728,11 +775,15 @@ public class HelloClient {
 }
 ```
 
+</div>
+
 Run `gradle run`, then `gradle run -PmainClass=HelloClient`.
 
 </div>
 
 </div>
+
+</CodeWorkspace>
 
 Each client prints:
 
@@ -750,7 +801,9 @@ The Order code shows only its outbound call; a real service should also propagat
 
 These are the gRPC library imports. The complete snippets below also import standard-library helpers and generated bindings where needed.
 
-<div data-code-examples="shop-imports">
+<CodeWorkspace id="shop-imports-code" label="Order and Inventory imports">
+
+<div data-code-examples="shop-imports" data-code-file="imports" data-code-label="Imports">
 
 <div
   data-code-switcher
@@ -837,11 +890,15 @@ import grpc
 
 </div>
 
+</CodeWorkspace>
+
 ### Order/Inventory project structure
 
 Generated bindings and installed dependencies are omitted.
 
-<div data-code-examples="shop-structure">
+<CodeWorkspace id="shop-structure-code" label="Order and Inventory project structure">
+
+<div data-code-examples="shop-structure" data-code-file="structure" data-code-label="Project layout">
 
 <div
   data-code-switcher
@@ -941,6 +998,12 @@ order-inventory-python/
 
 </div>
 
+</CodeWorkspace>
+
+<CodeWorkspace id="shop-files-code" label="Order and Inventory source files">
+
+<div data-code-file="contract" data-code-label="inventory.proto">
+
 ### inventory.proto
 
 Use this same contract in all four languages. The Go and Java options only control the generated code's package layout.
@@ -967,6 +1030,10 @@ message CheckStockResponse {
   bool in_stock = 1;
 }
 ```
+
+</div>
+
+<div data-code-file="server" data-code-label="Inventory server">
 
 ### Inventory service (server)
 
@@ -1014,7 +1081,7 @@ The sample inventory contains ten units of `book`. Unknown SKUs have no stock; a
   </button>
 </div>
 
-<div id="shop-inventory-go" data-code-example="go">
+<div id="shop-inventory-go" data-code-example="go" data-code-filename="cmd/inventory/main.go">
 
 #### Go (`cmd/inventory/main.go`)
 
@@ -1068,7 +1135,7 @@ func main() {
 
 </div>
 
-<div id="shop-inventory-java" data-code-example="java">
+<div id="shop-inventory-java" data-code-example="java" data-code-filename="src/main/java/InventoryServer.java">
 
 #### Java (`src/main/java/InventoryServer.java`)
 
@@ -1118,7 +1185,7 @@ public class InventoryServer {
 
 </div>
 
-<div id="shop-inventory-node" data-code-example="node">
+<div id="shop-inventory-node" data-code-example="node" data-code-filename="inventory.mjs">
 
 #### JavaScript (Node.js) (`inventory.mjs`)
 
@@ -1171,7 +1238,7 @@ server.bindAsync("127.0.0.1:50051", credentials, (error) => {
 
 </div>
 
-<div id="shop-inventory-python" data-code-example="python">
+<div id="shop-inventory-python" data-code-example="python" data-code-filename="inventory.py">
 
 #### Python (`inventory.py`)
 
@@ -1207,6 +1274,10 @@ server.wait_for_termination()
 </div>
 
 </div>
+
+</div>
+
+<div data-code-file="client" data-code-label="Order client">
 
 ### Order service (client)
 
@@ -1249,7 +1320,7 @@ The Order service asks whether one `book` is available. The channel and client s
   </button>
 </div>
 
-<div id="shop-order-go" data-code-example="go">
+<div id="shop-order-go" data-code-example="go" data-code-filename="cmd/order/main.go">
 
 #### Go (`cmd/order/main.go`)
 
@@ -1291,7 +1362,7 @@ func main() {
 
 </div>
 
-<div id="shop-order-java" data-code-example="java">
+<div id="shop-order-java" data-code-example="java" data-code-filename="src/main/java/OrderClient.java">
 
 #### Java (`src/main/java/OrderClient.java`)
 
@@ -1330,7 +1401,7 @@ public class OrderClient {
 
 </div>
 
-<div id="shop-order-node" data-code-example="node">
+<div id="shop-order-node" data-code-example="node" data-code-filename="order.mjs">
 
 #### JavaScript (Node.js) (`order.mjs`)
 
@@ -1371,7 +1442,7 @@ client.checkStock(
 
 </div>
 
-<div id="shop-order-python" data-code-example="python">
+<div id="shop-order-python" data-code-example="python" data-code-filename="order.py">
 
 #### Python (`order.py`)
 
@@ -1417,6 +1488,10 @@ if __name__ == "__main__":
 
 </div>
 
+</div>
+
+</CodeWorkspace>
+
 ### Generate and run the Order/Inventory example
 
 Provide a TLS certificate and private key for the Inventory service. The Order service's CA file must trust that certificate, and the address hostname must match its subject alternative name. Set these environment variables in **both terminals**, using absolute file paths:
@@ -1429,6 +1504,8 @@ export INVENTORY_ADDRESS="localhost:50051"
 ```
 
 For a local self-signed certificate, `CA_CERT_FILE` can point to the server's certificate. Do not commit private keys. The examples below assume the server certificate covers `localhost`.
+
+<CodeWorkspace id="shop-run-code" label="Order and Inventory setup and run commands">
 
 <div data-code-examples="shop-run">
 
@@ -1474,6 +1551,8 @@ For a local self-signed certificate, `CA_CERT_FILE` can point to the server's ce
 
 <div id="shop-run-go" data-code-example="go">
 
+<div data-code-file="server-run" data-code-label="Start Inventory">
+
 With Go and `protoc` installed, run from `order-inventory-go`:
 
 ```sh
@@ -1486,6 +1565,10 @@ protoc -I . --go_out=. --go_opt=module=example.com/shop --go-grpc_out=. --go-grp
 go run ./cmd/inventory
 ```
 
+</div>
+
+<div data-code-file="client-run" data-code-label="Call Inventory">
+
 In another terminal, enter the same folder and run:
 
 ```sh
@@ -1494,7 +1577,11 @@ go run ./cmd/order
 
 </div>
 
+</div>
+
 <div id="shop-run-java" data-code-example="java">
+
+<div data-code-file="build" data-code-label="build.gradle">
 
 With JDK 17 and Gradle installed, save this as `build.gradle` in `order-inventory-java`. It uses the same build setup as the Java Hello World example above.
 
@@ -1532,11 +1619,19 @@ application {
 }
 ```
 
+</div>
+
+<div data-code-file="server-run" data-code-label="Start Inventory">
+
 Gradle generates the Java bindings automatically. Start the server:
 
 ```sh
 gradle run
 ```
+
+</div>
+
+<div data-code-file="client-run" data-code-label="Call Inventory">
 
 In another terminal, enter the same folder and run:
 
@@ -1546,7 +1641,11 @@ gradle run -PmainClass=OrderClient
 
 </div>
 
+</div>
+
 <div id="shop-run-node" data-code-example="node">
+
+<div data-code-file="server-run" data-code-label="Start Inventory">
 
 From `order-inventory-node`, install the official libraries and start the server:
 
@@ -1556,6 +1655,10 @@ npm install @grpc/grpc-js @grpc/proto-loader
 node inventory.mjs
 ```
 
+</div>
+
+<div data-code-file="client-run" data-code-label="Call Inventory">
+
 Node.js loads `inventory.proto` at runtime, so no separate code-generation step is needed. In another terminal, enter the same folder and run:
 
 ```sh
@@ -1564,7 +1667,11 @@ node order.mjs
 
 </div>
 
+</div>
+
 <div id="shop-run-python" data-code-example="python">
+
+<div data-code-file="server-run" data-code-label="Start Inventory">
 
 From `order-inventory-python`, create an environment, install the tools, generate the bindings, and start the server:
 
@@ -1576,6 +1683,10 @@ python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. inventory.pro
 python inventory.py
 ```
 
+</div>
+
+<div data-code-file="client-run" data-code-label="Call Inventory">
+
 In another terminal, enter the same folder, activate the environment, and run:
 
 ```sh
@@ -1586,6 +1697,10 @@ python order.py
 </div>
 
 </div>
+
+</div>
+
+</CodeWorkspace>
 
 The Order client prints `In stock: true` (`True` in Python). Requesting more than ten books or an unknown SKU returns `false`; invalid requests produce a gRPC error instead.
 
@@ -1630,7 +1745,9 @@ This one is just a different take on it: others exist like webRPC
 
 ## gRPC library imports
 
-<div data-code-examples="library-imports">
+<CodeWorkspace id="library-imports-code" label="gRPC library imports">
+
+<div data-code-examples="library-imports" data-code-file="imports" data-code-label="Imports">
 
 <div data-code-switcher role="group" aria-label="gRPC library language" hidden>
   <button
@@ -1704,11 +1821,15 @@ import * as protoLoader from "@grpc/proto-loader";
 
 </div>
 
+</CodeWorkspace>
+
 ## Project structure
 
 Each project has a server, a client, and the same `user.proto` contract. Generated bindings and installed dependencies are omitted from these source layouts.
 
-<div data-code-examples="project-structure">
+<CodeWorkspace id="user-structure-code" label="User service project structure">
+
+<div data-code-examples="project-structure" data-code-file="structure" data-code-label="Project layout">
 
 <div
   data-code-switcher
@@ -1808,6 +1929,12 @@ grpc-python/
 
 </div>
 
+</CodeWorkspace>
+
+<CodeWorkspace id="user-files-code" label="User service source files">
+
+<div data-code-file="contract" data-code-label="user.proto">
+
 ### user.proto
 
 The client sends a user ID, and the server returns the matching user.
@@ -1831,6 +1958,10 @@ message User {
   string email = 3;
 }
 ```
+
+</div>
+
+<div data-code-file="server" data-code-label="User server">
 
 ### Server
 
@@ -1878,7 +2009,7 @@ Each server implements the same `UserService.GetUser` contract and returns user 
   </button>
 </div>
 
-<div id="user-server-go" data-code-example="go">
+<div id="user-server-go" data-code-example="go" data-code-filename="cmd/server/main.go">
 
 #### Go (`server.go`)
 
@@ -1931,7 +2062,7 @@ func main() {
 
 </div>
 
-<div id="user-server-java" data-code-example="java">
+<div id="user-server-java" data-code-example="java" data-code-filename="src/main/java/Server.java">
 
 #### Java (`Server.java`)
 
@@ -1980,7 +2111,7 @@ public class Server {
 
 </div>
 
-<div id="user-server-node" data-code-example="node">
+<div id="user-server-node" data-code-example="node" data-code-filename="server.mjs">
 
 #### JavaScript (Node.js) (`server.mjs`)
 
@@ -2029,7 +2160,7 @@ server.bindAsync(
 
 </div>
 
-<div id="user-server-python" data-code-example="python">
+<div id="user-server-python" data-code-example="python" data-code-filename="server.py">
 
 #### Python (`server.py`)
 
@@ -2069,6 +2200,10 @@ server.wait_for_termination()
 </div>
 
 </div>
+
+</div>
+
+<div data-code-file="client" data-code-label="User client">
 
 ### Client
 
@@ -2116,7 +2251,7 @@ Each client calls `UserService.GetUser` from the same `user.proto`, requesting u
   </button>
 </div>
 
-<div id="user-client-go" data-code-example="go">
+<div id="user-client-go" data-code-example="go" data-code-filename="cmd/client/main.go">
 
 #### Go (`client.go`)
 
@@ -2161,7 +2296,7 @@ func main() {
 
 </div>
 
-<div id="user-client-java" data-code-example="java">
+<div id="user-client-java" data-code-example="java" data-code-filename="src/main/java/Client.java">
 
 #### Java (`Client.java`)
 
@@ -2202,7 +2337,7 @@ public class Client {
 
 </div>
 
-<div id="user-client-node" data-code-example="node">
+<div id="user-client-node" data-code-example="node" data-code-filename="client.mjs">
 
 #### JavaScript (Node.js) (`client.mjs`)
 
@@ -2239,7 +2374,7 @@ client.getUser(
 
 </div>
 
-<div id="user-client-python" data-code-example="python">
+<div id="user-client-python" data-code-example="python" data-code-filename="client.py">
 
 #### Python (`client.py`)
 
@@ -2262,6 +2397,10 @@ with grpc.insecure_channel("127.0.0.1:50051") as channel:
 </div>
 
 </div>
+
+</div>
+
+</CodeWorkspace>
 
 ### Generate the stubs and run
 
@@ -2355,6 +2494,15 @@ This local example uses an insecure localhost connection. Use TLS for production
     type="website"
     publisher="Google Developers Blog"
     url="https://developers.googleblog.com/en/introducing-grpc-a-new-open-source-http2-rpc-framework/"
+  />
+  <Citation
+    id="grpc-pubsub-benchmark"
+    author="Sethuraman, K. & Schapira, E."
+    year="2016"
+    title="Announcing gRPC Alpha for Google Cloud Pub/Sub"
+    type="website"
+    publisher="Google Cloud Blog"
+    url="https://cloud.google.com/blog/products/gcp/announcing-grpc-alpha-for-google-cloud-pubsub"
   />
   <Citation
     id="grpc-1-0"

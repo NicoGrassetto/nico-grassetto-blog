@@ -2,6 +2,8 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
+import CodePanels from '../../components/CodePanels.astro';
+import ArticleShare from '../../components/ArticleShare.astro';
 import { formatDate } from '../../utils/formatDate';
 
 export async function getStaticPaths() {
@@ -28,14 +30,24 @@ if (!import.meta.env.DEV && entry.data.draft) {
 const { Content } = await entry.render();
 
 const bannerImage = entry.data.image;
+const shareURL = new URL(`${import.meta.env.BASE_URL}blog/${entry.slug}`, Astro.site).href;
 ---
 
-<Layout title={entry.data.title} description={null}>  <article class="blog-post">
-    <!-- Scientific Paper Style Header -->
+<Layout title={entry.data.title} description={null}>
+  <CodePanels />
+  <article class="blog-post">
     <header class="paper-header">
+      <div class="post-meta">
+        <time datetime={entry.data.date} class="paper-date">{formatDate(entry.data.date)}</time>
+        {entry.data.tags.length > 0 && (
+          <ul class="post-tags" aria-label="Tags">
+            {entry.data.tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        )}
+      </div>
       <h1 class="paper-title">{entry.data.title}</h1>
-      <div class="paper-date">
-        <time datetime={entry.data.date}>{formatDate(entry.data.date)}</time>
+      <div class="post-actions">
+        <ArticleShare title={entry.data.title} url={shareURL} />
       </div>
     </header>
 
@@ -49,58 +61,61 @@ const bannerImage = entry.data.image;
   </article>
 </Layout>
 
-<script>
-  document.querySelectorAll<HTMLElement>('[data-code-examples]').forEach((group) => {
-    const buttons = group.querySelectorAll<HTMLButtonElement>('[data-code-switcher] button');
-    const examples = group.querySelectorAll<HTMLElement>('[data-code-example]');
-
-    function selectLanguage(language: string) {
-      buttons.forEach((button) => {
-        button.setAttribute('aria-pressed', String(button.value === language));
-      });
-      examples.forEach((example) => {
-        example.hidden = example.dataset.codeExample !== language;
-      });
-    }
-
-    buttons.forEach((button) => {
-      button.addEventListener('click', () => selectLanguage(button.value));
-    });
-    selectLanguage(buttons[0].value);
-    group.querySelectorAll<HTMLElement>('[data-code-switcher]').forEach((switcher) => {
-      switcher.hidden = false;
-    });
-  });
-</script>
-
 <style>
   .blog-post {
     max-width: 800px;
     margin: 0 auto;
   }
 
-  /* Scientific Paper Header Styles */
   .paper-header {
+    position: relative;
+    left: 50%;
+    width: min(60rem, calc(100vw - 3rem));
+    transform: translateX(-50%);
     text-align: center;
     margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-primary);
+    padding-top: 3rem;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .post-tags {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    list-style: none;
+    color: var(--text-muted);
   }
 
   .paper-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin: 0 0 1.5rem 0;
+    font-size: clamp(2rem, 7.5vw, 3.75rem);
+    font-weight: 400;
+    line-height: 1.05;
+    margin: 0;
     color: var(--text-primary);
     text-transform: none;
-    letter-spacing: normal;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
   }
 
-  .paper-date {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 1rem;
+  .post-actions {
+    max-width: 41rem;
+    margin: 5rem auto 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+    text-align: start;
   }
 
   .post-content {
@@ -216,40 +231,6 @@ const bannerImage = entry.data.image;
     padding: 0;
   }
 
-  .post-content :global([data-code-switcher]:not([hidden])) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 1.5rem 0 1rem;
-  }
-
-  .post-content :global([data-code-switcher] button) {
-    min-height: 44px;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-secondary);
-    border-radius: 4px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font: inherit;
-    font-size: 0.875rem;
-    cursor: pointer;
-  }
-
-  .post-content :global([data-code-switcher] button:hover) {
-    border-color: var(--text-primary);
-  }
-
-  .post-content :global([data-code-switcher] button[aria-pressed="true"]) {
-    background: var(--text-primary);
-    color: var(--bg-primary);
-    border-color: var(--text-primary);
-  }
-
-  .post-content :global([data-code-switcher] button:focus-visible) {
-    outline: 2px solid var(--text-primary);
-    outline-offset: 3px;
-  }
-
   .post-content :global(blockquote) {
     border-left: 3px solid var(--border-primary);
     margin: 2rem 0;
@@ -286,23 +267,19 @@ const bannerImage = entry.data.image;
   }
 
   @media (max-width: 768px) {
-    .paper-title {
-      font-size: 1.4rem;
-    }
-
     .post-content {
       font-size: 0.95rem;
     }
   }
 
   @media (max-width: 480px) {
-    .paper-title {
-      font-size: 1.25rem;
-    }
-
     .paper-header {
       margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    .post-actions {
+      margin-top: 3rem;
     }
   }
 </style>

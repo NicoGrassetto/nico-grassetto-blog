@@ -1,0 +1,669 @@
+---
+title: "Understanding parsing and serialisation"
+date: "2026-11-11"
+tags: ["Engineering"]
+draft: false
+---
+
+import Citation from "../../components/Citation.astro";
+import References from "../../components/References.astro";
+import CodeWorkspace from "../../components/CodeWorkspace.astro";
+import SerialisationDiagram from "../../components/SerialisationDiagram.astro";
+
+Programs work with values in memory, but files and network connections carry text or bytes. **Serialisation** turns those values into a representation that can be stored or sent elsewhere. **Parsing** reads the syntax of a representation into a structure the program can work with. Reconstructing language values or application objects is called **deserialisation**; JSON libraries often handle parsing and deserialisation in the same call.
+
+After receiving a JSON request, a service parses it before using its fields. Before sending a response, it serialises its data back into JSON. The same boundary exists when reading and writing a file.
+
+<SerialisationDiagram />
+
+JSON is the example here, not a requirement of either operation. Other formats include XML and Protocol Buffers. JSON itself has objects, arrays, strings, numbers, booleans and `null`; each programming language maps these to its own types.
+
+## Parsing a string
+
+Consider an order sent by an online shop:
+
+```json
+{ "id": 42, "item": "book", "quantity": 2 }
+```
+
+In this form, the order is text. Parsing it gives the application a structured value whose `quantity` field it can read. Each example below prints `2`.
+
+<CodeWorkspace id="json-parse-code" label="Parsing a JSON string">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="Parse JSON">
+
+<div data-code-example="go" data-code-filename="parse.go">
+
+### Go
+
+Run `go run parse.go`.
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "log"
+)
+
+func main() {
+    input := `{"id": 42, "item": "book", "quantity": 2}`
+    var order map[string]any
+    if err := json.Unmarshal([]byte(input), &order); err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(order["quantity"])
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="src/main/java/Parse.java">
+
+### Java
+
+With JDK 17 or later and Gradle installed, save the build file from the next tab as `build.gradle`, then run `gradle run` from the project directory.
+
+```java
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+public class Parse {
+    public static void main(String[] args) throws JsonProcessingException {
+        String input = "{\"id\": 42, \"item\": \"book\", \"quantity\": 2}";
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode order = mapper.readValue(input, ObjectNode.class);
+
+        System.out.println(order.get("quantity").asInt());
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="parse.mjs">
+
+### JavaScript
+
+Run `node parse.mjs`.
+
+```javascript
+const input = '{"id": 42, "item": "book", "quantity": 2}';
+const order = JSON.parse(input);
+
+console.log(order.quantity);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="parse.py">
+
+### Python
+
+Run `python3 parse.py`.
+
+```python
+import json
+
+input_text = '{"id": 42, "item": "book", "quantity": 2}'
+order = json.loads(input_text)
+
+print(order["quantity"])
+```
+
+</div>
+
+</div>
+
+<div data-code-example="java">
+
+<div data-code-file="build" data-code-label="build.gradle">
+
+Reuse this build file for all three Java examples. Put their source files in `src/main/java/`.
+
+```groovy
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.0'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = project.findProperty('mainClass') ?: 'Parse'
+}
+```
+
+</div>
+
+</div>
+
+</CodeWorkspace>
+
+Malformed input, such as a missing closing brace, produces a parsing error. It should not be treated as an empty order or a successful request.
+
+## Serialising a value
+
+Now take an order with quantity three and turn it into JSON text. The application starts with its own values; the serialiser handles details such as quotes, escaping and separators. Building JSON by concatenating strings skips that work and is easy to get wrong.
+
+<CodeWorkspace id="json-serialise-code" label="Serialising a value as JSON">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="Serialise JSON">
+
+<div data-code-example="go" data-code-filename="serialise.go">
+
+### Go
+
+Run `go run serialise.go`.
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "log"
+)
+
+func main() {
+    order := map[string]any{
+        "id":       42,
+        "item":     "book",
+        "quantity": 3,
+    }
+    output, err := json.Marshal(order)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(string(output))
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="src/main/java/Serialise.java">
+
+### Java
+
+Reuse the earlier `build.gradle` and run `gradle run -PmainClass=Serialise`.
+
+```java
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+public class Serialise {
+    public static void main(String[] args) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode order = mapper.createObjectNode();
+        order.put("id", 42);
+        order.put("item", "book");
+        order.put("quantity", 3);
+
+        String output = mapper.writeValueAsString(order);
+        System.out.println(output);
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="serialise.mjs">
+
+### JavaScript
+
+Run `node serialise.mjs`.
+
+```javascript
+const order = { id: 42, item: "book", quantity: 3 };
+const output = JSON.stringify(order);
+
+console.log(output);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="serialise.py">
+
+### Python
+
+Run `python3 serialise.py`.
+
+```python
+import json
+
+order = {"id": 42, "item": "book", "quantity": 3}
+output = json.dumps(order, allow_nan=False)
+
+print(output)
+```
+
+</div>
+
+</div>
+
+</CodeWorkspace>
+
+All four examples produce the same JSON values. Whitespace and object-key order can differ between serialisers without changing the meaning of the document.
+
+## Reading and writing JSON files
+
+Files add an input/output step, but the conversion is the same: read the representation, parse it, change a value, then serialise the result.
+
+Save the `order.json` tab in your working directory. Each program reads that file, changes the quantity from two to three, and writes `updated-order.json`. The output is indented to make it easier to read; indentation is a presentation choice, not a different data format.
+
+<CodeWorkspace id="json-files-code" label="Reading and writing JSON files">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="Read and write JSON">
+
+<div data-code-example="go" data-code-filename="files.go">
+
+### Go
+
+Run `go run files.go` from the directory containing `order.json`.
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "log"
+    "os"
+)
+
+func main() {
+    input, err := os.ReadFile("order.json")
+    if err != nil {
+        log.Fatal(err)
+    }
+    var order map[string]any
+    if err := json.Unmarshal(input, &order); err != nil {
+        log.Fatal(err)
+    }
+    order["quantity"] = 3
+
+    output, err := json.MarshalIndent(order, "", "  ")
+    if err != nil {
+        log.Fatal(err)
+    }
+    if err := os.WriteFile("updated-order.json", output, 0600); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="src/main/java/FilesExample.java">
+
+### Java
+
+Reuse the earlier `build.gradle`, save `order.json` in the project directory, and run `gradle run -PmainClass=FilesExample`.
+
+```java
+import java.io.File;
+import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+public class FilesExample {
+    public static void main(String[] args) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode order = mapper.readValue(new File("order.json"), ObjectNode.class);
+        order.put("quantity", 3);
+
+        mapper.writerWithDefaultPrettyPrinter()
+            .writeValue(new File("updated-order.json"), order);
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="files.mjs">
+
+### JavaScript
+
+Run `node files.mjs` from the directory containing `order.json`.
+
+```javascript
+import { readFile, writeFile } from "node:fs/promises";
+
+const input = await readFile("order.json", "utf8");
+const order = JSON.parse(input);
+order.quantity = 3;
+
+const output = JSON.stringify(order, null, 2);
+await writeFile("updated-order.json", output, "utf8");
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="files.py">
+
+### Python
+
+Run `python3 files.py` from the directory containing `order.json`.
+
+```python
+import json
+
+with open("order.json", encoding="utf-8") as file:
+    order = json.load(file)
+
+order["quantity"] = 3
+
+with open("updated-order.json", "w", encoding="utf-8") as file:
+    json.dump(order, file, indent=2, ensure_ascii=False, allow_nan=False)
+```
+
+</div>
+
+</div>
+
+<div data-code-file="input" data-code-label="order.json">
+
+```json
+{ "id": 42, "item": "book", "quantity": 2 }
+```
+
+</div>
+
+</CodeWorkspace>
+
+A missing file and malformed JSON are different failures: one concerns reading the data, the other concerns its contents. These examples stop on either failure. In an application, handle the specific error at the boundary rather than continuing with missing or partially parsed data.
+
+## Serialising objects
+
+A language object is not automatically a JSON object. Dates, decimal values and custom classes may need an explicit conversion or a library-specific mapping. Decide what the representation should contain before choosing how to encode it.
+
+<div class="table-scroll" role="region" aria-label="JSON representations for application values" tabIndex={0}>
+
+| Application value | Possible JSON representation            | What to agree on                       |
+| ----------------- | --------------------------------------- | -------------------------------------- |
+| Date and time     | An ISO 8601 string                      | Time zone and precision                |
+| Money             | Integer minor units or a decimal string | Currency, scale and rounding           |
+| Custom object     | An object containing selected fields    | Field names, types and optional values |
+
+</div>
+
+Number ranges also differ between languages. A large integer that one program stores exactly may lose precision in another; identifiers can be represented as strings when their exact digits matter.
+
+Finally, **valid JSON is not necessarily valid application data**. An order with quantity `-1` can be perfectly valid JSON and still be an invalid order. Check required fields, expected types and business rules after parsing.
+
+## Beyond JSON: Protocol Buffers
+
+Parsing and serialisation are not specific to JSON. XML (`.xml`) and YAML (`.yaml`) are other text formats; CSV (`.csv`) stores rows and columns. Protocol Buffers, MessagePack and CBOR use binary encodings. Each format has its own rules and libraries, but the job is the same: convert application values into a representation, then read that representation back.
+
+Other formats include BSON, Apache Avro, FlatBuffers and Apache Parquet.
+
+**Protocol Buffers**, or **Protobuf**, describes messages in a `.proto` schema. The schema below represents the same order used throughout this article. The numbers `1`, `2` and `3` identify the fields in the binary message; they are not default values.
+
+Unlike JSON, the binary message does not include field names such as `quantity`. A reader uses a compatible schema to interpret the numbered fields. Keep existing field numbers stable when changing the schema, and reserve the numbers of fields you remove rather than reusing them.
+
+Save the shared `order.proto` tab alongside the example for your language. Each program creates an order, **serialises it into bytes**, then **deserialises those bytes into a new message** and prints its quantity. There is no JSON conversion in this round trip.
+
+<CodeWorkspace id="protobuf-code" label="Serialising and deserialising Protocol Buffers">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="Protobuf round trip">
+
+<div data-code-example="go" data-code-filename="protobuf.go">
+
+### Go
+
+In a new directory, run `go mod init example.com/orders`, then `go get google.golang.org/protobuf@v1.36.10` and `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10`.
+
+With the Protocol Buffers compiler (`protoc`) installed and `protoc-gen-go` on your `PATH`, run `protoc --go_out=. --go_opt=module=example.com/orders order.proto`. This creates the `orderpb` package. Save this example as `protobuf.go` and run `go run protobuf.go`.
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "example.com/orders/orderpb"
+    "google.golang.org/protobuf/proto"
+)
+
+func main() {
+    order := &orderpb.Order{Id: 42, Item: "book", Quantity: 2}
+    encoded, err := proto.Marshal(order)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var decoded orderpb.Order
+    if err := proto.Unmarshal(encoded, &decoded); err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("%x\n", encoded)
+    fmt.Println(decoded.GetQuantity())
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="src/main/java/ProtobufExample.java">
+
+### Java
+
+Reuse the earlier Gradle project and add `implementation 'com.google.protobuf:protobuf-java:4.33.0'` to its `dependencies` block. With `protoc` version 33.0 installed, run `protoc --java_out=src/main/java order.proto` from the project directory.
+
+Save this example in `src/main/java/ProtobufExample.java` and run `gradle run -PmainClass=ProtobufExample`. The compiler and runtime versions must be compatible; the versions above work together.
+
+```java
+import java.io.IOException;
+import java.util.HexFormat;
+import example.orders.OrderSchema.Order;
+
+public class ProtobufExample {
+    public static void main(String[] args) throws IOException {
+        Order order = Order.newBuilder()
+            .setId(42)
+            .setItem("book")
+            .setQuantity(2)
+            .build();
+
+        byte[] encoded = order.toByteArray();
+        Order decoded = Order.parseFrom(encoded);
+
+        System.out.println(HexFormat.of().formatHex(encoded));
+        System.out.println(decoded.getQuantity());
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="protobuf.mjs">
+
+### JavaScript
+
+Run `npm install protobufjs`, then `node protobuf.mjs`. This library reads the `.proto` file at runtime, so this example does not need `protoc`.
+
+```javascript
+import protobuf from "protobufjs";
+
+const root = await protobuf.load("order.proto");
+const Order = root.lookupType("orders.Order");
+const order = Order.create({ id: 42, item: "book", quantity: 2 });
+
+const encoded = Order.encode(order).finish();
+const decoded = Order.decode(encoded);
+
+console.log(Buffer.from(encoded).toString("hex"));
+console.log(decoded.quantity);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="protobuf_example.py">
+
+### Python
+
+In a virtual environment, run `python3 -m pip install protobuf==6.33.0`. With `protoc` version 33.0 installed, run `protoc --python_out=. order.proto` to generate `order_pb2.py`, then run `python3 protobuf_example.py`.
+
+```python
+from order_pb2 import Order
+
+order = Order(id=42, item="book", quantity=2)
+encoded = order.SerializeToString()
+decoded = Order.FromString(encoded)
+
+print(encoded.hex())
+print(decoded.quantity)
+```
+
+</div>
+
+</div>
+
+<div data-code-file="schema" data-code-label="order.proto">
+
+The Go and Java options control where their generated code lives. They do not change the message's binary format.
+
+```protobuf
+syntax = "proto3";
+
+package orders;
+
+option go_package = "example.com/orders/orderpb";
+option java_package = "example.orders";
+option java_outer_classname = "OrderSchema";
+
+message Order {
+  int32 id = 1;
+  string item = 2;
+  int32 quantity = 3;
+}
+```
+
+</div>
+
+</CodeWorkspace>
+
+For this message, the examples print the encoded bytes in hexadecimal, followed by the restored quantity:
+
+```text
+082a1204626f6f6b1802
+2
+```
+
+The hexadecimal line is just a readable display of the bytes, not the format you need to store or send. Protobuf does not guarantee a single byte ordering across implementations or versions; what matters is that a compatible reader reconstructs the same values.
+
+To save the message as `order.pb`, write `encoded` as binary data. Read the file as bytes and pass those bytes to the decoder; do not treat it as UTF-8 text. The filename extension is a convention, not what determines the encoding.
+
+The same bytes can also travel over a network. Protobuf does not require gRPC or a particular web framework; [this Express example](https://compile7.org/serialize-and-deserialize/how-to-serialize-and-deserialize-protobuf-in-expressjs) shows the HTTP version of that boundary.
+
+A schema describes field types, not every rule of your application. This schema still allows a negative quantity, and successful decoding does not prove that the bytes were intended to represent an order. Validate the decoded values before using them.
+
+<References>
+  <Citation
+    id="compile7-json-python"
+    author="Compile7"
+    year="2026"
+    title="How to Parse and Generate JSON in Python"
+    type="website"
+    url="https://compile7.org/parse-and-generate-formats/how-to-parse-and-generate-json-in-python"
+  />
+  <Citation
+    id="compile7-protobuf-express"
+    author="Compile7"
+    year="2026"
+    title="How to Serialize and Deserialize Protobuf in Express.js"
+    type="website"
+    url="https://compile7.org/serialize-and-deserialize/how-to-serialize-and-deserialize-protobuf-in-expressjs"
+  />
+  <Citation
+    id="compile7-serialization"
+    author="Compile7"
+    year="n.d."
+    title="Serialization"
+    type="website"
+    url="https://compile7.org/serialize-and-deserialize"
+  />
+  <Citation
+    id="protobuf-proto3"
+    author="Protocol Buffers"
+    year="n.d."
+    title="Language Guide (proto 3)"
+    type="website"
+    url="https://protobuf.dev/programming-guides/proto3/"
+  />
+</References>
