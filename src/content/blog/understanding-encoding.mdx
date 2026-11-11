@@ -1,0 +1,444 @@
+---
+title: "Understanding encoding"
+date: "2026-11-11"
+tags: ["Engineering"]
+draft: false
+---
+
+import Citation from "../../components/Citation.astro";
+import References from "../../components/References.astro";
+import CodeWorkspace from "../../components/CodeWorkspace.astro";
+
+Encoding changes how data is represented. You might need to send bytes through a text-only field, put a search term in a URL, or write characters to a file. Each case needs a different encoding.
+
+## Encoding to Base64
+
+Base64 turns bytes into text using letters, digits, `+` and `/`, with `=` for padding when needed. It is useful when a field or protocol accepts text but the data you need to send is binary, such as an image or an attachment.
+
+For text, first choose a character encoding. Here, `café` becomes the UTF-8 bytes `63 61 66 c3 a9`, then the Base64 text `Y2Fmw6k=`. Decoding reverses those steps.
+
+<CodeWorkspace id="base64-code" label="Encoding and decoding Base64">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="Base64 round trip">
+
+<div data-code-example="go" data-code-filename="base64.go">
+
+### Go
+
+Run `go run base64.go`.
+
+```go
+package main
+
+import (
+    "encoding/base64"
+    "fmt"
+    "log"
+)
+
+func main() {
+    text := "café"
+    encoded := base64.StdEncoding.EncodeToString([]byte(text))
+    decoded, err := base64.StdEncoding.DecodeString(encoded)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(encoded)
+    fmt.Println(string(decoded))
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="Base64Example.java">
+
+### Java
+
+Run `java -Dfile.encoding=UTF-8 Base64Example.java`.
+
+```java
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+public class Base64Example {
+    public static void main(String[] args) {
+        String text = "café";
+        String encoded = Base64.getEncoder()
+            .encodeToString(text.getBytes(StandardCharsets.UTF_8));
+        byte[] decoded = Base64.getDecoder().decode(encoded);
+
+        System.out.println(encoded);
+        System.out.println(new String(decoded, StandardCharsets.UTF_8));
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="base64.mjs">
+
+### JavaScript
+
+Run `node base64.mjs`. `Buffer` is a Node.js API.
+
+```javascript
+const text = "café";
+const encoded = Buffer.from(text, "utf8").toString("base64");
+const decoded = Buffer.from(encoded, "base64").toString("utf8");
+
+console.log(encoded);
+console.log(decoded);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="base64_example.py">
+
+### Python
+
+Run `python3 base64_example.py`.
+
+```python
+import base64
+
+text = "café"
+encoded = base64.b64encode(text.encode("utf-8")).decode("ascii")
+decoded = base64.b64decode(encoded, validate=True).decode("utf-8")
+
+print(encoded)
+print(decoded)
+```
+
+</div>
+
+</div>
+
+<div data-code-file="output" data-code-label="Output">
+
+```text
+Y2Fmw6k=
+café
+```
+
+</div>
+
+</CodeWorkspace>
+
+In browsers, `btoa()` expects a string whose characters each represent one byte, not arbitrary Unicode text. Convert text to UTF-8 bytes first rather than passing it directly to `btoa()`.
+
+**Base64 is not encryption.** Anyone can decode it without a key. It is not compression either: three input bytes become four output characters, so large inputs grow by roughly a third.
+
+Standard Base64 can be awkward in URLs because `+`, `/` and `=` have other uses there. **Base64url** replaces `+` and `/` with `-` and `_`; some protocols also omit the padding. Use the variant required by the receiving system rather than assuming they are interchangeable.
+
+## Encoding and decoding URL components
+
+Characters such as `&`, `=` and `#` have structural meaning in a URL. If a search term contains those characters, encode the value so they remain part of the search term rather than becoming separators.
+
+Percent-encoding writes a byte as `%` followed by two hexadecimal digits. A space can become `%20`, `&` becomes `%26`, and the UTF-8 bytes for `é` become `%C3%A9`.
+
+These examples encode `café & tea` as a single query-parameter value, then decode it. Go and Java use form-style query encoding, where a space becomes `+`. The JavaScript and Python examples use `%20`. Both forms are commonly accepted for query values, but a `+` does not mean a space in every part of a URL.
+
+<CodeWorkspace id="url-components-code" label="Encoding and decoding a URL query value">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="URL component round trip">
+
+<div data-code-example="go" data-code-filename="url_components.go">
+
+### Go
+
+Run `go run url_components.go`.
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "net/url"
+)
+
+func main() {
+    value := "café & tea"
+    encoded := url.QueryEscape(value)
+    decoded, err := url.QueryUnescape(encoded)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(encoded)
+    fmt.Println(decoded)
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="URLComponents.java">
+
+### Java
+
+Run `java -Dfile.encoding=UTF-8 URLComponents.java`.
+
+```java
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+public class URLComponents {
+    public static void main(String[] args) {
+        String value = "café & tea";
+        String encoded = URLEncoder.encode(value, StandardCharsets.UTF_8);
+        String decoded = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+
+        System.out.println(encoded);
+        System.out.println(decoded);
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="url_components.mjs">
+
+### JavaScript
+
+Run `node url_components.mjs`. These two functions also work in browsers.
+
+```javascript
+const value = "café & tea";
+const encoded = encodeURIComponent(value);
+const decoded = decodeURIComponent(encoded);
+
+console.log(encoded);
+console.log(decoded);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="url_components.py">
+
+### Python
+
+Run `python3 url_components.py`.
+
+```python
+from urllib.parse import quote, unquote
+
+value = "café & tea"
+encoded = quote(value, safe="", encoding="utf-8", errors="strict")
+decoded = unquote(encoded, encoding="utf-8", errors="strict")
+
+print(encoded)
+print(decoded)
+```
+
+</div>
+
+</div>
+
+<div data-code-file="output" data-code-label="Results">
+
+```text
+Go / Java:
+caf%C3%A9+%26+tea
+café & tea
+
+JavaScript / Python:
+caf%C3%A9%20%26%20tea
+café & tea
+```
+
+</div>
+
+</CodeWorkspace>
+
+Encode individual values, not the complete URL. For example, the query `?q=caf%C3%A9%20%26%20tea` keeps the ampersand inside the search term. In JavaScript, `encodeURI()` leaves URL separators untouched, so it is not a substitute for `encodeURIComponent()` here.
+
+Use the matching decoder: `decodeURIComponent()` does not turn `+` into a space, while form-style query decoders do. When using a query-parameter builder such as `URLSearchParams`, give it the original value and let it handle encoding. Encoding the value yourself first can turn `%26` into `%2526`.
+
+URL encoding does not hide a value. Encoded query values can still appear in browser history, access logs and shared links.
+
+## Character encoding
+
+A character encoding defines how text becomes bytes and how those bytes become text again. Unicode assigns code points to characters; UTF-8 and UTF-16 are ways to encode those code points.
+
+Some encodings you will encounter:
+
+<div class="table-scroll" role="region" aria-label="Common character encodings" tabIndex={0}>
+
+| Encoding | Where it is used | Bytes for `é` |
+| --- | --- | --- |
+| ASCII | Basic English letters, digits and control characters | Cannot represent it |
+| UTF-8 | Common default for web content and text files | `c3 a9` |
+| UTF-16LE | Unicode text using little-endian 16-bit code units | `e9 00` |
+| ISO-8859-1 (Latin-1) | Older Western European text | `e9` |
+| Windows-1252 | Older Windows text; overlaps with Latin-1 but is not identical | `e9` |
+
+</div>
+
+UTF-8 and UTF-16 can represent all Unicode characters. ASCII, Latin-1 and Windows-1252 cover smaller sets. You cannot encode every language or symbol in those older encodings.
+
+The following examples turn `café` into UTF-8 bytes and back. The first output line displays the bytes in hexadecimal so they are readable; the second line is the decoded text.
+
+<CodeWorkspace id="character-encoding-code" label="Encoding and decoding UTF-8 text">
+
+<div data-code-switcher hidden>
+  <button type="button" value="go">
+    Go
+  </button>
+  <button type="button" value="java">
+    Java
+  </button>
+  <button type="button" value="node">
+    JavaScript
+  </button>
+  <button type="button" value="python">
+    Python
+  </button>
+</div>
+
+<div data-code-file="source" data-code-label="UTF-8 round trip">
+
+<div data-code-example="go" data-code-filename="characters.go">
+
+### Go
+
+Run `go run characters.go`. This string literal contains valid UTF-8; Go's conversions between strings and byte slices do not validate the encoding.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    text := "café"
+    encoded := []byte(text)
+    decoded := string(encoded)
+
+    fmt.Printf("%x\n", encoded)
+    fmt.Println(decoded)
+}
+```
+
+</div>
+
+<div data-code-example="java" data-code-filename="Characters.java">
+
+### Java
+
+Run `java -Dfile.encoding=UTF-8 Characters.java`.
+
+```java
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
+
+public class Characters {
+    public static void main(String[] args) throws CharacterCodingException {
+        String text = "café";
+        byte[] encoded = text.getBytes(StandardCharsets.UTF_8);
+        String decoded = StandardCharsets.UTF_8.newDecoder()
+            .decode(ByteBuffer.wrap(encoded)).toString();
+
+        System.out.println(HexFormat.of().formatHex(encoded));
+        System.out.println(decoded);
+    }
+}
+```
+
+</div>
+
+<div data-code-example="node" data-code-filename="characters.mjs">
+
+### JavaScript
+
+Run `node characters.mjs`. `TextEncoder` and `TextDecoder` also work in browsers; `Buffer` is used here only to display the hexadecimal output in Node.js.
+
+```javascript
+const text = "café";
+const encoded = new TextEncoder().encode(text);
+const decoded = new TextDecoder("utf-8", { fatal: true }).decode(encoded);
+
+console.log(Buffer.from(encoded).toString("hex"));
+console.log(decoded);
+```
+
+</div>
+
+<div data-code-example="python" data-code-filename="characters.py">
+
+### Python
+
+Run `python3 characters.py`.
+
+```python
+text = "café"
+encoded = text.encode("utf-8")
+decoded = encoded.decode("utf-8")
+
+print(encoded.hex())
+print(decoded)
+```
+
+</div>
+
+</div>
+
+<div data-code-file="output" data-code-label="Output">
+
+```text
+636166c3a9
+café
+```
+
+</div>
+
+</CodeWorkspace>
+
+The word has four characters but needs five UTF-8 bytes. A string's length is not necessarily its encoded byte length.
+
+Reading these UTF-8 bytes as Windows-1252 produces `cafÃ©` instead of `café`. This is often called **mojibake**: the bytes were interpreted using the wrong character encoding. Keep file-encoding settings and HTTP charset declarations consistent with the bytes you actually write.
+
+For incoming data, check whether your decoder rejects invalid byte sequences or replaces them with a replacement character. The Java, JavaScript and Python decoders in the UTF-8 examples report invalid input; the Go conversion preserves bytes without checking them.
+
+<References>
+  <Citation
+    id="compile7-encoding"
+    author="Compile7"
+    year="n.d."
+    title="Encoding and data formats"
+    type="website"
+    url="https://compile7.org/learn/encoding-and-data-formats/"
+  />
+</References>
